@@ -4,7 +4,8 @@ from __future__ import annotations
 import functools
 import inspect
 import logging
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from google.adk.plugins.base_plugin import BasePlugin
 
@@ -81,7 +82,6 @@ class PredictionPlugin(BasePlugin):
             llm_request.append_instructions([PROTOCOL_INSTRUCTION])
         except Exception:
             log.exception("prediction.before_model")
-        return None
 
     async def before_tool_callback(self, *, tool, tool_args, tool_context):
         if not self.cfg.is_action(tool.name):
@@ -102,7 +102,7 @@ class PredictionPlugin(BasePlugin):
 
     async def after_tool_callback(self, *, tool, tool_args, tool_context, result):
         if not self.cfg.is_action(tool.name):
-            return None
+            return
         try:
             state = tool_context.state
             call_id = tool_context.function_call_id or tool.name
@@ -112,7 +112,7 @@ class PredictionPlugin(BasePlugin):
             status = (result or {}).get("status")
             if status in BLOCK_STATUSES or pred is None:
                 state[K_LAST_ERROR] = None
-                return None
+                return
             observed = infer_observed(result or {})
             err = prediction_error(pred["expected"], observed, pred["confidence"])
             state[K_LAST_ERROR] = {"tool": tool.name, "args": pred["args"], "expected": pred["expected"],
@@ -122,4 +122,4 @@ class PredictionPlugin(BasePlugin):
             bump(state, "error_count")
         except Exception:
             log.exception("prediction.after_tool")
-        return None
+        return

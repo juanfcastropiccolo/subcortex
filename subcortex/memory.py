@@ -44,9 +44,9 @@ class MemoryPlugin(BasePlugin):
             state = callback_context.state
             scene = self.cfg.scene_fn(state)
             if scene is None:
-                return None
+                return
             tone = float(state.get(K_TONE, 1.0))
-            k = int(round(2 + 4 * tone))
+            k = round(2 + 4 * tone)
             blocks = [render_precedents(self.store.recall(scene, k)),
                       render_rules(self.store.rules_for(scene))]
             blocks = [b for b in blocks if b]
@@ -54,27 +54,27 @@ class MemoryPlugin(BasePlugin):
                 llm_request.append_instructions(blocks)
         except Exception:
             log.exception("memory.before_model")
-        return None
+        return
 
     async def after_tool_callback(self, *, tool, tool_args, tool_context, result):
         if not self.cfg.is_action(tool.name):
-            return None
+            return
         try:
             state = tool_context.state
             if (result or {}).get("status") in BLOCK_STATUSES:
-                return None
+                return
             le = state.get(K_LAST_ERROR)
             if not le or le.get("tool") != tool.name:
-                return None
+                return
             scene = self.cfg.scene_fn(state)
             if scene is None:
-                return None
+                return
             observed = le["observed"]
             self.store.record_outcome(scene.key, tool.name, observed in SUCCESS_EFFECTS)
             err = float(le["error"])
             surprised = abs(err) >= self.cfg.surprise_threshold or le.get("status") == "error"
             if not surprised:
-                return None
+                return
             self.store.write(Episode(
                 scene_key=scene.key, features=scene.features, tool=tool.name, args=le["args"],
                 expected=le["expected"], observed=observed, prediction_error=err, valence=err,
@@ -82,4 +82,4 @@ class MemoryPlugin(BasePlugin):
             bump(state, "episodes_written")
         except Exception:
             log.exception("memory.after_tool")
-        return None
+        return

@@ -35,7 +35,7 @@ class Scene(BaseModel):
     features: dict[str, str]
 
     @classmethod
-    def from_features(cls, features: dict[str, Any]) -> "Scene":
+    def from_features(cls, features: dict[str, Any]) -> Scene:
         norm = {str(k): str(v) for k, v in features.items()}
         raw = json.dumps(norm, sort_keys=True)
         return cls(key=hashlib.sha1(raw.encode()).hexdigest()[:12], features=norm)

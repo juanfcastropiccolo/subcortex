@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from opsworld.tools import ALL_TOOLS, registry, restart, inspect_service
+from opsworld.tools import ALL_TOOLS, inspect_service, registry, restart
 from opsworld.world import Incident, World
 
 

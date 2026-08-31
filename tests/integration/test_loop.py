@@ -41,7 +41,7 @@ async def run_episode(llm, inc, store_path=":memory:", sc=None, app=None):
 async def test_authorized_action_runs_and_protocol_is_injected():
     llm = ScriptedLlm(script=[call("restart", service="api", expected_effect="resolves", confidence=0.9),
                               text("listo")])
-    world, state, sc = await run_episode(llm, incident("memory_leak"))
+    world, state, _ = await run_episode(llm, incident("memory_leak"))
     assert world.resolved and llm.calls == 2
     assert "Protocolo de acción" in llm.seen_instructions[0]
     assert "Estado interno" in llm.seen_instructions[0]
@@ -70,7 +70,7 @@ async def test_missing_prediction_is_rejected():
 async def test_surprise_writes_episode_with_habenula():
     llm = ScriptedLlm(script=[call("restart", service="api", expected_effect="resolves", confidence=1.0),
                               text("uh")])
-    world, state, sc = await run_episode(llm, incident("db_saturated"))
+    _world, state, sc = await run_episode(llm, incident("db_saturated"))
     eps = sc.store.all_episodes()
     assert len(eps) == 1 and eps[0].habenula and eps[0].observed == "worsens"
     assert state["subcortex.metrics"]["episodes_written"] == 1
@@ -102,5 +102,5 @@ async def test_parallel_actions_reduced_to_one():
                                 "confidence": 0.9})),
     ]))
     llm = ScriptedLlm(script=[two, text("ok")])
-    world, state, _ = await run_episode(llm, incident("traffic_spike"))
+    world, _state, _ = await run_episode(llm, incident("traffic_spike"))
     assert world.steps == 1 and world.log[0]["action"] == "scale" and world.resolved

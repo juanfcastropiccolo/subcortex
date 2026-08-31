@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable
+from typing import Any
 
 from google.adk.agents import LlmAgent
 from google.adk.apps.app import App
@@ -19,7 +20,7 @@ from .prediction import PredictionPlugin, wrap_action_tool
 from .store import EpisodicStore
 from .types import Scene
 
-__all__ = ["attach", "Subcortex", "SubcortexConfig", "EpisodicStore", "Scene"]
+__all__ = ["EpisodicStore", "Scene", "Subcortex", "SubcortexConfig", "attach"]
 log = logging.getLogger("subcortex")
 
 

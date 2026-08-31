@@ -1,4 +1,5 @@
 import pytest
+
 from subcortex.types import Scene, prediction_error
 
 

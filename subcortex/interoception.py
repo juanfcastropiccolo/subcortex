@@ -58,7 +58,6 @@ class InteroceptionPlugin(BasePlugin):
             llm_request.append_instructions([render_state(intero, tone, self.cfg)])
         except Exception:  # degradación a vanilla
             log.exception("interoception.before_model")
-        return None
 
     async def after_tool_callback(self, *, tool, tool_args, tool_context, result):
         try:
@@ -80,7 +79,6 @@ class InteroceptionPlugin(BasePlugin):
             state[K_TONE] = compute_tone(intero, self.cfg)
         except Exception:
             log.exception("interoception.after_tool")
-        return None
 
     async def on_tool_error_callback(self, *, tool, tool_args, tool_context, error):
         # Convertimos la excepción en resultado para que el loop siga y se aprenda de ella.

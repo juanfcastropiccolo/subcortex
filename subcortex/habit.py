@@ -52,18 +52,18 @@ class HabitPlugin(BasePlugin):
 
     async def after_tool_callback(self, *, tool, tool_args, tool_context, result):
         if not self.cfg.is_action(tool.name):
-            return None
+            return
         try:
             state = tool_context.state
             if (result or {}).get("status") in BLOCK_STATUSES:
-                return None
+                return
             state[K_ACTED] = True
             le = state.get(K_LAST_ERROR)
             if not le or le.get("tool") != tool.name:
-                return None
+                return
             scene = self.cfg.scene_fn(state)
             if scene is None:
-                return None
+                return
             err = float(le["error"])
             habit = self.store.get_habit(scene.key)
             if state.get(K_HABIT_HIT) and habit and habit.tool == tool.name:
@@ -74,9 +74,9 @@ class HabitPlugin(BasePlugin):
                     self.store.upsert_habit(habit)
                     bump(state, "dehabituations")
                     log.info("des-habituación: %s cae a %.2f", habit.tool, habit.strength)
-                    return None
+                    return
             if le["observed"] not in SUCCESS_EFFECTS or self.cfg.risk_of(tool.name) == "irreversible":
-                return None
+                return
             s, f = self.store.outcome_counts(scene.key, tool.name)
             if s >= self.cfg.habit_min_successes and f == 0:
                 strength = min(1.0, 0.8 + 0.05 * (s - self.cfg.habit_min_successes))
@@ -85,4 +85,4 @@ class HabitPlugin(BasePlugin):
                                               successes=s, failures=f))
         except Exception:
             log.exception("habit.after_tool")
-        return None
+        return
