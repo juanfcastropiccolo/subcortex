@@ -13,7 +13,8 @@ def test_tone_starts_high_and_drops():
     fresh = {"steps": 0, "failures": 0, "blocks": 0}
     assert compute_tone(fresh, CFG) == 1.0
     assert compute_tone({"steps": 4, "failures": 0, "blocks": 0}, CFG) == pytest.approx(0.75)
-    assert compute_tone({"steps": 0, "failures": 2, "blocks": 1}, CFG) == pytest.approx(0.55)
+    assert compute_tone({"steps": 0, "failures": 2, "blocks": 1}, CFG) == pytest.approx(0.7)
+    assert compute_tone({"steps": 0, "failures": 0, "blocks": 5}, CFG) == 1.0  # los vetos no bajan el tono
     assert compute_tone({"steps": 8, "failures": 5, "blocks": 5}, CFG) == 0.05
 
 

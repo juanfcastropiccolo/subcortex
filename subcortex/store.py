@@ -112,6 +112,13 @@ class EpisodicStore:
         s, f = self.outcome_counts(scene_key, tool)
         return (s + prior * 2) / (s + f + 2)
 
+    def best_tools(self, scene_key: str) -> list[tuple[str, int, int]]:
+        """Acciones con al menos un éxito en la escena, mejores primero: (tool, éxitos, fallos)."""
+        rows = self.conn.execute(
+            "SELECT tool, successes, failures FROM dopamine WHERE scene_key=? AND successes > 0"
+            " ORDER BY successes DESC, failures ASC", (scene_key,))
+        return [(r["tool"], r["successes"], r["failures"]) for r in rows]
+
     # --- hábitos ---------------------------------------------------------------
     def upsert_habit(self, h: Habit) -> None:
         self.conn.execute(

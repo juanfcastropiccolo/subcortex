@@ -17,12 +17,8 @@ log = logging.getLogger("subcortex")
 BLOCK_STATUSES = {"vetoed", "rejected"}
 
 PROTOCOL_INSTRUCTION = """## Protocolo de acción (subcortex)
-Cada tool de acción exige dos parámetros extra:
-- `expected_effect`: qué esperás que pase. Uno de: resolves, improves, no_change, worsens.
-- `confidence`: entre 0 y 1, cuán seguro estás de ese efecto.
-Las acciones sin predicción se rechazan. Las acciones irreversibles con confianza baja se vetan.
-Si una acción vuelve con status "vetoed" o "rejected", no la repitas igual: diagnosticá, cambiá de acción o escalá.
-Ejecutá una sola acción por turno."""
+Toda acción lleva `expected_effect` (resolves|improves|no_change|worsens) y `confidence` (0–1) honestos.
+Si una acción vuelve "vetoed" o "rejected", leé `reason` y `hint` antes de decidir. Una acción por turno."""
 
 _DOC_SUFFIX = """
 

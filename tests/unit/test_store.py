@@ -45,6 +45,9 @@ def test_dopamine_prior_and_update(store):
     assert store.outcome_counts("s", "restart") == (2, 1)
     # (2 + 0.6*2) / (3 + 2) = 0.64
     assert store.dopamine("s", "restart", prior=0.6) == pytest.approx(0.64)
+    store.record_outcome("s", "scale", True)
+    store.record_outcome("s", "rollback", False)
+    assert store.best_tools("s") == [("restart", 2, 1), ("scale", 1, 0)]
 
 
 def test_habit_and_rule_roundtrip(store):

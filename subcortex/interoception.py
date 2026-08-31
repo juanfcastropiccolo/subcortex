@@ -21,7 +21,9 @@ def _intero(state: Any) -> dict:
 
 
 def compute_tone(intero: dict, cfg: SubcortexConfig) -> float:
-    tone = (1.0 - 0.15 * intero.get("failures", 0) - 0.15 * intero.get("blocks", 0)
+    """Tono = presupuesto restante y fallos reales. Los vetos NO bajan el tono: si lo
+    hicieran, cada veto haría más probable el siguiente (bucle observado en la corrida 1)."""
+    tone = (1.0 - 0.15 * intero.get("failures", 0)
             - 0.5 * intero.get("steps", 0) / max(cfg.step_budget, 1))
     return round(max(0.05, min(1.0, tone)), 4)
 
@@ -35,7 +37,8 @@ def render_state(intero: dict, tone: float, cfg: SubcortexConfig) -> str:
         lines.append(f"- Llevás {f} fallos seguidos: bajá la confianza y diagnosticá antes de actuar.")
     b = intero.get("blocks", 0)
     if b:
-        lines.append(f"- Tus últimas {b} acciones fueron bloqueadas: cambiá de estrategia o escalá.")
+        lines.append(f"- Tus últimas {b} acciones fueron bloqueadas: leé el motivo y la alternativa "
+                     "del bloqueo antes de insistir.")
     if intero.get("last_status") == "vetoed":
         lines.append("- La última acción fue vetada por riesgo.")
     if tone < 0.4:

@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from collections.abc import Iterable
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -24,21 +25,37 @@ K_ACTED = "subcortex.acted"
 K_HABIT_HIT = "subcortex.habit_hit"
 K_METRICS = "subcortex.metrics"
 K_FEATURES = "subcortex.features"
+K_DISCOVERED = "subcortex.discovered"
+K_VETO_LOG = "subcortex.veto_log"
 
 PRED_PARAMS = ("expected_effect", "confidence")
 
 
+def _hash(d: dict[str, str]) -> str:
+    return hashlib.sha1(json.dumps(d, sort_keys=True).encode()).hexdigest()[:12]
+
+
 class Scene(BaseModel):
-    """Contexto observable de la decisión (paso 8.1, giro parahipocampal)."""
+    """Contexto observable de la decisión (paso 8.1, giro parahipocampal).
+
+    `key` identifica la escena exacta (todas las features): la usa el recuerdo episódico.
+    `coarse_key` identifica la clase de escena (subconjunto de features): la usan la
+    dopamina, el gate y los hábitos, que necesitan repetición para aprender.
+    """
 
     key: str
+    coarse_key: str
     features: dict[str, str]
 
     @classmethod
-    def from_features(cls, features: dict[str, Any]) -> Scene:
+    def from_features(cls, features: dict[str, Any],
+                      coarse: Iterable[str] | None = None) -> Scene:
         norm = {str(k): str(v) for k, v in features.items()}
-        raw = json.dumps(norm, sort_keys=True)
-        return cls(key=hashlib.sha1(raw.encode()).hexdigest()[:12], features=norm)
+        if coarse is None:
+            coarse_key = _hash(norm)
+        else:
+            coarse_key = _hash({k: norm[k] for k in coarse if k in norm})
+        return cls(key=_hash(norm), coarse_key=coarse_key, features=norm)
 
 
 class Prediction(BaseModel):
@@ -68,6 +85,9 @@ class Episode(BaseModel):
 
 
 class Habit(BaseModel):
+    """`args` es una plantilla: un valor "$service" se resuelve con la feature `service`
+    de la escena actual, así el hábito aprendido en `api` sirve en `checkout`."""
+
     scene_key: str
     tool: str
     args: dict[str, Any]

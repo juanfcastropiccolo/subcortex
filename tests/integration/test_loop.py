@@ -93,6 +93,43 @@ async def test_habit_bypasses_llm():
 
 
 @pytest.mark.asyncio
+async def test_habit_learned_with_finding_transfers_to_another_service():
+    """Tres memory_leak en servicios distintos, siempre inspect → restart. El cuarto, en otro
+    servicio, debe resolverse por hábito tras el diagnóstico, sin llamar al LLM para actuar."""
+    from opsworld.world import COARSE_FEATURES
+    def script_for(svc):
+        return [call("inspect_service", service=svc),
+                call("restart", service=svc, expected_effect="resolves", confidence=0.9),
+                text("ok")]
+
+    llm = ScriptedLlm(script=script_for("api"))
+    agent = LlmAgent(name="ops", model=llm, instruction="x", tools=list(ALL_TOOLS))
+    app = App(name="t", root_agent=agent)
+    sc = subcortex.attach(app, risk=RISK, diagnostic_tools=DIAGNOSTIC_TOOLS,
+                          coarse_features=COARSE_FEATURES)
+    for svc in ("api", "auth", "search"):
+        llm.calls, llm.script = 0, script_for(svc)
+        inc = Incident(id=1, service=svc, cause="memory_leak", recent_deploy=False,
+                       traffic="normal", hour_bucket="night")
+        world, _, _ = await run_episode(llm, inc, sc=sc, app=app)
+        assert world.resolved and llm.calls == 3
+    assert len(sc.store.habits()) == 1 and sc.store.habits()[0].args == {"service": "$service"}
+    llm.calls, llm.script = 0, script_for("checkout")
+    inc = Incident(id=9, service="checkout", cause="memory_leak", recent_deploy=False,
+                   traffic="spike", hour_bucket="morning")  # traffic distinto → clase distinta
+    world, state, _ = await run_episode(llm, inc, sc=sc, app=app)
+    assert world.resolved and state["subcortex.metrics"]["habit_hits"] == 0
+    # Con hábito, el LLM solo debe hablar dos veces: pedir el diagnóstico y cerrar.
+    llm.calls, llm.script = 0, [call("inspect_service", service="checkout"), text("ok")]
+    inc = Incident(id=10, service="checkout", cause="memory_leak", recent_deploy=False,
+                   traffic="normal", hour_bucket="morning")
+    world, state, _ = await run_episode(llm, inc, sc=sc, app=app)
+    assert world.resolved and world.log[0]["action"] == "restart" and world.log[0]["args"] == {"service": "checkout"}
+    assert state["subcortex.metrics"]["habit_hits"] == 1
+    assert llm.calls == 2  # inspect (LLM) → hábito (sin LLM) → texto final (LLM)
+
+
+@pytest.mark.asyncio
 async def test_parallel_actions_reduced_to_one():
     two = LlmResponse(content=types.Content(role="model", parts=[
         types.Part(function_call=types.FunctionCall(

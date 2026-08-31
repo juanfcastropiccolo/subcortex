@@ -9,7 +9,7 @@ from google.adk.apps.app import App
 
 import subcortex
 from opsworld.tools import ALL_TOOLS
-from opsworld.world import DIAGNOSTIC_TOOLS, RISK
+from opsworld.world import COARSE_FEATURES, DIAGNOSTIC_TOOLS, RISK
 
 try:  # carga demo/.env o .env de la raíz si existen (adk web lo hace solo; run_ab no)
     from dotenv import load_dotenv
@@ -31,7 +31,8 @@ def build_agent(model: str | object = MODEL) -> LlmAgent:
 
 def build_app(with_subcortex: bool, store_path: str = ":memory:", model: str | object = MODEL):
     app = App(name="opsworld", root_agent=build_agent(model))
-    sc = (subcortex.attach(app, risk=RISK, diagnostic_tools=DIAGNOSTIC_TOOLS, store_path=store_path)
+    sc = (subcortex.attach(app, risk=RISK, diagnostic_tools=DIAGNOSTIC_TOOLS, store_path=store_path,
+                           coarse_features=COARSE_FEATURES)
           if with_subcortex else None)
     return app, sc
 

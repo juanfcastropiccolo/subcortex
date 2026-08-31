@@ -16,7 +16,7 @@ from demo.agent import MODEL, build_app
 from opsworld.tools import registry
 from opsworld.world import World, features, generate_incidents
 from subcortex.metrics import get_metrics
-from subcortex.types import K_FEATURES
+from subcortex.types import K_FEATURES, K_VETO_LOG
 
 MAX_ATTEMPTS = 4
 
@@ -69,7 +69,8 @@ async def run_variant(name: str, incidents, with_subcortex: bool, model=MODEL,
                "episodes_written": m.get("episodes_written", 0), "habit_hits": m.get("habit_hits", 0),
                "dehabituations": m.get("dehabituations", 0),
                "abs_error_sum": m.get("abs_error_sum", 0.0), "error_count": m.get("error_count", 0),
-               "actions": [e["action"] for e in world.log]}
+               "actions": [e["action"] for e in world.log],
+               "veto_log": list(session.state.get(K_VETO_LOG) or []) if with_subcortex else []}
         rows.append(row)
         print(f"[{name}] #{i:02d} {inc.cause:15s} score={world.score:5d} steps={world.steps} "
               f"llm={row['llm_calls']} vetoes={row['vetoes']} rej={row['rejected']} "

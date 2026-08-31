@@ -8,6 +8,13 @@ def test_scene_key_is_stable_and_order_independent():
     b = Scene.from_features({"symptom": "oom", "service": "api"})
     assert a.key == b.key
     assert len(a.key) == 12
+    assert a.coarse_key == a.key  # sin coarse, la clase de escena es la escena exacta
+
+
+def test_scene_coarse_key_ignores_other_features():
+    a = Scene.from_features({"service": "api", "symptom": "oom", "hour": "night"}, coarse=("symptom",))
+    b = Scene.from_features({"service": "auth", "symptom": "oom", "hour": "day"}, coarse=("symptom",))
+    assert a.key != b.key and a.coarse_key == b.coarse_key
 
 
 def test_prediction_error_signed_and_scaled_by_confidence():

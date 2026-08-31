@@ -48,10 +48,17 @@ def _wrap_agent_tools(agent: LlmAgent, cfg: SubcortexConfig) -> None:
 
 def attach(app: App, *, risk: dict[str, str], diagnostic_tools: Iterable[str] = (),
            store_path: str = ":memory:", scene_fn: Callable[[Any], Scene | None] | None = None,
+           coarse_features: Iterable[str] | None = None,
            config: SubcortexConfig | None = None) -> Subcortex:
-    """Agrega la capa subcortical a `app` sin modificar la lógica del agente."""
-    cfg = config or SubcortexConfig(risk=dict(risk), diagnostic_tools=frozenset(diagnostic_tools),
-                                    scene_fn=scene_fn or default_scene_fn)
+    """Agrega la capa subcortical a `app` sin modificar la lógica del agente.
+
+    `coarse_features`: qué features definen la *clase* de escena para dopamina, gate y hábitos
+    (None = todas; con muchas features distintas, nada se repite y nada se aprende).
+    """
+    cfg = config or SubcortexConfig(
+        risk=dict(risk), diagnostic_tools=frozenset(diagnostic_tools),
+        scene_fn=scene_fn or default_scene_fn,
+        coarse_features=tuple(coarse_features) if coarse_features else None)
     store = EpisodicStore(store_path)
     agent = app.root_agent
     if isinstance(agent, LlmAgent):

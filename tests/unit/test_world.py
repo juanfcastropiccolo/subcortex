@@ -58,6 +58,7 @@ def test_step_cap_ends_episode():
 
 
 def test_diagnostic_hints_reflect_cause():
-    assert "memory" in World(make("memory_leak")).diagnose("inspect_service", service="api")["metrics"]
+    r = World(make("memory_leak")).diagnose("inspect_service", service="api")
+    assert "memory" in r["metrics"] and r["finding"] == "memory_high"
     assert World(make("bad_deploy")).diagnose("check_deploys", service="api")["recent_deploy"] is True
     assert EFFECTS["false_alarm"]["resolve"] == "resolves"

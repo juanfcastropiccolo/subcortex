@@ -30,6 +30,8 @@ EFFECTS: dict[str, dict[str, str]] = {
 RISK = {"restart": "costly", "rollback": "irreversible", "scale": "costly",
         "failover_db": "irreversible", "resolve": "free", "escalate_to_human": "free"}
 DIAGNOSTIC_TOOLS = frozenset({"inspect_service", "check_deploys"})
+# Clase de escena para dopamina/gate/hábitos: síntoma + contexto + lo que descubre el diagnóstico.
+COARSE_FEATURES = ("symptom", "recent_deploy", "traffic", "finding")
 
 ACTION_COST = {"free": 0, "costly": 10, "irreversible": 25}
 STEP_COST = 5
@@ -143,8 +145,19 @@ class World:
                     "recent_deploy": inc.recent_deploy,
                     "last_deploy": "12 min ago" if inc.recent_deploy else "3 days ago"}
         return {"status": "success", "observed_effect": "diagnostic",
-                "service": inc.service, "metrics": _HINTS[inc.cause]}
+                "service": inc.service, "metrics": _HINTS[inc.cause],
+                "finding": FINDING_OF[inc.cause]}
 
+
+# Hallazgo estructurado que devuelve inspect_service (lo ven ambas variantes del A/B).
+FINDING_OF = {
+    "memory_leak": "memory_high",
+    "bad_deploy": "errors_after_deploy",
+    "traffic_spike": "traffic_5x",
+    "db_saturated": "db_pool_exhausted",
+    "dependency_down": "upstream_timeout",
+    "false_alarm": "metrics_nominal",
+}
 
 _HINTS = {
     "memory_leak": "memory 96% and climbing steadily; rps normal; db pool healthy",
