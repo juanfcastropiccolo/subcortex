@@ -51,7 +51,7 @@ async def run_variant(name: str, incidents, with_subcortex: bool, model=MODEL,
                     if ev.usage_metadata and ev.usage_metadata.total_token_count:
                         tokens_fallback += ev.usage_metadata.total_token_count
                 break
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 if attempt == MAX_ATTEMPTS:
                     raise
                 wait = 5 * attempt
