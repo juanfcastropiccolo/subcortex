@@ -271,7 +271,18 @@ memory-tests/
 └── README.md
 ```
 
-## 10. Fuera de alcance
+## 10. Revisiones tras la corrida 1 (2026-08-31)
+
+Resultados y diagnóstico en `docs/superpowers/results/2026-08-30-ab-run.md`. Cambios respecto de las secciones 4.2 y 4.4:
+
+- **Escena a dos niveles.** `Scene` gana `coarse_key` = hash de `config.coarse_features` (subconjunto). Dopamina, gate y hábitos usan `coarse_key`; el recall episódico y las reglas siguen usando `key`/features completas. `attach(coarse_features=...)`. Sin coarse, `coarse_key == key` (comportamiento de la corrida 1).
+- **La escena se enriquece durante el episodio.** `MemoryPlugin.after_tool` aplica `config.discover_fn(tool, result)` a las tools diagnósticas y guarda el resultado en `state["subcortex.discovered"]`; `config.scene_of(state)` = features de entrada + descubiertas. Convención por defecto: el campo `finding` del resultado. En opsworld, `inspect_service` devuelve `finding` (lo ven ambas variantes).
+- **Hábitos con args plantilla.** Al compilar, los valores de args que coinciden con una feature se guardan como `"$feature"` y se resuelven con la escena actual en el bypass. Un hábito aprendido en `api` sirve en `checkout`.
+- **Gate.** `value = confidence × dopamina − costo` (el `tone` ya no multiplica; solo actúa en la vía hiperdirecta). Costos `costly 0.10`, `irreversible 0.20`. `hyperdirect_confidence` 0.6. **Confianza ganada:** si `(coarse_key, tool)` tiene `≥ trust_min_successes (2)` éxitos y 0 fallos, se exime de la hiperdirecta (no del umbral de valor). El veto devuelve `hint` con las acciones que ya funcionaron en la clase de escena y la instrucción de cómo destrabarse. Cada veto se registra en `state["subcortex.veto_log"]`.
+- **Interocepción.** Los bloqueos (`blocks`) ya no bajan el `tone` (rompía el bucle veto → tono → veto). Siguen contando para el bloqueo tras 3 seguidos.
+- **Recall.** Máximo `recall_max` (4) precedentes y solo con `overlap ≥ recall_min_overlap` (2) o misma escena exacta. Protocolo de acción recortado a dos líneas.
+
+## 11. Fuera de alcance
 
 Consolidación con LLM, embeddings para escena, integración con Proyecto Momentum,
 deploy, evalsets `adk eval`, fork de ADK. Todos son pasos siguientes candidatos si la

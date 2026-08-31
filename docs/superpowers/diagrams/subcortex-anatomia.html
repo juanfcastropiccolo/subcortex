@@ -183,20 +183,21 @@ sequenceDiagram
     alt sin predicción válida
         P-->>F: {status: rejected}
     else
-        F->>G: value = conf × dopamina × tone − costo
-        alt irreversible con conf menor a 0.7, tone menor a 0.4, o value bajo el umbral
+        F->>G: value = conf × dopamina(clase de escena) − costo
+        alt irreversible sin confianza ganada y conf menor a 0.6 o tone menor a 0.4, o value bajo el umbral
             G-->>F: {status: vetoed, reason}
         else autorizada
             F->>T: ejecuta → {observed_effect}
         end
     end
     F->>P: error = rank(observed) − rank(expected)
-    F->>M: dopamina(scene, tool); write(Episode) si |error| ≥ 0.25
+    F->>M: si fue diagnóstico: discover_fn → la escena gana "finding"
+    F->>M: si fue acción: dopamina(clase de escena, tool); write(Episode) si |error| ≥ 0.25
     F->>H: compila hábito (3 éxitos) o des-habitúa (error negativo)
     F->>I: steps, blocks, failures → tone
     note over F: vuelve a before_model hasta que Gemini responda texto
 </pre>
-      <figcaption>Los rechazos y vetos vuelven al modelo como resultado de tool; <code>Interoception</code> los cuenta como <code>blocks</code> y baja el <code>tone</code>, y tras tres seguidos el gate solo deja pasar <code>escalate_to_human</code> y <code>resolve</code>.</figcaption>
+      <figcaption>Los rechazos y vetos vuelven al modelo como resultado de tool con <code>reason</code> y <code>hint</code> (qué funcionó antes en esta clase de escena). <code>Interoception</code> los cuenta como <code>blocks</code> — sin bajar el <code>tone</code>, para no realimentar el veto — y tras tres seguidos el gate solo deja pasar <code>escalate_to_human</code> y <code>resolve</code>.</figcaption>
     </figure>
   </section>
 
@@ -264,19 +265,24 @@ classDiagram
         +risk Dict~tool, RiskClass~
         +diagnostic_tools
         +scene_fn(state) Scene?
+        +coarse_features
+        +discover_fn(tool, result) dict
         +always_allowed
         +step_budget = 8
         +surprise_threshold = 0.25
         +gate_threshold = 0.10
-        +cost free/costly/irreversible
+        +cost costly 0.10 · irreversible 0.20
         +dopamine_prior = 0.6
-        +hyperdirect_confidence = 0.7
+        +hyperdirect_confidence = 0.6
         +hyperdirect_tone = 0.4
+        +trust_min_successes = 2
         +max_consecutive_blocks = 3
         +habit_min_successes = 3
         +habit_min_strength = 0.8
+        +recall_min_overlap = 2 · recall_max = 4
         +is_action(name) bool
         +risk_of(name) RiskClass
+        +scene_of(state) Scene?
     }
 
     class PredictionPlugin {
@@ -288,17 +294,18 @@ classDiagram
     class GatePlugin {
         &lt;&lt;ganglios basales + cingulado&gt;&gt;
         +after_model: llm_calls, tokens, winner-take-all
-        +before_tool: gate_decision → None | vetoed
+        +before_tool: gate_decision(trusted) → None | vetoed + hint con alternativas
     }
     class MemoryPlugin {
-        &lt;&lt;hipocampo · amígdala · habénula&gt;&gt;
-        +before_model: recall(scene) + rules_for(scene)
-        +after_tool: record_outcome; write si sorpresa
+        &lt;&lt;hipocampo · parahipocampal · amígdala · habénula&gt;&gt;
+        +before_model: recall(scene, overlap ≥ 2) + rules_for(scene)
+        +after_tool diagnóstica: discover_fn → state.discovered
+        +after_tool acción: record_outcome(coarse_key); write si sorpresa
     }
     class HabitPlugin {
         &lt;&lt;caudado → putamen&gt;&gt;
-        +before_model: bypass con habit_response()
-        +after_tool: compila / des-habitúa
+        +before_model: bypass con habit_response(habit, scene)
+        +after_tool: compila (args "$feature") / des-habitúa
     }
     class InteroceptionPlugin {
         &lt;&lt;ínsula · hipotálamo · reticular&gt;&gt;
@@ -324,9 +331,10 @@ classDiagram
         +update_strength / delete_episodes / stats
     }
     class Scene {
-        +key sha1[12]
+        +key sha1[12] — escena exacta (recall)
+        +coarse_key sha1[12] — clase de escena (dopamina, gate, hábitos)
         +features Dict~str,str~
-        +from_features(dict)$ Scene
+        +from_features(dict, coarse)$ Scene
     }
     class Prediction {
         +tool
@@ -456,7 +464,7 @@ classDiagram
           <tr><td class="mono">InteroceptionPlugin</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Ínsula · hipotálamo · reticular (4, 6, 7)</td><td>Traduce contadores (pasos, fallos, bloqueos) a texto que el modelo puede pesar, y a un escalar <code>tone</code> que modula al gate y a la memoria.</td><td class="mono">compute_tone() · render_state()</td></tr>
           <tr><td class="mono">consolidate()</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Sueño · microglía (0.4, 15.3)</td><td>Offline: decae lo no usado, refuerza lo recuperado, poda, y destila episodios recurrentes en reglas semánticas.</td><td class="mono">consolidate(store, now) → {decayed, pruned, reinforced, rules}</td></tr>
           <tr><td class="mono">EpisodicStore</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Sustrato (capa 0)</td><td>Lo único que persiste entre sesiones: episodios, dopamina, hábitos, reglas. SQLite; cae a memoria si el archivo no está disponible.</td><td class="mono">write · recall · dopamine · upsert_habit · rules_for</td></tr>
-          <tr><td class="mono">Scene · Prediction · Episode · Habit · Rule</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>—</td><td>Tipos pydantic. <code>Scene.key</code> es un hash estable de features observables; nunca incluye la causa.</td><td class="mono">types.py</td></tr>
+          <tr><td class="mono">Scene · Prediction · Episode · Habit · Rule</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Giro parahipocampal (8.1)</td><td>Tipos pydantic. <code>Scene.key</code> es la escena exacta (features de entrada + lo descubierto por el diagnóstico); <code>Scene.coarse_key</code> es la clase de escena con la que aprenden dopamina, gate y hábitos. Nunca incluye la causa.</td><td class="mono">types.py</td></tr>
           <tr><td class="mono">BasePlugin · App · Runner · LlmAgent · FunctionTool</td><td class="pkg"><span class="tag adk">ADK</span></td><td>Corteza y bucle</td><td>El framework tal cual viene. Los plugins corren en orden de registro y el primer valor no-<code>None</code> corta la cadena.</td><td class="mono">App(plugins=[...]) · Runner(app=)</td></tr>
           <tr><td class="mono">World · Incident · WorldRegistry · tools</td><td class="pkg"><span class="tag ops">opsworld</span></td><td>El mundo</td><td>Incidentes con causa oculta y dinámica con trampas; cada tool ADK busca su <code>World</code> por <code>session.id</code> y devuelve <code>observed_effect</code>.</td><td class="mono">World.act() · World.diagnose()</td></tr>
           <tr><td class="mono">run_ab · ScriptedLlm</td><td class="pkg"><span class="tag test">demo / tests</span></td><td>—</td><td>La corrida A/B con Gemini real y el LLM programado que recorre el bucle completo en tests sin red.</td><td class="mono">summarize(rows) · ScriptedLlm(script=[...])</td></tr>
