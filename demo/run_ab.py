@@ -18,6 +18,8 @@ from opsworld.world import World, features, generate_incidents
 from subcortex.metrics import get_metrics
 from subcortex.types import K_FEATURES
 
+MAX_ATTEMPTS = 4
+
 
 async def run_variant(name: str, incidents, with_subcortex: bool, model=MODEL,
                       consolidate_every: int = 0, store_path: str = ":memory:"):
@@ -26,24 +28,36 @@ async def run_variant(name: str, incidents, with_subcortex: bool, model=MODEL,
     runner = Runner(app=app, session_service=svc)
     rows = []
     for i, inc in enumerate(incidents):
-        session = await svc.create_session(app_name="opsworld", user_id="demo",
-                                           state={K_FEATURES: features(inc)})
-        world = World(inc)
-        registry.register(session.id, world)
         f = features(inc)
         prompt = (f"Incidente #{inc.id}: servicio={f['service']}, síntoma={f['symptom']}, "
                   f"deploy_reciente={f['recent_deploy']}, tráfico={f['traffic']}, "
                   f"franja={f['hour_bucket']}. Actuá.")
         msg = types.Content(role="user", parts=[types.Part(text=prompt)])
         t0 = time.time()
-        model_turns = 0
-        tokens_fallback = 0
-        async for ev in runner.run_async(user_id="demo", session_id=session.id, new_message=msg):
-            if (ev.author != "user" and not ev.partial and ev.content
-                    and not ev.get_function_responses()):
-                model_turns += 1
-            if ev.usage_metadata and ev.usage_metadata.total_token_count:
-                tokens_fallback += ev.usage_metadata.total_token_count
+        # Un 503/429 transitorio de Gemini no debe tirar la corrida: reintento con sesión y mundo nuevos.
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            session = await svc.create_session(app_name="opsworld", user_id="demo",
+                                               state={K_FEATURES: f})
+            world = World(inc)
+            registry.register(session.id, world)
+            model_turns = 0
+            tokens_fallback = 0
+            try:
+                async for ev in runner.run_async(user_id="demo", session_id=session.id,
+                                                 new_message=msg):
+                    if (ev.author != "user" and not ev.partial and ev.content
+                            and not ev.get_function_responses()):
+                        model_turns += 1
+                    if ev.usage_metadata and ev.usage_metadata.total_token_count:
+                        tokens_fallback += ev.usage_metadata.total_token_count
+                break
+            except Exception as e:  # noqa: BLE001
+                if attempt == MAX_ATTEMPTS:
+                    raise
+                wait = 5 * attempt
+                print(f"[{name}] #{i:02d} fallo transitorio ({type(e).__name__}); "
+                      f"reintento {attempt}/{MAX_ATTEMPTS - 1} en {wait}s", flush=True)
+                await asyncio.sleep(wait)
         session = await svc.get_session(app_name="opsworld", user_id="demo", session_id=session.id)
         m = get_metrics(session.state) if with_subcortex else {}
         row = {"variant": name, "i": i, "cause": inc.cause, "score": world.score,
@@ -131,9 +145,10 @@ async def main() -> None:
                                  consolidate_every=args.consolidate_every if flag else 0)
         results[name] = rows
         summaries[name] = summarize(rows)
+        # Guardado parcial: si la segunda variante cae, la primera no se pierde.
+        Path(args.out).write_text(json.dumps({"rows": results, "summary": summaries}, indent=2,
+                                             ensure_ascii=False))
     print_table(summaries)
-    Path(args.out).write_text(json.dumps({"rows": results, "summary": summaries}, indent=2,
-                                         ensure_ascii=False))
     print(f"\nGuardado en {args.out}")
 
 

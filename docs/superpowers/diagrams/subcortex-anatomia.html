@@ -1,0 +1,478 @@
+<title>Anatomía de subcortex</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F3F5F7;
+    --surface: #FFFFFF;
+    --ink: #1D2430;
+    --ink-2: #4A5563;
+    --ink-3: #7A8592;
+    --line: #D6DCE3;
+    --adk: #3B5BA9;
+    --adk-soft: #E4EAF7;
+    --sub: #0E7C7B;
+    --sub-soft: #DDF0EE;
+    --ops: #B8741A;
+    --ops-soft: #F6EBD8;
+    --test: #6B5CA5;
+    --test-soft: #ECE8F6;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141A1F; --surface: #1C242B; --ink: #E6EAEE; --ink-2: #B4BCC6; --ink-3: #7F8994;
+      --line: #313C46; --adk: #8FA6E6; --adk-soft: #23304A; --sub: #5CC4C0; --sub-soft: #16383A;
+      --ops: #E0A64E; --ops-soft: #3D2E16; --test: #B4A6E6; --test-soft: #2C2742; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141A1F; --surface: #1C242B; --ink: #E6EAEE; --ink-2: #B4BCC6; --ink-3: #7F8994;
+    --line: #313C46; --adk: #8FA6E6; --adk-soft: #23304A; --sub: #5CC4C0; --sub-soft: #16383A;
+    --ops: #E0A64E; --ops-soft: #3D2E16; --test: #B4A6E6; --test-soft: #2C2742; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.55; }
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 28px 96px; display: flex; flex-direction: column; gap: 56px; }
+  h1, h2, h3 { font-family: "Source Serif 4", Georgia, "Times New Roman", serif; text-wrap: balance; margin: 0; }
+  h1 { font-size: 40px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
+  h2 { font-size: 26px; font-weight: 600; }
+  h3 { font-size: 18px; font-weight: 600; }
+  p { max-width: 68ch; margin: 0; color: var(--ink-2); }
+  code, .mono { font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace; font-size: 0.92em; }
+  header { display: flex; flex-direction: column; gap: 14px; border-bottom: 1px solid var(--line); padding-bottom: 28px; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 13px; color: var(--ink-2); }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .legend .adk::before { background: var(--adk); } .legend .sub::before { background: var(--sub); }
+  .legend .ops::before { background: var(--ops); } .legend .test::before { background: var(--test); }
+  section { display: flex; flex-direction: column; gap: 16px; }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  figure > svg { max-width: 100%; height: auto; display: block; color: var(--ink); }
+  figcaption { font-size: 13px; color: var(--ink-3); max-width: 80ch; }
+  .scroll { overflow-x: auto; }
+  pre.mermaid { margin: 0; background: transparent; }
+  .diagram-note { font-size: 13px; color: var(--ink-3); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; background: var(--bg); }
+  tr:last-child td { border-bottom: none; }
+  td.pkg { white-space: nowrap; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .tag.adk { background: var(--adk-soft); color: var(--adk); } .tag.sub { background: var(--sub-soft); color: var(--sub); }
+  .tag.ops { background: var(--ops-soft); color: var(--ops); } .tag.test { background: var(--test-soft); color: var(--test); }
+  .hooks { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .hook { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .hook h3 { font-family: "IBM Plex Mono", monospace; font-size: 14px; font-weight: 500; color: var(--sub); }
+  .hook ol { margin: 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; display: flex; flex-direction: column; gap: 3px; }
+  .hook ol code { color: var(--ink); }
+  .hook .rule { font-size: 12px; color: var(--ink-3); }
+  @media (max-width: 640px) { h1 { font-size: 30px; } main { padding: 32px 16px 64px; } }
+  @media (prefers-reduced-motion: no-preference) { a:focus-visible { outline: 2px solid var(--sub); outline-offset: 2px; } }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">memory-tests · POC · ADK 2.8 + Gemini</div>
+    <h1>Anatomía de subcortex</h1>
+    <p>Un <code>LlmAgent</code> de ADK es la corteza: percibe, compara y produce una intención. <code>subcortex</code> es todo lo que en el cerebro decide alrededor de ella. Estas cuatro figuras muestran cómo se conectan las clases, qué pasa en un turno y cómo el experimento A/B mide la diferencia.</p>
+    <div class="legend">
+      <span class="adk">ADK (framework)</span>
+      <span class="sub">subcortex (la librería)</span>
+      <span class="ops">opsworld (simulador)</span>
+      <span class="test">demo / tests</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>1 · El experimento, de punta a punta</h2>
+    <p>La misma secuencia de incidentes (mismo <code>seed</code>) alimenta dos corridas del mismo agente. La única diferencia es una llamada: <code>subcortex.attach(app)</code>.</p>
+    <figure>
+      <svg viewBox="0 0 1040 400" role="img" aria-label="Flujo del experimento: generate_incidents produce 40 incidentes; cada uno crea un World y una sesión ADK; el Runner corre el agente en dos variantes, baseline y subcortex, y ambas producen filas que summarize agrega por tercios en results.json." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        </defs>
+        <!-- incidents -->
+        <rect x="20" y="150" width="170" height="70" rx="6" fill="none" stroke="var(--ops)" stroke-width="1.5"/>
+        <text x="105" y="176" text-anchor="middle" fill="currentColor" font-weight="600">generate_incidents</text>
+        <text x="105" y="196" text-anchor="middle" fill="var(--ink-3)" font-family="IBM Plex Mono, monospace" font-size="11">n=40 · seed=42</text>
+        <text x="105" y="240" text-anchor="middle" fill="var(--ink-3)" font-size="11">6 causas ocultas, en ciclo</text>
+
+        <!-- per incident -->
+        <rect x="240" y="120" width="190" height="130" rx="6" fill="none" stroke="var(--ops)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="335" y="142" text-anchor="middle" fill="var(--ink-3)" font-size="11" letter-spacing="1">POR INCIDENTE</text>
+        <rect x="256" y="156" width="158" height="34" rx="4" fill="var(--ops-soft)" stroke="none"/>
+        <text x="335" y="178" text-anchor="middle" fill="currentColor" font-family="IBM Plex Mono, monospace" font-size="11">World(incident)</text>
+        <rect x="256" y="200" width="158" height="34" rx="4" fill="var(--adk-soft)" stroke="none"/>
+        <text x="335" y="222" text-anchor="middle" fill="currentColor" font-family="IBM Plex Mono, monospace" font-size="11">Session.state[features]</text>
+        <line x1="190" y1="185" x2="238" y2="185" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- variants -->
+        <rect x="500" y="40" width="240" height="110" rx="6" fill="none" stroke="var(--adk)" stroke-width="1.5"/>
+        <text x="620" y="64" text-anchor="middle" fill="currentColor" font-weight="600">A · baseline</text>
+        <text x="620" y="86" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="11">Runner(App(LlmAgent))</text>
+        <text x="620" y="106" text-anchor="middle" fill="var(--ink-3)" font-size="11">gemini-3-flash-preview</text>
+        <text x="620" y="126" text-anchor="middle" fill="var(--ink-3)" font-size="11">tools sin predicción · sin plugins</text>
+
+        <rect x="500" y="210" width="240" height="140" rx="6" fill="none" stroke="var(--sub)" stroke-width="2"/>
+        <text x="620" y="234" text-anchor="middle" fill="currentColor" font-weight="600">B · subcortex</text>
+        <text x="620" y="256" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="11">Runner(App(LlmAgent))</text>
+        <text x="620" y="276" text-anchor="middle" fill="var(--sub)" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="500">+ subcortex.attach(app)</text>
+        <text x="620" y="298" text-anchor="middle" fill="var(--ink-3)" font-size="11">5 plugins · tools envueltas</text>
+        <rect x="520" y="310" width="200" height="26" rx="4" fill="var(--sub-soft)"/>
+        <text x="620" y="327" text-anchor="middle" fill="currentColor" font-family="IBM Plex Mono, monospace" font-size="11">EpisodicStore (SQLite, persiste)</text>
+
+        <line x1="430" y1="170" x2="498" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="430" y1="200" x2="498" y2="270" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="455" y="128" fill="var(--ink-3)" font-size="11">misma</text>
+        <text x="455" y="252" fill="var(--ink-3)" font-size="11">secuencia</text>
+
+        <!-- world feedback -->
+        <path d="M 500 330 C 470 360, 380 360, 335 300 L 335 252" fill="none" stroke="var(--ops)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+        <text x="380" y="372" fill="var(--ops)" font-size="11">tools → World.act() → observed_effect, score</text>
+
+        <!-- consolidate -->
+        <path d="M 740 330 C 790 330, 790 372, 740 372 C 700 372, 700 350, 740 350" fill="none" stroke="var(--sub)" stroke-width="1.2" marker-end="url(#arr)"/>
+        <text x="800" y="366" fill="var(--sub)" font-size="11">consolidate() cada 10</text>
+
+        <!-- rows -->
+        <rect x="820" y="120" width="200" height="130" rx="6" fill="none" stroke="var(--test)" stroke-width="1.5"/>
+        <text x="920" y="144" text-anchor="middle" fill="currentColor" font-weight="600">run_ab.summarize</text>
+        <text x="920" y="166" text-anchor="middle" fill="var(--ink-2)" font-size="11">score · llm_calls · vetos</text>
+        <text x="920" y="184" text-anchor="middle" fill="var(--ink-2)" font-size="11">worsens · error de predicción</text>
+        <text x="920" y="202" text-anchor="middle" fill="var(--ink-2)" font-size="11">episodios · hábitos</text>
+        <text x="920" y="230" text-anchor="middle" fill="var(--ink-3)" font-family="IBM Plex Mono, monospace" font-size="11">por tercios → results.json</text>
+        <line x1="740" y1="95" x2="818" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="740" y1="280" x2="818" y2="220" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="760" y="112" fill="var(--ink-3)" font-size="11">fila A</text>
+        <text x="760" y="262" fill="var(--ink-3)" font-size="11">fila B + métricas</text>
+      </svg>
+      <figcaption>Ambas variantes ven los mismos 40 incidentes en el mismo orden. Las métricas de B salen de <code>session.state["subcortex.metrics"]</code>; las de A se infieren de los eventos. El <code>EpisodicStore</code> es lo único que sobrevive entre incidentes: es la memoria que hace que B aprenda.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>2 · Un turno del bucle córtico-estriatal</h2>
+    <p>ADK ya tiene el bucle: el modelo propone una function call, la tool responde, el modelo vuelve a mirar. Los cinco plugins se cuelgan de sus hooks. Un veto no rompe el bucle: devuelve un resultado de tool y el modelo re-itera.</p>
+    <figure class="scroll">
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant F as ADK flow
+    participant P as Prediction
+    participant G as Gate
+    participant M as Memory
+    participant H as Habit
+    participant I as Interoception
+    participant L as Gemini
+    participant T as Tool → World
+
+    note over F,I: before_model (en este orden; el primer no-None corta)
+    F->>P: inyecta protocolo (expected_effect, confidence)
+    F->>M: recall(scene) → precedentes + reglas
+    F->>H: ¿hábito fuerte y aún no actuó?
+    alt hay hábito compilado
+        H-->>F: LlmResponse(function_call)  — Gemini no se llama
+    else deliberación
+        F->>I: inyecta estado interno (tone)
+        F->>L: generate_content
+        L-->>F: function_call(tool, args, expected_effect, confidence)
+        F->>G: after_model: llm_calls++, winner-take-all si hay varias acciones
+    end
+
+    note over F,T: before_tool → tool → after_tool
+    F->>P: valida predicción → pending
+    alt sin predicción válida
+        P-->>F: {status: rejected}
+    else
+        F->>G: value = conf × dopamina × tone − costo
+        alt irreversible con conf menor a 0.7, tone menor a 0.4, o value bajo el umbral
+            G-->>F: {status: vetoed, reason}
+        else autorizada
+            F->>T: ejecuta → {observed_effect}
+        end
+    end
+    F->>P: error = rank(observed) − rank(expected)
+    F->>M: dopamina(scene, tool); write(Episode) si |error| ≥ 0.25
+    F->>H: compila hábito (3 éxitos) o des-habitúa (error negativo)
+    F->>I: steps, blocks, failures → tone
+    note over F: vuelve a before_model hasta que Gemini responda texto
+</pre>
+      <figcaption>Los rechazos y vetos vuelven al modelo como resultado de tool; <code>Interoception</code> los cuenta como <code>blocks</code> y baja el <code>tone</code>, y tras tres seguidos el gate solo deja pasar <code>escalate_to_human</code> y <code>resolve</code>.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>3 · Diagrama de clases</h2>
+    <p>Las abstracciones de ADK (arriba a la izquierda) no se tocan: subcortex hereda de <code>BasePlugin</code>, envuelve <code>FunctionTool</code> y se registra en <code>App.plugins</code>. Todo el estado persistente vive en <code>EpisodicStore</code>.</p>
+    <figure class="scroll">
+<pre class="mermaid">
+classDiagram
+    direction TB
+
+    class BasePlugin {
+        &lt;&lt;ADK · abstract&gt;&gt;
+        +name
+        +before_model_callback(callback_context, llm_request) LlmResponse?
+        +after_model_callback(callback_context, llm_response) LlmResponse?
+        +before_tool_callback(tool, tool_args, tool_context) dict?
+        +after_tool_callback(tool, tool_args, tool_context, result) dict?
+        +on_tool_error_callback(tool, tool_args, tool_context, error) dict?
+    }
+    class App {
+        &lt;&lt;ADK&gt;&gt;
+        +name
+        +root_agent LlmAgent
+        +plugins List~BasePlugin~
+    }
+    class LlmAgent {
+        &lt;&lt;ADK&gt;&gt;
+        +model str | BaseLlm
+        +instruction
+        +tools List~callable | FunctionTool~
+    }
+    class Runner {
+        &lt;&lt;ADK&gt;&gt;
+        +run_async(user_id, session_id, new_message) Event*
+    }
+    class FunctionTool {
+        &lt;&lt;ADK&gt;&gt;
+        +func
+        +name
+    }
+    class BaseLlm {
+        &lt;&lt;ADK · abstract&gt;&gt;
+        +generate_content_async(llm_request) LlmResponse*
+    }
+    class Context {
+        &lt;&lt;ADK · ToolContext = CallbackContext&gt;&gt;
+        +state
+        +session
+        +function_call_id
+    }
+
+    class subcortex {
+        &lt;&lt;módulo&gt;&gt;
+        +attach(app, risk, diagnostic_tools, store_path, scene_fn) Subcortex
+        -_wrap_agent_tools(agent, cfg)
+    }
+    class Subcortex {
+        +config SubcortexConfig
+        +store EpisodicStore
+        +plugins
+        +consolidate(now) dict
+    }
+    class SubcortexConfig {
+        +risk Dict~tool, RiskClass~
+        +diagnostic_tools
+        +scene_fn(state) Scene?
+        +always_allowed
+        +step_budget = 8
+        +surprise_threshold = 0.25
+        +gate_threshold = 0.10
+        +cost free/costly/irreversible
+        +dopamine_prior = 0.6
+        +hyperdirect_confidence = 0.7
+        +hyperdirect_tone = 0.4
+        +max_consecutive_blocks = 3
+        +habit_min_successes = 3
+        +habit_min_strength = 0.8
+        +is_action(name) bool
+        +risk_of(name) RiskClass
+    }
+
+    class PredictionPlugin {
+        &lt;&lt;cerebelo&gt;&gt;
+        +before_model: inyecta PROTOCOL_INSTRUCTION
+        +before_tool: parse_prediction → pending | rejected
+        +after_tool: prediction_error → K_LAST_ERROR
+    }
+    class GatePlugin {
+        &lt;&lt;ganglios basales + cingulado&gt;&gt;
+        +after_model: llm_calls, tokens, winner-take-all
+        +before_tool: gate_decision → None | vetoed
+    }
+    class MemoryPlugin {
+        &lt;&lt;hipocampo · amígdala · habénula&gt;&gt;
+        +before_model: recall(scene) + rules_for(scene)
+        +after_tool: record_outcome; write si sorpresa
+    }
+    class HabitPlugin {
+        &lt;&lt;caudado → putamen&gt;&gt;
+        +before_model: bypass con habit_response()
+        +after_tool: compila / des-habitúa
+    }
+    class InteroceptionPlugin {
+        &lt;&lt;ínsula · hipotálamo · reticular&gt;&gt;
+        +before_model: render_state(intero, tone)
+        +after_tool: steps, blocks, failures → compute_tone
+        +on_tool_error: error → {worsens}
+    }
+    class consolidate {
+        &lt;&lt;función · sueño / microglía&gt;&gt;
+        +consolidate(store, now, min_support) dict
+        -_distill(store) Rule*
+    }
+
+    class EpisodicStore {
+        &lt;&lt;SQLite&gt;&gt;
+        +write(Episode) int
+        +recall(scene, k, now) List~Episode~
+        +record_outcome(scene_key, tool, success)
+        +outcome_counts(scene_key, tool) (int, int)
+        +dopamine(scene_key, tool, prior) float
+        +upsert_habit(Habit) / get_habit(scene_key)
+        +upsert_rule(Rule) / rules_for(scene)
+        +update_strength / delete_episodes / stats
+    }
+    class Scene {
+        +key sha1[12]
+        +features Dict~str,str~
+        +from_features(dict)$ Scene
+    }
+    class Prediction {
+        +tool
+        +args
+        +expected Effect
+        +confidence 0..1
+    }
+    class Episode {
+        +scene_key, features
+        +tool, args
+        +expected, observed
+        +prediction_error, valence
+        +habenula bool
+        +strength, access_count
+        +created_at, last_access
+    }
+    class Habit {
+        +scene_key
+        +tool, args
+        +typical_effect
+        +strength, successes, failures
+    }
+    class Rule {
+        +scene_pattern
+        +tool
+        +text
+        +support
+    }
+
+    class World {
+        &lt;&lt;opsworld&gt;&gt;
+        +incident
+        +steps, score, worsens, resolved, done
+        +act(action, **args) dict
+        +diagnose(tool, **args) dict
+    }
+    class Incident {
+        &lt;&lt;opsworld&gt;&gt;
+        +service, cause (oculta)
+        +recent_deploy, traffic, hour_bucket
+        +symptom
+    }
+    class WorldRegistry {
+        &lt;&lt;opsworld&gt;&gt;
+        +register(session_id, world)
+        +get(session_id) World?
+    }
+    class tools {
+        &lt;&lt;opsworld · módulo&gt;&gt;
+        +restart / rollback / scale / failover_db
+        +resolve / escalate_to_human
+        +inspect_service / check_deploys
+    }
+    class run_ab {
+        &lt;&lt;demo · módulo&gt;&gt;
+        +run_variant(name, incidents, with_subcortex)
+        +summarize(rows) dict
+    }
+    class ScriptedLlm {
+        &lt;&lt;tests&gt;&gt;
+        +script List~LlmResponse~
+        +calls
+    }
+
+    BasePlugin <|-- PredictionPlugin
+    BasePlugin <|-- GatePlugin
+    BasePlugin <|-- MemoryPlugin
+    BasePlugin <|-- HabitPlugin
+    BasePlugin <|-- InteroceptionPlugin
+    BaseLlm <|-- ScriptedLlm
+
+    App o-- LlmAgent : root_agent
+    App o-- BasePlugin : plugins
+    Runner --> App : ejecuta
+    LlmAgent o-- FunctionTool : tools
+    LlmAgent --> BaseLlm : model
+    BasePlugin ..> Context : lee/escribe state
+
+    subcortex ..> Subcortex : crea
+    subcortex ..> FunctionTool : envuelve (wrap_action_tool)
+    subcortex ..> App : registra plugins
+    Subcortex o-- SubcortexConfig
+    Subcortex o-- EpisodicStore
+    Subcortex ..> consolidate
+
+    PredictionPlugin ..> Prediction : crea
+    GatePlugin --> EpisodicStore : dopamine()
+    MemoryPlugin --> EpisodicStore : recall() write() record_outcome()
+    HabitPlugin --> EpisodicStore : get_habit() upsert_habit()
+    consolidate --> EpisodicStore : decae, poda, destila
+    PredictionPlugin --> SubcortexConfig
+    GatePlugin --> SubcortexConfig
+    MemoryPlugin --> SubcortexConfig
+    HabitPlugin --> SubcortexConfig
+    InteroceptionPlugin --> SubcortexConfig
+    SubcortexConfig ..> Scene : scene_fn
+
+    EpisodicStore *-- Episode
+    EpisodicStore *-- Habit
+    EpisodicStore *-- Rule
+
+    FunctionTool --> tools : func
+    tools --> WorldRegistry : get(session.id)
+    WorldRegistry o-- World
+    World *-- Incident
+    run_ab --> Runner : run_async por incidente
+    run_ab --> World : crea y lee score
+    run_ab --> subcortex : attach() en variante B
+</pre>
+      <figcaption>Flechas con punta hueca = herencia; rombo = composición/agregación; punteada = crea o usa. Los estereotipos entre <code>&lt;&lt; &gt;&gt;</code> indican el paquete o el análogo cerebral. Los valores numéricos de <code>SubcortexConfig</code> son los umbrales que gobiernan el gate, la sorpresa y el hábito.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>4 · Las abstracciones, una por fila</h2>
+    <p>Qué hace cada pieza, a qué paso del ensayo responde y cuál es su interfaz mínima. Si una fila no tiene análogo cerebral es infraestructura, no mecanismo.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Abstracción</th><th>Paquete</th><th>Cerebro (paso del ensayo)</th><th>Responsabilidad</th><th>Interfaz clave</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">attach()</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>—</td><td>Único punto de entrada. Envuelve tools de acción, abre el store, registra los cinco plugins en orden.</td><td class="mono">attach(app, risk=, diagnostic_tools=, store_path=) → Subcortex</td></tr>
+          <tr><td class="mono">SubcortexConfig</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>—</td><td>Todos los umbrales en un lugar; clasifica tools por riesgo; extrae la escena del estado.</td><td class="mono">is_action() · risk_of() · scene_fn()</td></tr>
+          <tr><td class="mono">PredictionPlugin</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Cerebelo (13)</td><td>Exige una copia eferente por acción y mide el error contra lo observado. Sin predicción no hay aprendizaje que medir.</td><td class="mono">wrap_action_tool() · prediction_error()</td></tr>
+          <tr><td class="mono">GatePlugin</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Ganglios basales + cingulado (9, 11)</td><td>Veto por defecto. Autoriza una acción si su valor supera el umbral; vía hiperdirecta para irreversibles; una sola acción por turno.</td><td class="mono">gate_decision(cfg, tool, conf, dopamina, tone, blocks)</td></tr>
+          <tr><td class="mono">MemoryPlugin</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Hipocampo · amígdala · habénula (5, 8, 15)</td><td>Recupera por escena con valencia, fracasos primero. Escribe solo ante sorpresa. Mantiene la dopamina por (escena, acción).</td><td class="mono">render_precedents() · render_rules()</td></tr>
+          <tr><td class="mono">HabitPlugin</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Caudado → putamen (15.4)</td><td>Tras tres éxitos limpios compila la decisión y responde sin llamar al modelo. Si el hábito falla, pierde fuerza y vuelve a deliberación.</td><td class="mono">habit_response(habit) → LlmResponse</td></tr>
+          <tr><td class="mono">InteroceptionPlugin</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Ínsula · hipotálamo · reticular (4, 6, 7)</td><td>Traduce contadores (pasos, fallos, bloqueos) a texto que el modelo puede pesar, y a un escalar <code>tone</code> que modula al gate y a la memoria.</td><td class="mono">compute_tone() · render_state()</td></tr>
+          <tr><td class="mono">consolidate()</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Sueño · microglía (0.4, 15.3)</td><td>Offline: decae lo no usado, refuerza lo recuperado, poda, y destila episodios recurrentes en reglas semánticas.</td><td class="mono">consolidate(store, now) → {decayed, pruned, reinforced, rules}</td></tr>
+          <tr><td class="mono">EpisodicStore</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>Sustrato (capa 0)</td><td>Lo único que persiste entre sesiones: episodios, dopamina, hábitos, reglas. SQLite; cae a memoria si el archivo no está disponible.</td><td class="mono">write · recall · dopamine · upsert_habit · rules_for</td></tr>
+          <tr><td class="mono">Scene · Prediction · Episode · Habit · Rule</td><td class="pkg"><span class="tag sub">subcortex</span></td><td>—</td><td>Tipos pydantic. <code>Scene.key</code> es un hash estable de features observables; nunca incluye la causa.</td><td class="mono">types.py</td></tr>
+          <tr><td class="mono">BasePlugin · App · Runner · LlmAgent · FunctionTool</td><td class="pkg"><span class="tag adk">ADK</span></td><td>Corteza y bucle</td><td>El framework tal cual viene. Los plugins corren en orden de registro y el primer valor no-<code>None</code> corta la cadena.</td><td class="mono">App(plugins=[...]) · Runner(app=)</td></tr>
+          <tr><td class="mono">World · Incident · WorldRegistry · tools</td><td class="pkg"><span class="tag ops">opsworld</span></td><td>El mundo</td><td>Incidentes con causa oculta y dinámica con trampas; cada tool ADK busca su <code>World</code> por <code>session.id</code> y devuelve <code>observed_effect</code>.</td><td class="mono">World.act() · World.diagnose()</td></tr>
+          <tr><td class="mono">run_ab · ScriptedLlm</td><td class="pkg"><span class="tag test">demo / tests</span></td><td>—</td><td>La corrida A/B con Gemini real y el LLM programado que recorre el bucle completo en tests sin red.</td><td class="mono">summarize(rows) · ScriptedLlm(script=[...])</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>5 · Orden de los hooks</h2>
+    <p>El orden de registro es <code>[Prediction, Gate, Memory, Habit, Interoception]</code>. Importa porque ADK corta en el primer valor no-<code>None</code> y porque cada plugin de <code>after_tool</code> lee lo que escribió el anterior.</p>
+    <div class="hooks">
+      <div class="hook"><h3>before_model</h3><ol><li><code>Prediction</code> inyecta el protocolo</li><li><code>Gate</code> no interviene</li><li><code>Memory</code> inyecta precedentes y reglas</li><li><code>Habit</code> puede devolver la function call y cortar</li><li><code>Interoception</code> inyecta el estado interno</li></ol><span class="rule">El bypass de hábito nunca aplica a acciones irreversibles.</span></div>
+      <div class="hook"><h3>after_model</h3><ol><li><code>Gate</code> cuenta llamadas reales y tokens</li><li><code>Gate</code> reduce varias acciones paralelas a la de mayor valor</li></ol><span class="rule">No corre cuando la respuesta la produjo un hábito: por eso <code>llm_calls</code> mide solo llamadas reales.</span></div>
+      <div class="hook"><h3>before_tool</h3><ol><li><code>Prediction</code> valida y guarda la predicción pendiente</li><li><code>Gate</code> decide: <code>None</code> (ejecuta) o <code>{status: vetoed}</code></li></ol><span class="rule">Un dict devuelto saltea la tool, pero <code>after_tool</code> corre igual con ese dict: todos los plugins ignoran <code>vetoed</code> y <code>rejected</code>.</span></div>
+      <div class="hook"><h3>after_tool</h3><ol><li><code>Prediction</code> calcula el error y lo publica</li><li><code>Memory</code> actualiza dopamina y escribe si hubo sorpresa</li><li><code>Habit</code> compila o des-habitúa</li><li><code>Interoception</code> actualiza contadores y <code>tone</code></li></ol><span class="rule">Un error de tool se convierte en <code>{status: error, observed_effect: worsens}</code> para que el bucle siga y se aprenda de él.</span></div>
+    </div>
+  </section>
+</main>
