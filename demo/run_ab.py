@@ -135,11 +135,18 @@ async def main() -> None:
     ap.add_argument("--consolidate-every", type=int, default=10)
     ap.add_argument("--only", choices=["baseline", "subcortex"], default=None)
     ap.add_argument("--out", default="results.json")
+    ap.add_argument("--baseline-from", default=None,
+                    help="reusar las filas de baseline de un results.json previo (mismo n y seed)")
     args = ap.parse_args()
     incidents = generate_incidents(args.n, args.seed)
     results, summaries = {}, {}
+    if args.baseline_from:
+        prev = json.loads(Path(args.baseline_from).read_text())["rows"]["baseline"]
+        assert len(prev) == args.n, f"baseline previo con {len(prev)} filas, se esperaban {args.n}"
+        results["baseline"] = prev
+        summaries["baseline"] = summarize(prev)
     for name, flag in (("baseline", False), ("subcortex", True)):
-        if args.only and args.only != name:
+        if (args.only and args.only != name) or name in results:
             continue
         registry.clear()
         rows = await run_variant(name, incidents, flag,

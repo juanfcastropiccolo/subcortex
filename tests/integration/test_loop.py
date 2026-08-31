@@ -127,6 +127,13 @@ async def test_habit_learned_with_finding_transfers_to_another_service():
     assert world.resolved and world.log[0]["action"] == "restart" and world.log[0]["args"] == {"service": "checkout"}
     assert state["subcortex.metrics"]["habit_hits"] == 1
     assert llm.calls == 2  # inspect (LLM) → hábito (sin LLM) → texto final (LLM)
+    # El historial que ve el modelo tras el hábito no contiene la function call sintética
+    # (Gemini 3 la rechazaría por falta de thought_signature): va reescrita como texto.
+    last = llm.seen_contents[-1]
+    fcs = [p.function_call.name for c in last for p in (c.parts or []) if p.function_call]
+    texts = [p.text for c in last for p in (c.parts or []) if p.text]
+    assert "restart" not in fcs and any("[hábito] Ejecuté restart(service=checkout" in t for t in texts)
+    assert any("[resultado de restart]" in t and "resolves" in t for t in texts)
 
 
 @pytest.mark.asyncio

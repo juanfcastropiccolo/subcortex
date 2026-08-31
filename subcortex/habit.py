@@ -36,12 +36,51 @@ def resolve_args(template: dict[str, Any], features: dict[str, str]) -> dict[str
     return out
 
 
+HABIT_MARK = b"subcortex:habit"
+
+
 def habit_response(habit: Habit, scene: Scene) -> LlmResponse:
     args = {**resolve_args(habit.args, scene.features), "expected_effect": habit.typical_effect,
             "confidence": round(habit.strength, 3)}
-    part = types.Part(function_call=types.FunctionCall(name=habit.tool, args=args))
+    # La marca en thought_signature identifica la llamada como sintética para reescribirla
+    # después: Gemini 3 rechaza (400) function calls en el historial que el modelo no generó.
+    part = types.Part(function_call=types.FunctionCall(name=habit.tool, args=args),
+                      thought_signature=HABIT_MARK)
     return LlmResponse(content=types.Content(role="model", parts=[part]),
                        custom_metadata={"subcortex": "habit"})
+
+
+def _fmt_args(args: dict | None) -> str:
+    return ", ".join(f"{k}={v}" for k, v in (args or {}).items())
+
+
+def rewrite_habit_history(contents: list[types.Content]) -> int:
+    """Convierte cada par (function_call sintética, function_response) en texto plano.
+
+    Devuelve cuántas llamadas se reescribieron. Independiente del proveedor: el historial
+    resultante es válido para cualquier modelo porque no contiene function calls ajenas."""
+    synthetic_ids: set[str | None] = set()
+    synthetic_names: set[str] = set()
+    n = 0
+    for content in contents:
+        parts = content.parts or []
+        new_parts = []
+        for p in parts:
+            fc = p.function_call
+            fr = p.function_response
+            if fc is not None and p.thought_signature == HABIT_MARK:
+                synthetic_ids.add(fc.id)
+                synthetic_names.add(fc.name)
+                new_parts.append(types.Part(text=f"[hábito] Ejecuté {fc.name}({_fmt_args(fc.args)}) "
+                                                 "sin deliberar, por experiencia previa en esta escena."))
+                n += 1
+            elif fr is not None and (fr.id in synthetic_ids or (fr.id is None and fr.name in synthetic_names)):
+                new_parts.append(types.Part(text=f"[resultado de {fr.name}] {fr.response}"))
+            else:
+                new_parts.append(p)
+        if len(new_parts) == len(parts):
+            content.parts = new_parts
+    return n
 
 
 class HabitPlugin(BasePlugin):
@@ -53,6 +92,8 @@ class HabitPlugin(BasePlugin):
     async def before_model_callback(self, *, callback_context, llm_request):
         try:
             state = callback_context.state
+            if llm_request is not None and getattr(llm_request, "contents", None):
+                rewrite_habit_history(llm_request.contents)
             if state.get(K_ACTED):
                 return None
             scene = self.cfg.scene_of(state)

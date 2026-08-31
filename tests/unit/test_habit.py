@@ -37,6 +37,32 @@ def le(tool, err, observed, service="api"):
             "confidence": 0.9, "error": err, "status": "success", "call_id": "c1"}
 
 
+def test_rewrite_habit_history_replaces_only_synthetic_pairs():
+    from google.genai import types
+
+    from subcortex.habit import HABIT_MARK, rewrite_habit_history
+    real = types.Part(function_call=types.FunctionCall(id="r1", name="inspect_service", args={"service": "api"}),
+                      thought_signature=b"real-sig")
+    synth = types.Part(function_call=types.FunctionCall(id="h1", name="restart", args={"service": "api"}),
+                       thought_signature=HABIT_MARK)
+    contents = [
+        types.Content(role="user", parts=[types.Part(text="incidente")]),
+        types.Content(role="model", parts=[real]),
+        types.Content(role="user", parts=[types.Part(function_response=types.FunctionResponse(
+            id="r1", name="inspect_service", response={"finding": "memory_high"}))]),
+        types.Content(role="model", parts=[synth]),
+        types.Content(role="user", parts=[types.Part(function_response=types.FunctionResponse(
+            id="h1", name="restart", response={"observed_effect": "resolves"}))]),
+    ]
+    assert rewrite_habit_history(contents) == 1
+    assert contents[1].parts[0].function_call.name == "inspect_service"      # la real queda
+    assert contents[2].parts[0].function_response is not None
+    assert contents[3].parts[0].function_call is None
+    assert "[hábito] Ejecuté restart(service=api)" in contents[3].parts[0].text
+    assert contents[4].parts[0].function_response is None
+    assert "resolves" in contents[4].parts[0].text
+
+
 def test_args_template_roundtrip():
     t = templatize_args({"service": "api", "replicas": 4}, {"service": "api", "symptom": "oom"})
     assert t == {"service": "$service", "replicas": 4}

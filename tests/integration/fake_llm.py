@@ -24,6 +24,7 @@ class ScriptedLlm(BaseLlm):
     script: list[LlmResponse] = []
     calls: int = 0
     seen_instructions: list[str] = []
+    seen_contents: list[list[types.Content]] = []
 
     @classmethod
     def supported_models(cls) -> list[str]:
@@ -34,5 +35,6 @@ class ScriptedLlm(BaseLlm):
         self.calls += 1
         si = llm_request.config.system_instruction if llm_request.config else None
         self.seen_instructions.append(si if isinstance(si, str) else str(si))
+        self.seen_contents.append(list(llm_request.contents))
         idx = min(self.calls - 1, len(self.script) - 1)
         yield self.script[idx]
