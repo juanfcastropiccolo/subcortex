@@ -55,3 +55,17 @@ cp .env.example demo/.env   # y poné tu GOOGLE_API_KEY
 uv run python -m demo.run_ab --n 40 --seed 42 --consolidate-every 10
 adk web .                   # inspección manual del agente `demo`
 ```
+
+## Resultados (iteración 2, 40 incidentes, gemini-3-flash-preview)
+
+| métrica | baseline | subcortex |
+|---|---|---|
+| score medio | 46.3 | **56.3** |
+| tasa de resolución | 0.93 | **1.00** |
+| llamadas al LLM / episodio (último tercio) | 7.2 | **4.8** |
+| tokens / episodio | 11.6 k | 12.1 k |
+| acciones dañinas | 4 | **2** |
+| hábitos compilados / disparos | — | 4 / 9 |
+
+Detalle, diagnóstico de la corrida 1 (que no funcionó) y lo que queda pendiente en
+[`docs/superpowers/results/`](docs/superpowers/results/).
