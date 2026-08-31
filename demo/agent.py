@@ -11,6 +11,15 @@ import subcortex
 from opsworld.tools import ALL_TOOLS
 from opsworld.world import DIAGNOSTIC_TOOLS, RISK
 
+try:  # carga demo/.env o .env de la raíz si existen (adk web lo hace solo; run_ab no)
+    from dotenv import load_dotenv
+
+    for _env in (Path(__file__).parent / ".env", Path(__file__).parent.parent / ".env"):
+        if _env.exists():
+            load_dotenv(_env)
+except ImportError:  # pragma: no cover
+    pass
+
 MODEL = os.environ.get("SUBCORTEX_MODEL", "gemini-3-flash-preview")
 INSTRUCTION = (Path(__file__).parent / "instruction.md").read_text()
 
