@@ -559,11 +559,55 @@ trayectorias compiló un hábito <code>hold</code> para el régimen bajista domi
 </table></div>
 <p>Con tres veces más muestras, los hábitos se dispararon 11 veces (2 compilados, 6 reglas) y
 subcortex quedó por encima de BTC. Una sola trayectoria.</p>
-<p><strong>Ablaciones (baseline reutilizado, en curso al cierre del texto):</strong> sin memoria, 69.2 — entre el
-baseline (50.5) y la capa completa (89 ± 20): la memoria explica la mayor parte de la ganancia,
-pero no toda. Las ablaciones restantes (sin gate, sin hábito, sin interocepción) y las variantes
-con confianza por historial, reconsider y reglas con LLM se agregan al reporte de resultados
-del repositorio a medida que terminan.</p>
+<p><strong>Ablaciones (baseline reutilizado; una trayectoria por variante, mismas 40 decisiones):</strong></p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>variante</th>
+<th>equity final</th>
+<th>régimen bajista: media por decisión</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>capa completa (5 trayectorias)</td>
+<td>89.3 ± 19.5</td>
+<td>−1.24 %</td>
+</tr>
+<tr>
+<td>sin memoria</td>
+<td>69.2</td>
+<td><strong>−3.50 %</strong> (= baseline)</td>
+</tr>
+<tr>
+<td>sin interocepción</td>
+<td>69.7</td>
+<td>−2.27 %</td>
+</tr>
+<tr>
+<td>sin hábitos</td>
+<td>74.9</td>
+<td>−1.22 %</td>
+</tr>
+<tr>
+<td>sin gate</td>
+<td>91.5</td>
+<td>−1.28 %</td>
+</tr>
+<tr>
+<td>baseline</td>
+<td>50.5</td>
+<td>−3.51 %</td>
+</tr>
+</tbody>
+</table></div>
+<p>Con la cautela de que cada ablación es una sola trayectoria contra una media con σ ≈ 20, la señal
+conductual es nítida: <strong>sin memoria, la conducta en régimen bajista vuelve exactamente a la del
+baseline</strong> (−3.50 % vs −3.51 %); la interocepción aporta prudencia adicional; los hábitos algo; el
+gate, nada en este dominio —consistente con los cero vetos de todas las corridas: no hay acciones
+irreversibles que frenar. Las variantes de confianza por historial y reconsider quedaron dentro
+del rango de la capa completa (92.3 y 69.8; no concluyente con una trayectoria), y la corrida de
+reglas con LLM quedó incompleta por presupuesto (14/40).</p>
 <h3>6.4 Costos</h3>
 <p>Toda la investigación —tres mundos, unas 25 corridas A/B, ~20 millones de tokens registrados—
 costó alrededor de 9 USD de API a 0.46 USD por millón de tokens. Una corrida de 40 decisiones de

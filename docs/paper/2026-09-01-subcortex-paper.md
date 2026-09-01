@@ -351,11 +351,24 @@ trayectorias compiló un hábito `hold` para el régimen bajista dominante; en u
 Con tres veces más muestras, los hábitos se dispararon 11 veces (2 compilados, 6 reglas) y
 subcortex quedó por encima de BTC. Una sola trayectoria.
 
-**Ablaciones (baseline reutilizado, en curso al cierre del texto):** sin memoria, 69.2 — entre el
-baseline (50.5) y la capa completa (89 ± 20): la memoria explica la mayor parte de la ganancia,
-pero no toda. Las ablaciones restantes (sin gate, sin hábito, sin interocepción) y las variantes
-con confianza por historial, reconsider y reglas con LLM se agregan al reporte de resultados
-del repositorio a medida que terminan.
+**Ablaciones (baseline reutilizado; una trayectoria por variante, mismas 40 decisiones):**
+
+| variante | equity final | régimen bajista: media por decisión |
+|---|---|---|
+| capa completa (5 trayectorias) | 89.3 ± 19.5 | −1.24 % |
+| sin memoria | 69.2 | **−3.50 %** (= baseline) |
+| sin interocepción | 69.7 | −2.27 % |
+| sin hábitos | 74.9 | −1.22 % |
+| sin gate | 91.5 | −1.28 % |
+| baseline | 50.5 | −3.51 % |
+
+Con la cautela de que cada ablación es una sola trayectoria contra una media con σ ≈ 20, la señal
+conductual es nítida: **sin memoria, la conducta en régimen bajista vuelve exactamente a la del
+baseline** (−3.50 % vs −3.51 %); la interocepción aporta prudencia adicional; los hábitos algo; el
+gate, nada en este dominio —consistente con los cero vetos de todas las corridas: no hay acciones
+irreversibles que frenar. Las variantes de confianza por historial y reconsider quedaron dentro
+del rango de la capa completa (92.3 y 69.8; no concluyente con una trayectoria), y la corrida de
+reglas con LLM quedó incompleta por presupuesto (14/40).
 
 ### 6.4 Costos
 

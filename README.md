@@ -85,7 +85,9 @@ las referencias sin LLM (regla diaria, regla al ritmo del agente, BTC).
 | BTC | 95.3 |
 
 La diferencia está en los regímenes bajistas: subcortex mantiene en vez de rotar (−1.2 % por
-decisión contra −3.5 %). La capa destiló reglas correctas ("con BTC en tendencia, follow_momentum
+decisión contra −3.5 %). Las ablaciones lo atribuyen a la **memoria** (sin ella la conducta bajista
+vuelve exactamente a la del baseline), con aporte de interocepción y hábitos y sin efecto del gate
+en este dominio. La capa destiló reglas correctas ("con BTC en tendencia, follow_momentum
 tiende a resolver"; "con dispersión amplia, tiende a empeorar") y en la segunda corrida compiló un
 hábito `hold` para el régimen bajista dominante. La dirección se replica; la magnitud varía 30
 puntos entre corridas porque la memoria es dependiente del camino. Detalle en

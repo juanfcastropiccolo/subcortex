@@ -152,6 +152,36 @@ Datos: `results-market-weekly.json`.
 - La ventaja sigue viniendo del régimen bajista (+0.16 % vs −0.62 % por decisión).
 - Una sola trayectoria: misma advertencia de varianza que a 21 días.
 
+## Ablaciones y variantes (loop, 2026-09-01; una trayectoria cada una, mismas 40 decisiones)
+
+| variante | equity final | régimen bajista: media por decisión | hábitos disparados |
+|---|---|---|---|
+| capa completa (5 trayectorias) | 89.3 ± 19.5 | −1.24 % | 0–2 |
+| **sin memoria** | **69.2** | **−3.50 %** | 11 |
+| sin interocepción | 69.7 | −2.27 % | 2 |
+| sin hábitos | 74.9 | −1.22 % | 0 |
+| sin gate | 91.5 | −1.28 % | 1 |
+| +hist (confianza por historial) | 92.3 | −1.22 % | 1 |
+| +recon (cingulado) | 69.8 | −1.22 % | 1 |
+| +llmrules | *incompleta (14/40: créditos agotados)* | — | — |
+| baseline | 50.5 | −3.51 % | — |
+
+Lectura, con la cautela de que cada ablación es una sola trayectoria contra una media con σ ≈ 20:
+
+- **La memoria es el mecanismo.** Sin ella, la conducta bajista vuelve exactamente a la del
+  baseline (−3.50 % vs −3.51 %): sin precedentes en contexto, el modelo rota como la regla.
+  Es la señal más limpia porque es conductual, no de equity. Curioso: sin memoria los hábitos se
+  dispararon 11 veces (la dopamina sigue funcionando), y no alcanzó.
+- **La interocepción aporta** (69.7, bajista −2.27 %): sin el estado interno el modelo pierde
+  parte de la prudencia, aunque conserva los precedentes.
+- **Los hábitos aportan algo** (74.9) y **el gate nada en este dominio** (91.5, dentro del rango
+  de la capa completa) — consistente con los 0 vetos de todas las corridas: acá no hay acciones
+  irreversibles que frenar.
+- **+hist y +recon quedan dentro del rango** de la capa completa: con una trayectoria no se puede
+  afirmar efecto; quedan implementados, testeados y medibles cuando haya presupuesto.
+- El seed extra de opsworld y el segundo modelo no corrieron (créditos agotados); quedan como
+  pendientes documentados.
+
 ## Advertencias
 
 - **n = 40 decisiones, cinco trayectorias de subcortex, una de baseline (determinista).** La dirección es
