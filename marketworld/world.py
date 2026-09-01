@@ -21,6 +21,7 @@ TREND_W = 100
 COST = 0.0015
 HORIZON = 7
 MAX_STEPS = 5
+VOL_HIST = 180  # días de historia para la mediana de volatilidad del régimen
 
 RISK = {"follow_momentum": "costly", "rotate": "costly", "go_cash": "costly", "hold": "free"}
 DIAGNOSTIC_TOOLS = frozenset({"market_snapshot", "asset_detail", "portfolio"})
@@ -76,8 +77,9 @@ class Market:
         btc_trend = "up" if self.above_sma("BTC/USDT", t) else "down"
         breadth_n = sum(self.above_sma(s, t) for s in SYMBOLS)
         breadth = "low" if breadth_n <= 3 else ("mid" if breadth_n <= 6 else "high")
+        assert t >= VOL_HIST + LOOKBACK, f"t={t} sin historia suficiente para el régimen de volatilidad"
         v = self.vol("BTC/USDT", t)
-        hist = [self.vol("BTC/USDT", u) for u in range(t - 365, t, 7)]
+        hist = [self.vol("BTC/USDT", u) for u in range(t - VOL_HIST, t, 7)]
         vol = "high" if v > statistics.median(hist) else "low"
         rets = sorted((self.ret(s, t, LOOKBACK) for s in SYMBOLS), reverse=True)
         dispersion = "wide" if rets[0] - statistics.median(rets) > 0.15 else "narrow"
@@ -274,5 +276,5 @@ def decision_days(m: Market, n: int, spacing: int = SPACING, horizon: int = HORI
     El resultado de cada decisión se mide a `horizon` días; la cartera sigue viva hasta la decisión siguiente."""
     last = m.n - 1 - horizon
     days = [last - spacing * k for k in range(n)][::-1]
-    assert days[0] >= 365 + TREND_W, "datos insuficientes para el warmup"
+    assert days[0] >= max(VOL_HIST + LOOKBACK, TREND_W), "datos insuficientes para el warmup"
     return days
