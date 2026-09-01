@@ -1,0 +1,488 @@
+[
+  {
+    "id": 0,
+    "kind": "arith_swap",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 0,
+    "description": "// → * en línea 136",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_merge_sorted"
+    ]
+  },
+  {
+    "id": 1,
+    "kind": "compare_swap",
+    "file": "toolz/functoolz.py",
+    "site_kind": "compare_swap",
+    "site_index": 3,
+    "description": "== → != en línea 245",
+    "failing_tests": [
+      "toolz/tests/test_inspect_args.py::test_introspect_curry_valid_py3",
+      "toolz/tests/test_inspect_args.py::test_introspect_curry_partial_py3"
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "bool_swap",
+    "file": "toolz/dicttoolz.py",
+    "site_kind": "bool_swap",
+    "site_index": 0,
+    "description": "and → or en línea 33",
+    "failing_tests": [
+      "toolz/tests/test_curried.py::test_merge",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge",
+      "toolz/tests/test_dicttoolz.py::test_merge_with_non_dict_mappings"
+    ]
+  },
+  {
+    "id": 3,
+    "kind": "negate_condition",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "negate_condition",
+    "site_index": 43,
+    "description": "if … → if not (…) en línea 895",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_right_outer_join",
+      "toolz/tests/test_itertoolz.py::test_outer_join"
+    ]
+  },
+  {
+    "id": 4,
+    "kind": "constant_shift",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "constant_shift",
+    "site_index": 27,
+    "description": "1 → 2 en línea 452",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_get"
+    ]
+  },
+  {
+    "id": 5,
+    "kind": "return_none",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "return_none",
+    "site_index": 13,
+    "description": "return … → return None en línea 544",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_frequencies",
+      "toolz/tests/test_recipes.py::test_countby"
+    ]
+  },
+  {
+    "id": 6,
+    "kind": "broken_test",
+    "file": "toolz/tests/test_dicttoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 1,
+    "description": "+ → - en línea 131",
+    "failing_tests": [
+      "toolz/tests/test_dicttoolz.py::TestDict::test_update_in",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_update_in",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_update_in"
+    ]
+  },
+  {
+    "id": 7,
+    "kind": "arith_swap",
+    "file": "toolz/functoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 6,
+    "description": "+ → - en línea 522",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_compose_metadata"
+    ]
+  },
+  {
+    "id": 8,
+    "kind": "compare_swap",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "compare_swap",
+    "site_index": 10,
+    "description": "== → != en línea 125",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_merge_sorted"
+    ]
+  },
+  {
+    "id": 9,
+    "kind": "bool_swap",
+    "file": "toolz/functoolz.py",
+    "site_kind": "bool_swap",
+    "site_index": 4,
+    "description": "and → or en línea 296",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_curry_comparable"
+    ]
+  },
+  {
+    "id": 10,
+    "kind": "negate_condition",
+    "file": "toolz/functoolz.py",
+    "site_kind": "negate_condition",
+    "site_index": 6,
+    "description": "if … → if not (…) en línea 578",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_compose",
+      "toolz/tests/test_functoolz.py::test_compose_metadata",
+      "toolz/tests/test_functoolz.py::test_compose_left",
+      "toolz/tests/test_functoolz.py::test_complement",
+      "toolz/tests/test_serialization.py::test_complement"
+    ]
+  },
+  {
+    "id": 11,
+    "kind": "constant_shift",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "constant_shift",
+    "site_index": 24,
+    "description": "0 → 1 en línea 942",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_diff"
+    ]
+  },
+  {
+    "id": 12,
+    "kind": "return_none",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "return_none",
+    "site_index": 22,
+    "description": "return … → return None en línea 130",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_merge_sorted"
+    ]
+  },
+  {
+    "id": 13,
+    "kind": "broken_test",
+    "file": "toolz/tests/test_itertoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 14,
+    "description": "* → // en línea 356",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_partition_all"
+    ]
+  },
+  {
+    "id": 14,
+    "kind": "arith_swap",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 4,
+    "description": "// → * en línea 742",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_partition_all"
+    ]
+  },
+  {
+    "id": 15,
+    "kind": "compare_swap",
+    "file": "toolz/dicttoolz.py",
+    "site_kind": "compare_swap",
+    "site_index": 2,
+    "description": "== → != en línea 58",
+    "failing_tests": [
+      "toolz/tests/test_curried.py::test_merge_with_list",
+      "toolz/tests/test_dicttoolz.py::TestDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestDict::test_merge_with_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_merge_with_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with_iterable_arg"
+    ]
+  },
+  {
+    "id": 16,
+    "kind": "bool_swap",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "bool_swap",
+    "site_index": 0,
+    "description": "and → or en línea 609",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_reduce_by_callable_default"
+    ]
+  },
+  {
+    "id": 17,
+    "kind": "negate_condition",
+    "file": "toolz/dicttoolz.py",
+    "site_kind": "negate_condition",
+    "site_index": 4,
+    "description": "if … → if not (…) en línea 296",
+    "failing_tests": [
+      "toolz/tests/test_dicttoolz.py::TestDict::test_assoc_in",
+      "toolz/tests/test_dicttoolz.py::TestDict::test_update_in",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_update_in",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_assoc_in",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_update_in"
+    ]
+  },
+  {
+    "id": 18,
+    "kind": "constant_shift",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "constant_shift",
+    "site_index": 14,
+    "description": "1 → 2 en línea 764",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_count"
+    ]
+  },
+  {
+    "id": 19,
+    "kind": "return_none",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "return_none",
+    "site_index": 24,
+    "description": "return … → return None en línea 309",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_isdistinct"
+    ]
+  },
+  {
+    "id": 20,
+    "kind": "broken_test",
+    "file": "toolz/tests/test_functoolz.py",
+    "site_kind": "constant_shift",
+    "site_index": 325,
+    "description": "3 → 4 en línea 399",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_curry_on_classmethods"
+    ]
+  },
+  {
+    "id": 21,
+    "kind": "arith_swap",
+    "file": "toolz/functoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 1,
+    "description": "+ → - en línea 75",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_thread_first"
+    ]
+  },
+  {
+    "id": 22,
+    "kind": "compare_swap",
+    "file": "toolz/functoolz.py",
+    "site_kind": "compare_swap",
+    "site_index": 5,
+    "description": "== → != en línea 296",
+    "failing_tests": [
+      "toolz/tests/test_curried.py::test_curried_namespace",
+      "toolz/tests/test_functoolz.py::test_curry_comparable",
+      "toolz/tests/test_functoolz.py::test_curry_unknown_args"
+    ]
+  },
+  {
+    "id": 23,
+    "kind": "bool_swap",
+    "file": "toolz/dicttoolz.py",
+    "site_kind": "bool_swap",
+    "site_index": 1,
+    "description": "and → or en línea 58",
+    "failing_tests": [
+      "toolz/tests/test_dicttoolz.py::TestDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::test_merge_with_non_dict_mappings"
+    ]
+  },
+  {
+    "id": 24,
+    "kind": "negate_condition",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "negate_condition",
+    "site_index": 38,
+    "description": "if … → if not (…) en línea 465",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_get"
+    ]
+  },
+  {
+    "id": 25,
+    "kind": "constant_shift",
+    "file": "toolz/dicttoolz.py",
+    "site_kind": "constant_shift",
+    "site_index": 1,
+    "description": "0 → 1 en línea 34",
+    "failing_tests": [
+      "toolz/tests/test_dicttoolz.py::TestDict::test_merge_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_merge_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_iterable_arg"
+    ]
+  },
+  {
+    "id": 26,
+    "kind": "return_none",
+    "file": "toolz/recipes.py",
+    "site_kind": "return_none",
+    "site_index": 1,
+    "description": "return … → return None en línea 46",
+    "failing_tests": [
+      "toolz/tests/test_recipes.py::test_partitionby"
+    ]
+  },
+  {
+    "id": 27,
+    "kind": "broken_test",
+    "file": "toolz/tests/test_functoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 44,
+    "description": "+ → - en línea 433",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_memoize_on_classmethods"
+    ]
+  },
+  {
+    "id": 28,
+    "kind": "arith_swap",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 3,
+    "description": "* → // en línea 716",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_partition_all"
+    ]
+  },
+  {
+    "id": 29,
+    "kind": "compare_swap",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "compare_swap",
+    "site_index": 20,
+    "description": "== → != en línea 886",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_left_outer_join",
+      "toolz/tests/test_itertoolz.py::test_outer_join"
+    ]
+  },
+  {
+    "id": 30,
+    "kind": "bool_swap",
+    "file": "toolz/dicttoolz.py",
+    "site_kind": "bool_swap",
+    "site_index": 1,
+    "description": "and → or en línea 58",
+    "failing_tests": [
+      "toolz/tests/test_dicttoolz.py::TestDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::test_merge_with_non_dict_mappings"
+    ]
+  },
+  {
+    "id": 31,
+    "kind": "negate_condition",
+    "file": "toolz/recipes.py",
+    "site_kind": "negate_condition",
+    "site_index": 0,
+    "description": "if … → if not (…) en línea 21",
+    "failing_tests": [
+      "toolz/tests/test_recipes.py::test_countby"
+    ]
+  },
+  {
+    "id": 32,
+    "kind": "constant_shift",
+    "file": "toolz/recipes.py",
+    "site_kind": "constant_shift",
+    "site_index": 0,
+    "description": "1 → 2 en línea 46",
+    "failing_tests": [
+      "toolz/tests/test_recipes.py::test_partitionby"
+    ]
+  },
+  {
+    "id": 33,
+    "kind": "return_none",
+    "file": "toolz/functoolz.py",
+    "site_kind": "return_none",
+    "site_index": 17,
+    "description": "return … → return None en línea 278",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_curry_is_like_partial",
+      "toolz/tests/test_functoolz.py::test_curry_comparable",
+      "toolz/tests/test_functoolz.py::test_curry_bind",
+      "toolz/tests/test_inspect_args.py::test_introspect_curry_valid_py3",
+      "toolz/tests/test_inspect_args.py::test_introspect_curry_partial_py3"
+    ]
+  },
+  {
+    "id": 34,
+    "kind": "broken_test",
+    "file": "toolz/tests/test_dicttoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 1,
+    "description": "+ → - en línea 131",
+    "failing_tests": [
+      "toolz/tests/test_dicttoolz.py::TestDict::test_update_in",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_update_in",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_update_in"
+    ]
+  },
+  {
+    "id": 35,
+    "kind": "arith_swap",
+    "file": "toolz/functoolz.py",
+    "site_kind": "arith_swap",
+    "site_index": 1,
+    "description": "+ → - en línea 75",
+    "failing_tests": [
+      "toolz/tests/test_functoolz.py::test_thread_first"
+    ]
+  },
+  {
+    "id": 36,
+    "kind": "compare_swap",
+    "file": "toolz/dicttoolz.py",
+    "site_kind": "compare_swap",
+    "site_index": 2,
+    "description": "== → != en línea 58",
+    "failing_tests": [
+      "toolz/tests/test_curried.py::test_merge_with_list",
+      "toolz/tests/test_dicttoolz.py::TestDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestDict::test_merge_with_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestDefaultDict::test_merge_with_iterable_arg",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with",
+      "toolz/tests/test_dicttoolz.py::TestCustomMapping::test_merge_with_iterable_arg"
+    ]
+  },
+  {
+    "id": 37,
+    "kind": "bool_swap",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "bool_swap",
+    "site_index": 6,
+    "description": "or → and en línea 670",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_sliding_window"
+    ]
+  },
+  {
+    "id": 38,
+    "kind": "negate_condition",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "negate_condition",
+    "site_index": 55,
+    "description": "if … → if not (…) en línea 454",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_get"
+    ]
+  },
+  {
+    "id": 39,
+    "kind": "constant_shift",
+    "file": "toolz/itertoolz.py",
+    "site_kind": "constant_shift",
+    "site_index": 9,
+    "description": "0 → 1 en línea 401",
+    "failing_tests": [
+      "toolz/tests/test_itertoolz.py::test_last"
+    ]
+  }
+]

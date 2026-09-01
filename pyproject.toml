@@ -21,6 +21,7 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+extend-exclude = ["bugworld/vendor"]  # código ajeno: es el objetivo del experimento, no se toca
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["RUF012"]  # modelos pydantic en el LLM falso
