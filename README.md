@@ -69,3 +69,11 @@ adk web .                   # inspección manual del agente `demo`
 
 Detalle, diagnóstico de la corrida 1 (que no funcionó) y lo que queda pendiente en
 [`docs/superpowers/results/`](docs/superpowers/results/).
+
+## Fuera del simulador: bugworld
+
+`bugworld/` inyecta 40 bugs reales por mutación AST en `toolz` (vendorizado) y el agente los
+arregla con tools reales (pytest, leer, buscar, editar). `demo/run_bugs_ab.py` corre el A/B.
+Resultado: **empate** (score 25 vs 22.5, 0.72 vs 0.70 resueltos) con **0 episodios escritos**: en
+una tarea de un solo golpe no hay sorpresas que registrar y el framework queda inerte. El reporte
+explica por qué y qué cambiar (escritura por éxito, señal de no-progreso).
