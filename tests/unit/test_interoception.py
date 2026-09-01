@@ -28,6 +28,29 @@ class Tool:
 
 
 @pytest.mark.asyncio
+async def test_stall_and_invalid_streak_are_reported():
+    from subcortex.interoception import is_stalled
+    p = InteroceptionPlugin(CFG)
+    ctx = SimpleNamespace(state={})
+    for _ in range(4):  # 4 diagnósticos: 50 % del presupuesto de 8, todavía no está estancado
+        await p.after_tool_callback(tool=Tool("inspect_service"), tool_args={}, tool_context=ctx,
+                                    result={"status": "success"})
+    assert not is_stalled(ctx.state[K_INTERO], CFG)
+    for _ in range(2):  # dos edits inválidos: cuestan paso, no evalúan nada
+        await p.after_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=ctx,
+                                    result={"status": "invalid"})
+    i = ctx.state[K_INTERO]
+    assert i["steps"] == 6 and i["evaluated"] == 0 and i["invalid_streak"] == 2
+    assert is_stalled(i, CFG) and ctx.state["subcortex.metrics"]["stalled"] == 1
+    txt = render_state(i, 0.6, CFG)
+    assert "SIN PROGRESO" in txt and "escal" in txt and "2 llamadas fueron inválidas" in txt
+    await p.after_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=ctx,
+                                result={"status": "success", "observed_effect": "resolves"})
+    i = ctx.state[K_INTERO]
+    assert i["evaluated"] == 1 and i["invalid_streak"] == 0 and not is_stalled(i, CFG)
+
+
+@pytest.mark.asyncio
 async def test_plugin_updates_counters_and_injects():
     p = InteroceptionPlugin(CFG)
     ctx = SimpleNamespace(state={})

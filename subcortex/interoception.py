@@ -16,8 +16,15 @@ BLOCK_STATUSES = {"vetoed", "rejected", "invalid"}
 
 
 def _intero(state: Any) -> dict:
-    return dict(state.get(K_INTERO) or {"steps": 0, "failures": 0, "blocks": 0,
-                                        "last_status": None, "started_at": time.time()})
+    base = {"steps": 0, "failures": 0, "blocks": 0, "evaluated": 0, "invalid_streak": 0,
+            "last_status": None, "started_at": time.time()}
+    return {**base, **(state.get(K_INTERO) or {})}
+
+
+def is_stalled(intero: dict, cfg: SubcortexConfig) -> bool:
+    """No progreso: buena parte del presupuesto consumida sin ningún resultado evaluado."""
+    return (intero.get("evaluated", 0) == 0
+            and intero.get("steps", 0) >= cfg.stall_fraction * cfg.step_budget)
 
 
 def compute_tone(intero: dict, cfg: SubcortexConfig) -> float:
@@ -41,6 +48,14 @@ def render_state(intero: dict, tone: float, cfg: SubcortexConfig) -> str:
                      "del bloqueo antes de insistir.")
     if intero.get("last_status") == "vetoed":
         lines.append("- La última acción fue vetada por riesgo.")
+    inv = intero.get("invalid_streak", 0)
+    if inv >= 2:
+        lines.append(f"- Tus últimas {inv} llamadas fueron inválidas (no tocaron nada): revisá los "
+                     "argumentos exactos antes de repetir; una acción inválida cuesta un paso y no enseña nada.")
+    if is_stalled(intero, cfg):
+        lines.append(f"- SIN PROGRESO: consumiste el {used} % del presupuesto sin ningún resultado evaluado. "
+                     "Si no tenés un cambio concreto y justificado, escalá ahora (escalate_to_human) en vez "
+                     "de seguir probando; el problema puede no estar donde lo buscás.")
     if tone < 0.4:
         lines.append("- Tono bajo: el sistema no está en condiciones de acciones irreversibles.")
     elif tone > 0.8:
@@ -69,14 +84,24 @@ class InteroceptionPlugin(BasePlugin):
             status = (result or {}).get("status")
             if status in BLOCK_STATUSES:
                 intero["blocks"] += 1
+                if status == "invalid":
+                    intero["invalid_streak"] += 1
+                    intero["steps"] += 1  # el mundo suele cobrar la llamada aunque no la ejecute
+                    bump(state, "steps")
             else:
                 intero["blocks"] = 0
+                intero["invalid_streak"] = 0
                 intero["steps"] += 1
                 bump(state, "steps")
+                if self.cfg.is_action(tool.name):
+                    intero["evaluated"] += 1
                 if status == "error":
                     intero["failures"] += 1
                 else:
                     intero["failures"] = 0
+            if is_stalled(intero, self.cfg) and not intero.get("stalled_flagged"):
+                intero["stalled_flagged"] = True
+                bump(state, "stalled")
             intero["last_status"] = status
             state[K_INTERO] = intero
             state[K_TONE] = compute_tone(intero, self.cfg)

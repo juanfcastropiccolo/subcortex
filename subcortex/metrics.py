@@ -6,7 +6,7 @@ from .types import K_METRICS
 
 METRIC_KEYS = (
     "llm_calls", "tokens", "steps", "vetoes", "vetoes_irreversible", "rejected",
-    "episodes_written", "habit_hits", "dehabituations", "abs_error_sum", "error_count",
+    "episodes_written", "habit_hits", "dehabituations", "abs_error_sum", "error_count", "stalled",
 )
 
 

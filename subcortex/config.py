@@ -43,6 +43,8 @@ class SubcortexConfig:
     habit_min_strength: float = 0.8
     recall_min_overlap: int = 2
     recall_max: int = 4
+    write_on_success: bool = True  # el éxito también es un episodio que vale recordar
+    stall_fraction: float = 0.6    # presupuesto consumido sin resultado evaluado → "sin progreso"
 
     @property
     def action_tools(self) -> frozenset[str]:

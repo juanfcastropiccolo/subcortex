@@ -21,7 +21,7 @@ def render_precedents(episodes: list[Episode]) -> str:
         return ""
     lines = ["## Precedentes (experiencias propias, las peores primero)"]
     for e in episodes:
-        tag = "[FRACASO]" if e.habenula else "[MEJOR DE LO ESPERADO]"
+        tag = "[FRACASO]" if e.habenula else ("[MEJOR DE LO ESPERADO]" if e.prediction_error > 0 else "[ÉXITO]")
         feats = ", ".join(f"{k}={v}" for k, v in e.features.items())
         args = ", ".join(f"{k}={v}" for k, v in e.args.items())
         lines.append(f"- {tag} incidente ({feats}): {e.tool}({args}) esperaba {e.expected}, "
@@ -85,12 +85,14 @@ class MemoryPlugin(BasePlugin):
             self.store.record_outcome(scene.coarse_key, tool.name, observed in SUCCESS_EFFECTS)
             err = float(le["error"])
             surprised = abs(err) >= self.cfg.surprise_threshold or le.get("status") == "error"
-            if not surprised:
+            success = self.cfg.write_on_success and observed == "resolves"
+            if not (surprised or success):
                 return
             self.store.write(Episode(
                 scene_key=scene.key, features=scene.features, tool=tool.name, args=le["args"],
                 expected=le["expected"], observed=observed, prediction_error=err, valence=err,
-                habenula=err < 0 or le.get("status") == "error", strength=max(abs(err), 0.25)))
+                habenula=err < 0 or le.get("status") == "error",
+                strength=max(abs(err), 0.5 if observed == "resolves" else 0.25)))
             bump(state, "episodes_written")
         except Exception:
             log.exception("memory.after_tool")

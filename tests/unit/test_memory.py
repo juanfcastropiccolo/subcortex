@@ -31,9 +31,9 @@ def le(err, observed="worsens", status="success"):
 async def test_writes_only_on_surprise_but_always_updates_dopamine_on_coarse_key():
     store = EpisodicStore(":memory:")
     m = MemoryPlugin(CFG, store)
-    c = ctx(le(0.0, observed="resolves"))
+    c = ctx(le(0.0, observed="improves"))
     await m.after_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c, result={"status": "success"})
-    assert store.stats()["episodes"] == 0
+    assert store.stats()["episodes"] == 0  # mejora esperada, sin sorpresa ni resolución: no se escribe
     coarse = Scene.from_features(FEATS, coarse=CFG.coarse_features).coarse_key
     assert store.outcome_counts(coarse, "restart") == (1, 0)
     c = ctx(le(-1.0))
@@ -55,6 +55,24 @@ async def test_diagnostic_discovery_enriches_scene():
     await m.after_tool_callback(tool=Tool("inspect_service"), tool_args={}, tool_context=c,
                                 result={"status": "success", "metrics": "sin finding"})
     assert c.state[K_DISCOVERED] == {"finding": "db_pool_exhausted"}
+
+
+@pytest.mark.asyncio
+async def test_success_is_written_even_without_surprise():
+    """Una acción que resuelve como se esperaba también es un episodio (qué funcionó)."""
+    store = EpisodicStore(":memory:")
+    m = MemoryPlugin(CFG, store)
+    c = ctx(le(0.0, observed="resolves"))
+    await m.after_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c, result={"status": "success"})
+    eps = store.all_episodes()
+    assert len(eps) == 1 and not eps[0].habenula and eps[0].strength == 0.5
+    assert "[ÉXITO]" in render_precedents(eps)
+    off = SubcortexConfig(risk={"restart": "costly"}, write_on_success=False)
+    store2 = EpisodicStore(":memory:")
+    await MemoryPlugin(off, store2).after_tool_callback(tool=Tool("restart"), tool_args={},
+                                                        tool_context=ctx(le(0.0, observed="resolves")),
+                                                        result={"status": "success"})
+    assert store2.stats()["episodes"] == 0
 
 
 @pytest.mark.asyncio
