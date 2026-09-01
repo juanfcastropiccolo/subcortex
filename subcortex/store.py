@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS habits (
   successes INTEGER, failures INTEGER);
 CREATE TABLE IF NOT EXISTS rules (
   pattern TEXT, tool TEXT, text TEXT, support INTEGER, PRIMARY KEY (pattern, tool));
+CREATE TABLE IF NOT EXISTS habit_candidates (
+  scene_key TEXT, tool TEXT, args TEXT, successes INTEGER, PRIMARY KEY (scene_key, tool, args));
 """
 
 
@@ -120,6 +122,19 @@ class EpisodicStore:
         return [(r["tool"], r["successes"], r["failures"]) for r in rows]
 
     # --- hábitos ---------------------------------------------------------------
+    def record_habit_candidate(self, scene_key: str, tool: str, args: dict) -> int:
+        """Cuenta éxitos de la MISMA acción (tool + args plantilla) en la clase de escena.
+        Un hábito es repetir exactamente lo mismo; `edit_file` con otro `old` no es lo mismo."""
+        key = json.dumps(args, sort_keys=True)
+        self.conn.execute(
+            "INSERT INTO habit_candidates (scene_key, tool, args, successes) VALUES (?,?,?,1)"
+            " ON CONFLICT(scene_key, tool, args) DO UPDATE SET successes=successes+1",
+            (scene_key, tool, key))
+        self.conn.commit()
+        r = self.conn.execute("SELECT successes FROM habit_candidates WHERE scene_key=? AND tool=? AND args=?",
+                              (scene_key, tool, key)).fetchone()
+        return int(r["successes"])
+
     def upsert_habit(self, h: Habit) -> None:
         self.conn.execute(
             "INSERT INTO habits (scene_key, tool, args, typical_effect, strength, successes, failures)"

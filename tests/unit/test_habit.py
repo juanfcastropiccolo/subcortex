@@ -111,6 +111,39 @@ async def test_bypass_resolves_args_for_current_scene_once_per_episode():
 
 
 @pytest.mark.asyncio
+async def test_different_args_never_compile_a_habit():
+    """Tres edit_file exitosos con old/new distintos no son 'la misma acción': no hay hábito."""
+    store = EpisodicStore(":memory:")
+    h = HabitPlugin(SubcortexConfig(risk={"edit_file": "free"}, coarse_features=("symptom", "finding")), store)
+    for i in range(3):
+        store.record_outcome(KEY, "edit_file", True)
+        le_ = {"tool": "edit_file", "args": {"path": "a.py", "old": f"x{i}", "new": f"y{i}"},
+               "expected": "resolves", "observed": "resolves", "confidence": 0.9, "error": 0.0,
+               "status": "success", "call_id": "c1"}
+        await h.after_tool_callback(tool=Tool("edit_file"), tool_args={}, tool_context=ctx(le_),
+                                    result={"status": "success"})
+    assert store.get_habit(KEY) is None
+
+
+@pytest.mark.asyncio
+async def test_invalid_habit_call_weakens_and_fires_once_per_episode():
+    from subcortex.habit import K_HABIT_TRIED
+    store = EpisodicStore(":memory:")
+    store.upsert_habit(Habit(scene_key=KEY, tool="restart", args={"service": "$service"},
+                             typical_effect="resolves", strength=0.9, successes=3, failures=0))
+    h = HabitPlugin(CFG, store)
+    c = ctx()
+    assert await h.before_model_callback(callback_context=c, llm_request=None) is not None
+    assert c.state[K_HABIT_TRIED] is True
+    await h.after_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c,
+                                result={"status": "invalid", "observed_effect": "no_change"})
+    assert store.get_habit(KEY).strength == pytest.approx(0.45)
+    assert c.state[K_HABIT_HIT] is False and c.state["subcortex.metrics"]["dehabituations"] == 1
+    # mismo episodio: no vuelve a dispararse aunque no haya actuado
+    assert await h.before_model_callback(callback_context=c, llm_request=None) is None
+
+
+@pytest.mark.asyncio
 async def test_dehabituation_on_negative_error_and_acted_flag():
     store = EpisodicStore(":memory:")
     store.upsert_habit(Habit(scene_key=KEY, tool="restart", args={"service": "$service"},

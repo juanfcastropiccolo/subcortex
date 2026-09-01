@@ -25,6 +25,7 @@ from subcortex.types import K_FEATURES, K_VETO_LOG
 MAX_ATTEMPTS = 6
 BACKOFF = (10, 30, 60, 120, 180)  # segundos entre reintentos: un 429 de cuota por minuto necesita esperar
 MAX_LLM_CALLS = 40  # tope por episodio: si el modelo no cierra, el episodio termina igual
+EPISODE_TIMEOUT = 480  # segundos de pared por episodio: un bucle sin LLM no puede colgar la corrida
 
 
 async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: str,
@@ -53,16 +54,20 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
             model_turns = 0
             tokens_fallback = 0
             try:
-                async for ev in runner.run_async(user_id="demo", session_id=session.id, new_message=msg,
-                                                 run_config=RunConfig(max_llm_calls=MAX_LLM_CALLS)):
-                    if (ev.author != "user" and not ev.partial and ev.content
-                            and not ev.get_function_responses()):
-                        model_turns += 1
-                    if ev.usage_metadata and ev.usage_metadata.total_token_count:
-                        tokens_fallback += ev.usage_metadata.total_token_count
+                async with asyncio.timeout(EPISODE_TIMEOUT):
+                    async for ev in runner.run_async(user_id="demo", session_id=session.id, new_message=msg,
+                                                     run_config=RunConfig(max_llm_calls=MAX_LLM_CALLS)):
+                        if (ev.author != "user" and not ev.partial and ev.content
+                                and not ev.get_function_responses()):
+                            model_turns += 1
+                        if ev.usage_metadata and ev.usage_metadata.total_token_count:
+                            tokens_fallback += ev.usage_metadata.total_token_count
                 break
             except LlmCallsLimitExceededError:
                 print(f"[{name}] #{i:02d} tope de {MAX_LLM_CALLS} llamadas al LLM: episodio cortado", flush=True)
+                break
+            except TimeoutError:
+                print(f"[{name}] #{i:02d} timeout de {EPISODE_TIMEOUT}s: episodio cortado", flush=True)
                 break
             except Exception as e:
                 if attempt == MAX_ATTEMPTS:

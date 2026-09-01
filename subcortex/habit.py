@@ -13,6 +13,8 @@ from .metrics import bump
 from .store import EpisodicStore
 from .types import K_ACTED, K_HABIT_HIT, K_LAST_ERROR, SUCCESS_EFFECTS, Habit, Scene
 
+K_HABIT_TRIED = "subcortex.habit_tried"
+
 log = logging.getLogger("subcortex")
 BLOCK_STATUSES = {"vetoed", "rejected", "invalid"}
 
@@ -94,8 +96,8 @@ class HabitPlugin(BasePlugin):
             state = callback_context.state
             if llm_request is not None and getattr(llm_request, "contents", None):
                 rewrite_habit_history(llm_request.contents)
-            if state.get(K_ACTED):
-                return None
+            if state.get(K_ACTED) or state.get(K_HABIT_TRIED):
+                return None  # un hábito se intenta a lo sumo una vez por episodio
             scene = self.cfg.scene_of(state)
             if scene is None:
                 return None
@@ -105,6 +107,7 @@ class HabitPlugin(BasePlugin):
             if self.cfg.risk_of(habit.tool) == "irreversible":
                 return None
             state[K_HABIT_HIT] = True
+            state[K_HABIT_TRIED] = True
             bump(state, "habit_hits")
             log.info("hábito: %s en escena %s (fuerza %.2f), sin LLM",
                      habit.tool, scene.coarse_key, habit.strength)
@@ -118,34 +121,41 @@ class HabitPlugin(BasePlugin):
             return
         try:
             state = tool_context.state
-            if (result or {}).get("status") in BLOCK_STATUSES:
+            scene = self.cfg.scene_of(state)
+            habit = self.store.get_habit(scene.coarse_key) if scene else None
+            fired = bool(state.get(K_HABIT_HIT)) and habit is not None and habit.tool == tool.name
+            status = (result or {}).get("status")
+            if status in BLOCK_STATUSES:
+                if fired:  # el hábito produjo una llamada inválida o vetada: también es un fracaso
+                    state[K_HABIT_HIT] = False
+                    self._weaken(state, habit, f"resultado {status}")
                 return
             state[K_ACTED] = True
             le = state.get(K_LAST_ERROR)
-            if not le or le.get("tool") != tool.name:
-                return
-            scene = self.cfg.scene_of(state)
-            if scene is None:
+            if not le or le.get("tool") != tool.name or scene is None:
                 return
             err = float(le["error"])
-            habit = self.store.get_habit(scene.coarse_key)
-            if state.get(K_HABIT_HIT) and habit and habit.tool == tool.name:
+            if fired:
                 state[K_HABIT_HIT] = False
                 if err < 0:
-                    habit.strength = round(habit.strength * 0.5, 4)
-                    habit.failures += 1
-                    self.store.upsert_habit(habit)
-                    bump(state, "dehabituations")
-                    log.info("des-habituación: %s cae a %.2f", habit.tool, habit.strength)
+                    self._weaken(state, habit, f"error {err:.2f}")
                     return
             if le["observed"] not in SUCCESS_EFFECTS or self.cfg.risk_of(tool.name) == "irreversible":
                 return
+            args = templatize_args(le["args"], scene.features)
+            same = self.store.record_habit_candidate(scene.coarse_key, tool.name, args)
             s, f = self.store.outcome_counts(scene.coarse_key, tool.name)
-            if s >= self.cfg.habit_min_successes and f == 0:
-                strength = min(1.0, 0.8 + 0.05 * (s - self.cfg.habit_min_successes))
+            if same >= self.cfg.habit_min_successes and f == 0:
+                strength = min(1.0, 0.8 + 0.05 * (same - self.cfg.habit_min_successes))
                 self.store.upsert_habit(Habit(
-                    scene_key=scene.coarse_key, tool=tool.name,
-                    args=templatize_args(le["args"], scene.features),
-                    typical_effect=le["observed"], strength=strength, successes=s, failures=f))
+                    scene_key=scene.coarse_key, tool=tool.name, args=args,
+                    typical_effect=le["observed"], strength=strength, successes=same, failures=f))
         except Exception:
             log.exception("habit.after_tool")
+
+    def _weaken(self, state, habit: Habit, why: str) -> None:
+        habit.strength = round(habit.strength * 0.5, 4)
+        habit.failures += 1
+        self.store.upsert_habit(habit)
+        bump(state, "dehabituations")
+        log.info("des-habituación: %s cae a %.2f (%s)", habit.tool, habit.strength, why)
