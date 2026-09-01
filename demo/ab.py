@@ -22,7 +22,8 @@ from google.genai import types
 from subcortex.metrics import get_metrics
 from subcortex.types import K_FEATURES, K_VETO_LOG
 
-MAX_ATTEMPTS = 4
+MAX_ATTEMPTS = 6
+BACKOFF = (10, 30, 60, 120, 180)  # segundos entre reintentos: un 429 de cuota por minuto necesita esperar
 MAX_LLM_CALLS = 40  # tope por episodio: si el modelo no cierra, el episodio termina igual
 
 
@@ -30,11 +31,17 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
                        make_world: Callable[[Any, int], Any], features: Callable[[Any], dict],
                        prompt: Callable[[Any], str], label: Callable[[Any], str],
                        extra: Callable[[Any], dict] | None = None, with_subcortex: bool,
-                       consolidate_every: int = 0) -> list[dict]:
+                       consolidate_every: int = 0, resume_rows: list[dict] | None = None,
+                       on_row: Callable[[list[dict]], None] | None = None) -> list[dict]:
+    """`resume_rows`: filas ya corridas de esta variante (se saltean esos episodios).
+    `on_row`: callback tras cada episodio (guardado incremental)."""
     svc = InMemorySessionService()
     runner = Runner(app=app, session_service=svc)
-    rows = []
+    rows = list(resume_rows or [])
+    done_idx = {r["i"] for r in rows}
     for i, item in enumerate(items):
+        if i in done_idx:
+            continue
         t0 = time.time()
         # Un 503/429 transitorio no debe tirar la corrida: reintento con sesión y mundo nuevos.
         for attempt in range(1, MAX_ATTEMPTS + 1):
@@ -60,7 +67,7 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
             except Exception as e:
                 if attempt == MAX_ATTEMPTS:
                     raise
-                wait = 5 * attempt
+                wait = BACKOFF[min(attempt - 1, len(BACKOFF) - 1)]
                 print(f"[{name}] #{i:02d} fallo transitorio ({type(e).__name__}); "
                       f"reintento {attempt}/{MAX_ATTEMPTS - 1} en {wait}s", flush=True)
                 await asyncio.sleep(wait)
@@ -80,6 +87,8 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
         if extra:
             row.update(extra(world))
         rows.append(row)
+        if on_row:
+            on_row(rows)
         print(f"[{name}] #{i:02d} {label(item):16s} score={world.score:5d} steps={world.steps} "
               f"llm={row['llm_calls']} vetoes={row['vetoes']} rej={row['rejected']} "
               f"habit={row['habit_hits']} acciones={row['actions']}", flush=True)
@@ -142,5 +151,12 @@ def load_baseline(path: str, n: int) -> list[dict]:
     return prev
 
 
-def save(out: str, results: dict, summaries: dict) -> None:
+def load_partial(path: str) -> dict[str, list[dict]]:
+    """Filas ya corridas por variante (para --resume). {} si el archivo no existe."""
+    p = Path(path)
+    return json.loads(p.read_text()).get("rows", {}) if p.exists() else {}
+
+
+def save(out: str, results: dict, summaries: dict | None = None) -> None:
+    summaries = summaries or {k: summarize(v) for k, v in results.items() if v}
     Path(out).write_text(json.dumps({"rows": results, "summary": summaries}, indent=2, ensure_ascii=False))
