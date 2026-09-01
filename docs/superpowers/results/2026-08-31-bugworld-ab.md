@@ -85,10 +85,60 @@ episodios nuevos que salieron bien; el diseño lo omitió.
 4. **`invalid` es parte del contrato**, no un detalle: los mundos reales rechazan muchas más
    llamadas de las que ejecutan.
 
+## Iteración 2 (misma noche): escritura por éxito + señal de no-progreso
+
+Se implementaron los puntos 1 y 3 (`write_on_success`, `is_stalled` + aviso "SIN PROGRESO… escalá")
+y se corrió de nuevo solo subcortex contra el mismo baseline. Datos en `results-bugs-iter2.json`.
+
+| métrica | baseline | subcortex v1 | subcortex v2 |
+|---|---|---|---|
+| score medio | 22.5 | 25.0 | 19.0 |
+| resueltos | 28/40 | 29/40 | 26/40 |
+| llamadas al LLM / bug | 12.6 | 11.8 | 11.8 |
+| episodios escritos | — | 0 | **26** (20 escenas distintas) |
+| estancados (10 pasos sin acción) | 12 | 11 | 14 |
+| escalaciones | 0 | 0 | **0** |
+| score por tercios | 21 → 26 → 20 | 18 → 34 → 22 | 6 → 34 → 17 |
+
+| clase | base | v1 | v2 |
+|---|---|---|---|
+| arith_swap | 43.3 | 54.2 | 55.8 |
+| compare_swap | 16.7 | 2.5 | 20.0 |
+| bool_swap | 21.7 | 20.0 | 5.0 |
+| negate_condition | 50.8 | 54.2 | 40.8 |
+| constant_shift | 35.8 | 52.5 | 36.7 |
+| return_none | 28.0 | 30.0 | 12.0 |
+| broken_test | −50.0 | −50.0 | −50.0 |
+
+**Veredicto: tres corridas, tres empates dentro del ruido (±5).** Los dos mecanismos nuevos
+hicieron exactamente lo que se diseñó y ninguno movió el resultado:
+
+- **La memoria escribió 26 episodios de éxito** (`edit_file` con `old`/`new` reales, p. ej.
+  `mid = len(seqs) * 2 → // 2` para `RecursionError/exception` en `test_itertoolz`), pero fueron
+  **20 escenas distintas en 26 episodios**: casi nada se repite. Un precedente de éxito de otro
+  bug, aunque comparta `error_type` y `finding`, describe otra función y otro fix: no ayuda y ocupa
+  contexto (el primer tercio de v2 fue el peor de las tres corridas, 6.2, aunque puede ser ruido).
+- **La señal de no-progreso no produjo ninguna escalación** en 14 episodios estancados. El aviso
+  entra en el estado interno del sistema, pero el modelo, con el problema delante, prefiere seguir
+  leyendo y probando a rendirse; una línea en el system prompt no compite con la tarea.
+  `broken_test` sigue 0/5. Para mover esto haría falta que el gate lo *imponga* (tras el umbral,
+  solo `escalate_to_human`/`finish` autorizados), y eso cambia el score por diseño, no por aprendizaje.
+
+## Conclusión de bugworld
+
+En arreglar bugs de un solo golpe, con este modelo y este presupuesto, la capa subcortical no
+tiene palanca: las situaciones no se repiten a la granularidad en la que se decide, la acción no es
+reutilizable, y el veto no aplica porque la conducta errónea es no actuar. Lo que la capa aporta acá
+es diagnóstico (el `veto_log`, los `invalid`, la métrica de estancamiento) y dos bugs de framework
+encontrados, no mejor rendimiento. La hipótesis del ensayo se sostiene donde hay repetición y
+acciones con efectos —opsworld— y no se sostiene donde cada episodio es único. Ese límite es el
+resultado.
+
 ## Siguientes pasos
 
-1. Implementar 1 y 3 (escritura por éxito + señal de no-progreso) y repetir bugworld: son los
-   dos mecanismos que este dominio necesita y opsworld no exigía.
-2. Tokens: medir con baseline real (no reconstruido). Los 71 k/episodio de subcortex incluyen
-   lecturas de archivo de 120 líneas en cada llamada; comparar contra baseline real antes de concluir.
-3. Recién después, 3 seeds en ambos mundos.
+1. No insistir con bugworld a este nivel de escena. Si se retoma, la escena tendría que ser la
+   *función bajo test* + `finding`, y la memoria guardar el *patrón* del fix (operador cambiado),
+   no el edit literal: es un experimento distinto.
+2. Probar un tercer dominio con repetición real y acciones reutilizables (Proyecto Momentum en
+   replay: régimen de mercado como escena, indicadores como `finding`, rotar/mantener como acción).
+3. 3 seeds en opsworld para consolidar el número que sí se sostiene.

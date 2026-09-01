@@ -74,6 +74,7 @@ Detalle, diagnóstico de la corrida 1 (que no funcionó) y lo que queda pendient
 
 `bugworld/` inyecta 40 bugs reales por mutación AST en `toolz` (vendorizado) y el agente los
 arregla con tools reales (pytest, leer, buscar, editar). `demo/run_bugs_ab.py` corre el A/B.
-Resultado: **empate** (score 25 vs 22.5, 0.72 vs 0.70 resueltos) con **0 episodios escritos**: en
-una tarea de un solo golpe no hay sorpresas que registrar y el framework queda inerte. El reporte
-explica por qué y qué cambiar (escritura por éxito, señal de no-progreso).
+Resultado: **empate en tres corridas** (baseline 22.5 · subcortex 25.0 · subcortex con escritura
+por éxito y señal de no-progreso 19.0, todo dentro de ±5 de ruido). En una tarea de un solo golpe
+las escenas no se repiten (20 distintas en 26 episodios), la acción no es reutilizable y la conducta
+errónea es *no actuar*, que el veto no alcanza. El reporte documenta el límite y por qué.

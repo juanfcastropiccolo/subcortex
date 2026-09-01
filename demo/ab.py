@@ -85,7 +85,7 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
                "vetoes": m.get("vetoes", 0), "vetoes_irreversible": m.get("vetoes_irreversible", 0),
                "rejected": m.get("rejected", 0),
                "episodes_written": m.get("episodes_written", 0), "habit_hits": m.get("habit_hits", 0),
-               "dehabituations": m.get("dehabituations", 0),
+               "dehabituations": m.get("dehabituations", 0), "stalled": m.get("stalled", 0),
                "abs_error_sum": m.get("abs_error_sum", 0.0), "error_count": m.get("error_count", 0),
                "actions": [e["action"] for e in world.log],
                "veto_log": list(session.state.get(K_VETO_LOG) or []) if with_subcortex else []}
