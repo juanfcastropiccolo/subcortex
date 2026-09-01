@@ -109,10 +109,32 @@ El baseline no tiene ese canal, así que no varía. Con 3–5 trayectorias por v
 reportar media ± desvío; con dos, lo honesto es: subcortex terminó entre 91 y 121 contra 50.5,
 78.6 (regla diaria) y 95.3 (BTC), y en ambas corridas la ganancia vino del mismo lugar.
 
+## Cinco trayectorias de subcortex (loop, 2026-09-01)
+
+El baseline es determinista (50.5); subcortex se corrió cinco veces sobre las mismas 40 decisiones.
+
+| trayectoria | equity final | régimen bajista: media por decisión | hold / follow en bajista | episodios | hábitos disparados |
+|---|---|---|---|---|---|
+| run 1 | 90.9 | −1.22 % | 12 / 4 | 29 | 0 |
+| run 2 | 121.0 | −1.29 % | 13 / 2 | 24 | 2 |
+| run 3 | 83.2 | −1.21 % | 13 / 3 | 27 | 1 |
+| run 4 | 68.3 | −1.29 % | 12 / 4 | 26 | 2 |
+| run 5 | 83.2 | −1.21 % | 13 / 3 | 30 | 1 |
+| **media ± desvío** | **89.3 ± 19.5** | **−1.24 %** | | | |
+| baseline | 50.5 | −3.51 % | 9 / 5 | — | — |
+
+- **5 de 5 por encima del baseline** (mínimo 68.3 vs 50.5); 4 de 5 por encima de la regla diaria (78.6);
+  2 de 5 por encima de BTC (95.3).
+- **La conducta en régimen bajista es casi idéntica en las cinco** (−1.21 a −1.29 % por decisión, 12–13
+  `hold` de 19): ese es el mecanismo, y es estable. La dispersión del equity (68–121) viene de las
+  decisiones alcistas, donde subcortex a veces sigue la regla y a veces no; ahí la varianza del
+  modelo domina.
+- Datos: `results-market-run{1..5}.json`.
+
 ## Advertencias
 
-- **n = 40 decisiones y dos trayectorias por variante.** La ventaja es consistente en dirección y
-  en mecanismo; la magnitud varía 30 puntos. No citar "121" ni "91" como el número: citar el rango.
+- **n = 40 decisiones, cinco trayectorias de subcortex, una de baseline (determinista).** La dirección es
+  robusta (5/5); la magnitud tiene desvío ~20 puntos. Citar **89 ± 20 contra 50.5**, no un valor.
 - El baseline reproduce la regla a 21 días, que en esta ventana es la peor referencia. Contra la
   regla diaria (78.6) la ventaja es de 12 puntos; contra BTC (95.3), subcortex pierde.
 - Retorno a 21 días con umbrales ±6 %: 24 de 40 decisiones caen en `no_change`, lo que limita

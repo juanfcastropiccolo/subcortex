@@ -77,10 +77,10 @@ Detalle, diagnóstico de la corrida 1 (que no funcionó) y lo que queda pendient
 y consecuencia medida a 21 días. El agente no ve fechas. `demo/run_market_ab.py` corre el A/B y
 las referencias sin LLM (regla diaria, regla al ritmo del agente, BTC).
 
-| corredor | equity final (dos corridas) |
+| corredor | equity final |
 |---|---|
-| baseline (LLM sin capa) | 50.5 · 50.5 (determinista: es la regla a 21 días) |
-| **subcortex** | **90.9 · 121.0** |
+| baseline (LLM sin capa) | 50.5 (determinista: es la regla a 21 días) |
+| **subcortex (5 trayectorias)** | **89.3 ± 19.5** (68 – 121; 5/5 sobre el baseline) |
 | regla diaria | 78.6 |
 | BTC | 95.3 |
 
