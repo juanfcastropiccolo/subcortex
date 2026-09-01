@@ -144,7 +144,7 @@ class HabitPlugin(BasePlugin):
                 return
             args = templatize_args(le["args"], scene.features)
             same = self.store.record_habit_candidate(scene.coarse_key, tool.name, args)
-            s, f = self.store.outcome_counts(scene.coarse_key, tool.name)
+            _s, f = self.store.outcome_counts(scene.coarse_key, tool.name)
             if same >= self.cfg.habit_min_successes and f == 0:
                 strength = min(1.0, 0.8 + 0.05 * (same - self.cfg.habit_min_successes))
                 self.store.upsert_habit(Habit(
