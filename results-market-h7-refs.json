@@ -1,0 +1,246 @@
+{
+  "rows": [
+    {
+      "t": 268,
+      "rule_ret_pct": -17.24,
+      "btc_ret_pct": -5.33,
+      "finding": "up_high_high"
+    },
+    {
+      "t": 289,
+      "rule_ret_pct": -2.92,
+      "btc_ret_pct": 1.42,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 310,
+      "rule_ret_pct": -0.54,
+      "btc_ret_pct": 3.37,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 331,
+      "rule_ret_pct": -6.0,
+      "btc_ret_pct": -4.27,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 352,
+      "rule_ret_pct": -7.45,
+      "btc_ret_pct": -11.01,
+      "finding": "down_low_low"
+    },
+    {
+      "t": 373,
+      "rule_ret_pct": 0.12,
+      "btc_ret_pct": 0.12,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 394,
+      "rule_ret_pct": 0.86,
+      "btc_ret_pct": -0.49,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 415,
+      "rule_ret_pct": -1.61,
+      "btc_ret_pct": -4.24,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 436,
+      "rule_ret_pct": 3.4,
+      "btc_ret_pct": 3.18,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 457,
+      "rule_ret_pct": 13.43,
+      "btc_ret_pct": 9.8,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 478,
+      "rule_ret_pct": 56.17,
+      "btc_ret_pct": 16.86,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 499,
+      "rule_ret_pct": 7.23,
+      "btc_ret_pct": -0.73,
+      "finding": "up_high_high"
+    },
+    {
+      "t": 520,
+      "rule_ret_pct": -17.49,
+      "btc_ret_pct": -8.88,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 541,
+      "rule_ret_pct": 0.11,
+      "btc_ret_pct": -3.88,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 562,
+      "rule_ret_pct": -15.13,
+      "btc_ret_pct": -4.79,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 583,
+      "rule_ret_pct": 0.25,
+      "btc_ret_pct": 0.15,
+      "finding": "down_low_low"
+    },
+    {
+      "t": 604,
+      "rule_ret_pct": -0.15,
+      "btc_ret_pct": 2.28,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 625,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": -4.81,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 646,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": 10.06,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 667,
+      "rule_ret_pct": -0.22,
+      "btc_ret_pct": 2.24,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 688,
+      "rule_ret_pct": -1.39,
+      "btc_ret_pct": 0.09,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 709,
+      "rule_ret_pct": 9.61,
+      "btc_ret_pct": 7.32,
+      "finding": "up_low_low"
+    },
+    {
+      "t": 730,
+      "rule_ret_pct": 22.05,
+      "btc_ret_pct": -1.53,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 751,
+      "rule_ret_pct": 14.65,
+      "btc_ret_pct": 4.45,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 772,
+      "rule_ret_pct": -9.27,
+      "btc_ret_pct": -4.62,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 793,
+      "rule_ret_pct": 5.04,
+      "btc_ret_pct": -0.03,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 814,
+      "rule_ret_pct": -6.94,
+      "btc_ret_pct": -6.9,
+      "finding": "up_high_low"
+    },
+    {
+      "t": 835,
+      "rule_ret_pct": -2.49,
+      "btc_ret_pct": -3.51,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 856,
+      "rule_ret_pct": -0.07,
+      "btc_ret_pct": -7.88,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 877,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": -2.46,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 898,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": 4.07,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 919,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": -7.48,
+      "finding": "down_low_low"
+    },
+    {
+      "t": 940,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": -2.13,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 961,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": 0.3,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 982,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": -2.72,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 1003,
+      "rule_ret_pct": 0.0,
+      "btc_ret_pct": 4.33,
+      "finding": "down_low_low"
+    },
+    {
+      "t": 1024,
+      "rule_ret_pct": 4.08,
+      "btc_ret_pct": 4.63,
+      "finding": "up_low_low"
+    },
+    {
+      "t": 1045,
+      "rule_ret_pct": 3.04,
+      "btc_ret_pct": -4.4,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 1066,
+      "rule_ret_pct": -0.15,
+      "btc_ret_pct": -3.7,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 1087,
+      "rule_ret_pct": -2.68,
+      "btc_ret_pct": 0.61,
+      "finding": "down_low_low"
+    }
+  ],
+  "rule_equity": 129.36,
+  "btc_equity": 76.67
+}

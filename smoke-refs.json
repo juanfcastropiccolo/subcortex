@@ -1,0 +1,24 @@
+{
+  "rows": [
+    {
+      "t": 1045,
+      "rule_ret_pct": 3.05,
+      "btc_ret_pct": -4.4,
+      "finding": "up_mid_low"
+    },
+    {
+      "t": 1066,
+      "rule_ret_pct": -0.15,
+      "btc_ret_pct": -3.7,
+      "finding": "down_low_high"
+    },
+    {
+      "t": 1087,
+      "rule_ret_pct": -2.68,
+      "btc_ret_pct": 0.61,
+      "finding": "down_low_low"
+    }
+  ],
+  "rule_equity": 100.13,
+  "btc_equity": 92.63
+}
