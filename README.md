@@ -77,17 +77,19 @@ Detalle, diagnóstico de la corrida 1 (que no funcionó) y lo que queda pendient
 y consecuencia medida a 21 días. El agente no ve fechas. `demo/run_market_ab.py` corre el A/B y
 las referencias sin LLM (regla diaria, regla al ritmo del agente, BTC).
 
-| corredor | equity final |
+| corredor | equity final (dos corridas) |
 |---|---|
-| baseline (LLM sin capa) | 50.5 |
-| **subcortex** | **90.9** |
+| baseline (LLM sin capa) | 50.5 · 50.5 (determinista: es la regla a 21 días) |
+| **subcortex** | **90.9 · 121.0** |
 | regla diaria | 78.6 |
 | BTC | 95.3 |
 
-La diferencia está en los regímenes bajistas: subcortex mantiene en vez de rotar. La capa destiló
-reglas correctas ("con dispersión amplia, follow_momentum tiende a empeorar") pero no formó hábitos
-ni vetó nada: la ganancia vino de la memoria en contexto. Con n = 40 y un modelo no determinista, el
-número necesita replicación; ver `docs/superpowers/results/2026-09-01-marketworld-ab.md`.
+La diferencia está en los regímenes bajistas: subcortex mantiene en vez de rotar (−1.2 % por
+decisión contra −3.5 %). La capa destiló reglas correctas ("con BTC en tendencia, follow_momentum
+tiende a resolver"; "con dispersión amplia, tiende a empeorar") y en la segunda corrida compiló un
+hábito `hold` para el régimen bajista dominante. La dirección se replica; la magnitud varía 30
+puntos entre corridas porque la memoria es dependiente del camino. Detalle en
+`docs/superpowers/results/2026-09-01-marketworld-ab.md`.
 
 ## Fuera del simulador: bugworld
 

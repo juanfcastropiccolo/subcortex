@@ -72,11 +72,47 @@ tomadas equivale a seguir la regla).
    contaba 0 éxitos / 8 fallos: mantener en 0 % cuando todo cae es acertar. Es el error de
    predicción del paso 15 del ensayo, no la recompensa absoluta.
 
+## Replicación (misma noche, mismas 40 decisiones, ambas variantes de nuevo)
+
+| | baseline run 1 | baseline run 2 | subcortex run 1 | subcortex run 2 |
+|---|---|---|---|---|
+| equity final | 50.5 | 50.5 | 90.9 | **121.0** |
+| score medio | −4.1 | −4.1 | 6.6 | 16.2 |
+| suma de retornos 21d | −16.2 % | −16.2 % | +26.3 % | +65.0 % |
+| `worsens` | 13 | 13 | 9 | 7 |
+| decisiones iguales entre corridas | 40/40 | | 24/40 | |
+| régimen bajista (19 decisiones): media | −3.5 % | −3.5 % | −1.2 % | −1.3 % |
+| régimen bajista: `hold` / `follow` | 9 / 5 | 9 / 5 | 12 / 4 | 13 / 2 |
+| episodios / reglas / hábitos | — | — | 29 / 4 / 0 | 24 / 6 / **2** |
+
+Datos: `results-market-run1.json`, `results-market-run2.json` (+ `-refs.json`).
+
+Tres cosas quedan claras con dos trayectorias:
+
+1. **El baseline es determinista**: las 40 decisiones fueron idénticas en las dos corridas
+   (temperatura por defecto, prompt simple). Es exactamente la regla a 21 días, 50.5.
+2. **La dirección de subcortex se sostiene; la magnitud no**: 90.9 y 121.0, con solo 24 de 40
+   decisiones iguales entre corridas. Lo que se repite es la *conducta en régimen bajista* —
+   mantener en vez de rotar, −1.2 % y −1.3 % por decisión contra −3.5 % del baseline— y ahí se
+   gana toda la diferencia. La varianza entre corridas de subcortex es del tamaño de la mitad de
+   su ventaja: la ventaja es real, el número exacto no.
+3. **En la corrida 2 aparecieron hábitos y reglas más nítidas.** Hábito `hold` en la clase de
+   escena bajista dominante (fuerza 0.85, 4/0) y `follow_momentum` en una alcista (3/1, debilitado
+   a 0.4 tras un fallo: la des-habituación funcionó). Reglas destiladas: *"con btc_trend=up,
+   follow_momentum tiende a resolves (n=5)"*, *"con btc_trend=down, go_cash tiende a no_change
+   (n=4)"*, *"con dispersion=wide, follow_momentum tiende a worsens (n=5)"*. Es la estructura del
+   problema, aprendida de 40 muestras sin etiquetas.
+
+Por qué la varianza: la memoria es dependiente del camino. Una decisión distinta en la semana 3
+cambia qué episodios existen en la semana 10 y, por lo tanto, qué precedentes ve el modelo.
+El baseline no tiene ese canal, así que no varía. Con 3–5 trayectorias por variante se podría
+reportar media ± desvío; con dos, lo honesto es: subcortex terminó entre 91 y 121 contra 50.5,
+78.6 (regla diaria) y 95.3 (BTC), y en ambas corridas la ganancia vino del mismo lugar.
+
 ## Advertencias
 
-- **n = 40, una trayectoria, un modelo no determinista.** Un solo `follow_momentum` en la semana
-  equivocada mueve el equity final 15 puntos. La diferencia de 40 puntos es grande pero no es
-  una estadística. Replicación en curso (`results-market-run2.json`); ver sección siguiente.
+- **n = 40 decisiones y dos trayectorias por variante.** La ventaja es consistente en dirección y
+  en mecanismo; la magnitud varía 30 puntos. No citar "121" ni "91" como el número: citar el rango.
 - El baseline reproduce la regla a 21 días, que en esta ventana es la peor referencia. Contra la
   regla diaria (78.6) la ventaja es de 12 puntos; contra BTC (95.3), subcortex pierde.
 - Retorno a 21 días con umbrales ±6 %: 24 de 40 decisiones caen en `no_change`, lo que limita
