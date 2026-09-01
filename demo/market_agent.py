@@ -20,12 +20,14 @@ def build_agent(model: str | object = MODEL) -> LlmAgent:
                     instruction=INSTRUCTION, tools=list(ALL_TOOLS))
 
 
-def build_app(with_subcortex: bool, store_path: str = ":memory:", model: str | object = MODEL):
+def build_app(with_subcortex: bool, store_path: str = ":memory:", model: str | object = MODEL,
+              disable: tuple[str, ...] = (), history_confidence: bool = False, reconsider: bool = False):
     app = App(name="marketworld", root_agent=build_agent(model))
     sc = None
     if with_subcortex:
         cfg = SubcortexConfig(risk=dict(RISK), diagnostic_tools=DIAGNOSTIC_TOOLS,
                               scene_fn=default_scene_fn, coarse_features=COARSE_FEATURES,
-                              always_allowed=ALWAYS_ALLOWED, step_budget=MAX_STEPS)
-        sc = subcortex.attach(app, risk=RISK, store_path=store_path, config=cfg)
+                              always_allowed=ALWAYS_ALLOWED, step_budget=MAX_STEPS,
+                              confidence_from_history=history_confidence, cingulate_reconsider=reconsider)
+        sc = subcortex.attach(app, risk=RISK, store_path=store_path, config=cfg, disable=disable)
     return app, sc

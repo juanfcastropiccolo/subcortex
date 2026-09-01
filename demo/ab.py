@@ -33,7 +33,8 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
                        prompt: Callable[[Any], str], label: Callable[[Any], str],
                        extra: Callable[[Any], dict] | None = None, with_subcortex: bool,
                        consolidate_every: int = 0, resume_rows: list[dict] | None = None,
-                       on_row: Callable[[list[dict]], None] | None = None) -> list[dict]:
+                       on_row: Callable[[list[dict]], None] | None = None,
+                       consolidate_llm: Callable[[str], str] | None = None) -> list[dict]:
     """`resume_rows`: filas ya corridas de esta variante (se saltean esos episodios).
     `on_row`: callback tras cada episodio (guardado incremental)."""
     svc = InMemorySessionService()
@@ -98,7 +99,7 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
               f"llm={row['llm_calls']} vetoes={row['vetoes']} rej={row['rejected']} "
               f"habit={row['habit_hits']} acciones={row['actions']}", flush=True)
         if sc and consolidate_every and (i + 1) % consolidate_every == 0:
-            print(f"[{name}] consolidate → {sc.consolidate()}", flush=True)
+            print(f"[{name}] consolidate → {sc.consolidate(llm=consolidate_llm)}", flush=True)
     if sc:
         print(f"[{name}] store: {sc.store.stats()}", flush=True)
     return rows

@@ -44,7 +44,10 @@ class SubcortexConfig:
     recall_min_overlap: int = 2
     recall_max: int = 4
     write_on_success: bool = True  # el éxito también es un episodio que vale recordar
+    confidence_from_history: bool = False  # si True, la confianza del gate mezcla la del modelo con la dopamina
     stall_fraction: float = 0.6    # presupuesto consumido sin resultado evaluado → "sin progreso"
+    cingulate_reconsider: bool = False  # segundo pase cuando el valor de la acción está cerca del umbral
+    reconsider_margin: float = 0.08     # |value − umbral| por debajo del cual hay "conflicto"
 
     @property
     def action_tools(self) -> frozenset[str]:

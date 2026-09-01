@@ -77,7 +77,38 @@ def test_effect_buckets_and_benchmarks(market):
     assert effect_of(0.08) == "resolves" and effect_of(0.01) == "improves"
     assert effect_of(-0.01) == "no_change" and effect_of(-0.08) == "worsens"
     assert HORIZON == SPACING  # la consecuencia se mide hasta la decisión siguiente
+    from marketworld.world import band_for
+    assert band_for(21) == 0.06 and 0.03 < band_for(7) < 0.04
+    assert effect_of(0.04, band_for(7)) == "resolves" and effect_of(0.04, band_for(21)) == "improves"
     t = decision_days(market, 40)[0]
     rule = Portfolio()
     rr, br = benchmark_week(market, t, rule)
     assert -0.5 < rr < 0.5 and -0.5 < br < 0.5
+
+
+def test_weekly_variant_days_and_world(market):
+    days = decision_days(market, 12, spacing=7, horizon=7)
+    assert days[1] - days[0] == 7 and days[-1] + 7 == market.n - 1
+    w = MarketWorld(market, Portfolio(), days[0], horizon=7)
+    r = w.act("follow_momentum")
+    assert w.done and r["observed_effect"] == effect_of(w.ret, 0.035) and "7 días" in r["message"]
+
+
+def test_attach_disable_ablation():
+    from google.adk.agents import LlmAgent
+    from google.adk.apps.app import App
+
+    import subcortex
+    from marketworld.tools import ALL_TOOLS
+    from marketworld.world import DIAGNOSTIC_TOOLS, RISK
+    from tests.integration.fake_llm import ScriptedLlm, text
+    app = App(name="t", root_agent=LlmAgent(name="a", model=ScriptedLlm(script=[text("x")]),
+                                            instruction="x", tools=list(ALL_TOOLS)))
+    sc = subcortex.attach(app, risk=RISK, diagnostic_tools=DIAGNOSTIC_TOOLS, disable=("gate", "habit"))
+    names = [p.name for p in sc.plugins]
+    assert "subcortex_gate" not in names and "subcortex_habit" not in names
+    assert "subcortex_memory" in names and "subcortex_prediction" in names
+    with pytest.raises(ValueError):
+        subcortex.attach(App(name="t2", root_agent=LlmAgent(name="b", model=ScriptedLlm(script=[text("x")]),
+                                                              instruction="x", tools=list(ALL_TOOLS))),
+                         risk=RISK, disable=("prediction",))

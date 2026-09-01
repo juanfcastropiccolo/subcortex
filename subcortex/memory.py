@@ -13,7 +13,7 @@ from .store import EpisodicStore
 from .types import K_DISCOVERED, K_LAST_ERROR, K_TONE, Episode, Rule, Scene, is_success
 
 log = logging.getLogger("subcortex")
-BLOCK_STATUSES = {"vetoed", "rejected", "invalid"}
+BLOCK_STATUSES = {"vetoed", "rejected", "invalid", "reconsider"}
 
 
 def render_precedents(episodes: list[Episode]) -> str:

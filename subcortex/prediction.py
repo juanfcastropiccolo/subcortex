@@ -14,7 +14,7 @@ from .metrics import bump
 from .types import EFFECTS, K_LAST_ERROR, K_PENDING, PRED_PARAMS, Prediction, prediction_error
 
 log = logging.getLogger("subcortex")
-BLOCK_STATUSES = {"vetoed", "rejected", "invalid"}
+BLOCK_STATUSES = {"vetoed", "rejected", "invalid", "reconsider"}
 
 PROTOCOL_INSTRUCTION = """## Protocolo de acción (subcortex)
 Toda acción lleva `expected_effect` (resolves|improves|no_change|worsens) y `confidence` (0–1) honestos.

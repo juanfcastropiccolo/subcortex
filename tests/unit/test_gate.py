@@ -106,3 +106,52 @@ async def test_after_model_winner_take_all_and_llm_count():
     assert calls[0].args["confidence"] == 0.9
     m = c.state["subcortex.metrics"]
     assert m["llm_calls"] == 1 and m["tokens"] == 123 and m["vetoes"] == 1
+
+
+def test_effective_confidence_shifts_from_model_to_history():
+    from subcortex.gate import effective_confidence
+    assert effective_confidence(0.9, 0.2, 0) == 0.9            # sin historial manda el modelo
+    assert effective_confidence(0.9, 0.2, 2) == pytest.approx(0.55)   # a la par
+    assert effective_confidence(0.9, 0.2, 6) == pytest.approx(0.375)  # historial 3 a 1
+    assert effective_confidence(0.3, 0.9, 6) == pytest.approx(0.75)   # y también sube la del tímido
+
+
+@pytest.mark.asyncio
+async def test_gate_uses_history_confidence_when_enabled():
+    store = EpisodicStore(":memory:")
+    scene = Scene.from_features({**FEATS, "finding": "db_pool_exhausted"}, coarse=CFG.coarse_features)
+    for _ in range(6):  # seis fracasos de restart en esta clase de escena
+        store.record_outcome(scene.coarse_key, "restart", False)
+    cfg_hist = SubcortexConfig(**{**CFG.__dict__, "confidence_from_history": True})
+    g = GatePlugin(cfg_hist, store)
+    c = ctx({"tool": "restart", "args": {}, "expected": "resolves", "confidence": 0.95},
+            discovered={"finding": "db_pool_exhausted"})
+    r = await g.before_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c)
+    assert r is not None and r["status"] == "vetoed"      # el modelo dice 0.95, el historial dice 0.15
+    assert c.state[K_VETO_LOG][0]["declared"] == 0.95 and c.state[K_VETO_LOG][0]["confidence"] < 0.5
+    cfg2 = CFG  # por defecto la confianza es la declarada por el modelo
+    c2 = ctx({"tool": "restart", "args": {}, "expected": "resolves", "confidence": 0.95},
+             discovered={"finding": "db_pool_exhausted"})
+    # sin historial en la confianza, value = 0.95 × dopamina(0.15) − 0.10 = 0.04 < 0.1: igual veta,
+    # pero por valor; la diferencia se ve en el registro
+    r2 = await GatePlugin(cfg2, store).before_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c2)
+    assert r2["status"] == "vetoed" and c2.state[K_VETO_LOG][0]["confidence"] == 0.95
+
+
+@pytest.mark.asyncio
+async def test_cingulate_reconsider_once_per_action_when_value_is_near_threshold():
+    from subcortex.gate import K_RECONSIDERED
+    cfg = SubcortexConfig(**{**CFG.__dict__, "cingulate_reconsider": True})
+    g = GatePlugin(cfg, EpisodicStore(":memory:"))
+    # restart: value = 0.3 × 0.6 − 0.10 = 0.08 → autorizada por umbral? no: 0.08 < 0.10 → veto.
+    # Con confianza 0.4: 0.24 − 0.10 = 0.14 → autorizada y a 0.04 del umbral → conflicto.
+    c = ctx({"tool": "restart", "args": {}, "expected": "resolves", "confidence": 0.4})
+    r = await g.before_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c)
+    assert r["status"] == "reconsider" and "conflicto" in r["reason"]
+    assert c.state[K_RECONSIDERED] == ["restart"] and c.state["subcortex.metrics"]["reconsiders"] == 1
+    assert c.state["subcortex.metrics"].get("vetoes", 0) == 0
+    # segunda vez, misma acción: pasa
+    assert await g.before_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c) is None
+    # lejos del umbral no hay conflicto
+    c2 = ctx({"tool": "restart", "args": {}, "expected": "resolves", "confidence": 0.95})
+    assert await g.before_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=c2) is None

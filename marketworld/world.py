@@ -134,12 +134,17 @@ class Portfolio:
         return "cash" if n == 0 else ("one" if n == 1 else "two")
 
 
-def effect_of(r: float) -> str:
-    if r > RESOLVE_T:
+def band_for(horizon: int) -> float:
+    """Umbral de 'resolves'/'worsens' escalado con la raíz del horizonte (±6 % a 21 días, ±3.5 % a 7)."""
+    return round(RESOLVE_T * (horizon / 21) ** 0.5, 3)
+
+
+def effect_of(r: float, band: float = RESOLVE_T) -> str:
+    if r > band:
         return "resolves"
     if r > 0:
         return "improves"
-    if r >= WORSEN_T:
+    if r >= -band:
         return "no_change"
     return "worsens"
 
@@ -149,6 +154,7 @@ class MarketWorld:
     market: Market
     portfolio: Portfolio
     t: int
+    horizon: int = HORIZON
     steps: int = 0
     score: int = 0
     worsens: int = 0
@@ -166,7 +172,7 @@ class MarketWorld:
     def intro(self) -> str:
         m, t = self.market, self.t
         held = ", ".join(f"{s} {q * m.price(s, t):.0f} USD" for s, q in self.portfolio.holdings.items()) or "cash"
-        return (f"Día de decisión (la próxima es en {HORIZON} días). Cartera: {held}; cash "
+        return (f"Día de decisión (la próxima es en {self.horizon} días). Cartera: {held}; cash "
                 f"{self.portfolio.cash:.0f} USD; equity {self.portfolio.equity(m, t):.2f} USD. Decidí qué hacer.")
 
     def _step(self) -> None:
@@ -244,9 +250,9 @@ class MarketWorld:
             self._step()
         eq0 = self.portfolio.equity(m, t)
         self.cost = self.portfolio.rebalance(target, m, t)
-        eq7 = self.portfolio.equity(m, t + HORIZON)
+        eq7 = self.portfolio.equity(m, t + self.horizon)
         self.ret = eq7 / eq0 - 1.0
-        effect = effect_of(self.ret)
+        effect = effect_of(self.ret, band_for(self.horizon))
         self.score = round(1000 * self.ret)
         self.resolved = self.ret > 0
         self.worsens = int(effect == "worsens")
@@ -255,16 +261,16 @@ class MarketWorld:
                          "ret_pct": round(100 * self.ret, 2), "forced": forced, "step": self.steps})
         return {"status": "success", "observed_effect": effect,
                 "message": (f"Cartera → {target or ['cash']}; costo {self.cost:.2f} USD. "
-                            f"{HORIZON} días después: {100 * self.ret:+.2f} %."),
+                            f"{self.horizon} días después: {100 * self.ret:+.2f} %."),
                 "ret_pct": round(100 * self.ret, 2)}
 
 
-def benchmark_week(m: Market, t: int, rule: Portfolio) -> tuple[float, float]:
-    """(retorno semanal de la regla pura, retorno semanal de BTC) para el día t."""
+def benchmark_week(m: Market, t: int, rule: Portfolio, horizon: int = HORIZON) -> tuple[float, float]:
+    """(retorno de la regla pura, retorno de BTC) a `horizon` días desde el día t."""
     eq0 = rule.equity(m, t)
     rule.rebalance(m.momentum_target(t), m, t)
-    rule_ret = rule.equity(m, t + HORIZON) / eq0 - 1.0
-    btc_ret = m.price("BTC/USDT", t + HORIZON) / m.price("BTC/USDT", t) - 1.0
+    rule_ret = rule.equity(m, t + horizon) / eq0 - 1.0
+    btc_ret = m.price("BTC/USDT", t + horizon) / m.price("BTC/USDT", t) - 1.0
     return rule_ret, btc_ret
 
 

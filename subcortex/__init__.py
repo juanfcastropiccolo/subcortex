@@ -30,8 +30,8 @@ class Subcortex:
     store: EpisodicStore
     plugins: list
 
-    def consolidate(self, now: float | None = None) -> dict:
-        return _consolidate(self.store, now)
+    def consolidate(self, now: float | None = None, llm=None) -> dict:
+        return _consolidate(self.store, now, llm=llm)
 
 
 def _wrap_agent_tools(agent: LlmAgent, cfg: SubcortexConfig) -> None:
@@ -49,7 +49,7 @@ def _wrap_agent_tools(agent: LlmAgent, cfg: SubcortexConfig) -> None:
 def attach(app: App, *, risk: dict[str, str], diagnostic_tools: Iterable[str] = (),
            store_path: str = ":memory:", scene_fn: Callable[[Any], Scene | None] | None = None,
            coarse_features: Iterable[str] | None = None,
-           config: SubcortexConfig | None = None) -> Subcortex:
+           config: SubcortexConfig | None = None, disable: Iterable[str] = ()) -> Subcortex:
     """Agrega la capa subcortical a `app` sin modificar la lógica del agente.
 
     `coarse_features`: qué features definen la *clase* de escena para dopamina, gate y hábitos
@@ -69,7 +69,20 @@ def attach(app: App, *, risk: dict[str, str], diagnostic_tools: Iterable[str] = 
     #   before_model: Prediction(protocolo) → Gate(-) → Memory(precedentes) → Habit(bypass) → Intero(estado)
     #   before_tool:  Prediction(valida) → Gate(veto)
     #   after_tool:   Prediction(error) → Gate(-) → Memory(escribe, dopamina) → Habit(compila) → Intero(tono)
-    plugins = [PredictionPlugin(cfg), GatePlugin(cfg, store), MemoryPlugin(cfg, store),
-               HabitPlugin(cfg, store), InteroceptionPlugin(cfg)]
+    # `disable` (ablaciones): nombres en {gate, memory, habit, interoception}. Prediction no se
+    # desactiva: sin error de predicción no hay nada que aprender y la ablación sería "vanilla".
+    off = set(disable)
+    unknown = off - {"gate", "memory", "habit", "interoception"}
+    if unknown:
+        raise ValueError(f"plugins desconocidos en disable: {sorted(unknown)}")
+    plugins = [PredictionPlugin(cfg)]
+    if "gate" not in off:
+        plugins.append(GatePlugin(cfg, store))
+    if "memory" not in off:
+        plugins.append(MemoryPlugin(cfg, store))
+    if "habit" not in off:
+        plugins.append(HabitPlugin(cfg, store))
+    if "interoception" not in off:
+        plugins.append(InteroceptionPlugin(cfg))
     app.plugins.extend(plugins)
     return Subcortex(config=cfg, store=store, plugins=plugins)

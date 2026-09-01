@@ -10,6 +10,8 @@ from .metrics import bump
 from .store import EpisodicStore
 from .types import K_INTERO, K_PENDING, K_TONE, K_VETO_LOG
 
+K_RECONSIDERED = "subcortex.reconsidered"
+
 log = logging.getLogger("subcortex")
 
 
@@ -36,6 +38,16 @@ def gate_decision(cfg: SubcortexConfig, tool: str, confidence: float, dopamine: 
         return False, value, (f"valor esperado {value:.2f} < umbral {cfg.gate_threshold}: "
                               "poca confianza, historial pobre o costo alto")
     return True, value, "autorizada"
+
+
+def effective_confidence(declared: float, dopamine: float, n_history: int) -> float:
+    """Confianza que pesa el gate: la del modelo al principio, la del historial a medida que hay.
+
+    Los LLM están mal calibrados; la dopamina de (clase de escena, acción) es la tasa de éxito
+    observada. Peso del historial = n/(n+2): con 0 observaciones manda el modelo, con 2 van a la
+    par, con 6 el historial pesa 3 a 1. El modelo sigue desempatando cuando no hay datos."""
+    w = n_history / (n_history + 2.0)
+    return round((1 - w) * declared + w * dopamine, 4)
 
 
 class GatePlugin(BasePlugin):
@@ -109,21 +121,36 @@ class GatePlugin(BasePlugin):
         try:
             state = tool_context.state
             pending = (state.get(K_PENDING) or {}).get(tool_context.function_call_id or tool.name)
-            confidence = float(pending["confidence"]) if pending else 0.0
+            declared = float(pending["confidence"]) if pending else 0.0
             tone = float(state.get(K_TONE, 1.0))
             blocks = int((state.get(K_INTERO) or {}).get("blocks", 0))
             scene_key = self._scene_key(state)
             dop = self.store.dopamine(scene_key, tool.name, self.cfg.dopamine_prior)
             s, f = self.store.outcome_counts(scene_key, tool.name)
             trusted = s >= self.cfg.trust_min_successes and f == 0
+            confidence = (effective_confidence(declared, dop, s + f) if self.cfg.confidence_from_history
+                          else declared)
             ok, value, why = gate_decision(self.cfg, tool.name, confidence, dop, tone, blocks, trusted)
+            if ok and self.cfg.cingulate_reconsider and tool.name not in self.cfg.always_allowed:
+                # Cingulado (paso 9): conflicto = valor cerca del umbral. Compra un pase más de
+                # deliberación, una sola vez por episodio y por acción, antes de desinhibir.
+                near = abs(value - self.cfg.gate_threshold) < self.cfg.reconsider_margin
+                done = set(state.get(K_RECONSIDERED) or [])
+                if near and tool.name not in done:
+                    state[K_RECONSIDERED] = sorted(done | {tool.name})
+                    bump(state, "reconsiders")
+                    return {"status": "reconsider", "tool": tool.name, "value": value,
+                            "reason": f"valor {value:.2f} al borde del umbral {self.cfg.gate_threshold}: "
+                                      "conflicto entre confianza, historial y costo",
+                            "hint": (f"Pensalo un paso más. Si seguís convencido, repetí {tool.name} con la misma "
+                                     "predicción y se ejecuta; si no, cambiá de acción.")}
             if ok:
                 return None
             bump(state, "vetoes")
             if self.cfg.risk_of(tool.name) == "irreversible":
                 bump(state, "vetoes_irreversible")
             veto_log = list(state.get(K_VETO_LOG) or [])
-            veto_log.append({"tool": tool.name, "confidence": confidence, "tone": tone,
+            veto_log.append({"tool": tool.name, "confidence": confidence, "declared": declared, "tone": tone,
                              "dopamine": round(dop, 3), "reason": why})
             state[K_VETO_LOG] = veto_log
             log.info("veto %s: %s", tool.name, why)

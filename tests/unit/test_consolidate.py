@@ -34,3 +34,37 @@ def test_rules_distilled_from_recurrent_pattern():
     assert stats["rules"] == 1 and len(rules) == 1
     assert rules[0].tool == "restart" and "worsens" in rules[0].text and rules[0].support == 3
     assert "service" not in rules[0].scene_pattern
+
+
+def test_llm_rules_require_evidence():
+    from subcortex.types import Scene
+    store = EpisodicStore(":memory:")
+    for svc in ("api", "auth", "search", "checkout"):
+        store.write(ep({"service": svc, "symptom": "high_latency", "traffic": "normal"}, last=0))
+    calls = []
+
+    def fake_llm(prompt: str) -> str:
+        calls.append(prompt)
+        return ("bla [{\"pattern\": {\"symptom\": \"high_latency\"}, \"tool\": \"restart\", "
+                "\"text\": \"restart empeora con latencia alta\"}, "
+                "{\"pattern\": {\"symptom\": \"oom\"}, \"tool\": \"restart\", \"text\": \"inventada\"}] bla")
+
+    stats = consolidate(store, now=0, llm=fake_llm)
+    assert stats["llm_rules"] == 1 and len(calls) == 1 and "episodios" in calls[0]
+    rules = store.rules_for(Scene.from_features({"symptom": "high_latency", "service": "x"}))
+    assert any("restart empeora" in r.text and "(n=4)" in r.text for r in rules)
+    assert not store.rules_for(Scene.from_features({"symptom": "oom"}))  # sin evidencia, descartada
+    assert consolidate(store, now=0, llm=lambda p: "no json")["llm_rules"] == 0
+
+
+def test_suggest_coarse_features_ranks_by_information_gain():
+    from subcortex.consolidate import suggest_coarse_features
+    store = EpisodicStore(":memory:")
+    # 'regime' separa perfectamente éxito/fracaso; 'hour' es ruido
+    for i in range(8):
+        regime = "bear" if i % 2 else "bull"
+        store.write(ep({"regime": regime, "hour": str(i % 3)}, err=-0.8 if regime == "bear" else 0.5))
+    ranked = suggest_coarse_features(store)
+    assert ranked[0][0] == "regime" and ranked[0][1] > 0.9
+    assert dict(ranked)["hour"] < 0.3
+    assert suggest_coarse_features(EpisodicStore(":memory:")) == []
