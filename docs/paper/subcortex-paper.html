@@ -1,0 +1,660 @@
+<title>Subcortex</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F6F5F1; --paper: #FFFFFF; --ink: #1F1F1B; --ink-2: #4E4E47; --ink-3: #8A8A80;
+    --line: #DAD9D1; --accent: #0E6B6A; --accent-soft: #DCEEED; --mark: #B8741A; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171A; --paper: #1D2024; --ink: #EAEAE4; --ink-2: #BDBDB4; --ink-3: #85857C;
+      --line: #33373D; --accent: #5FC1BF; --accent-soft: #163A39; --mark: #E0A64E; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171A; --paper: #1D2024; --ink: #EAEAE4; --ink-2: #BDBDB4; --ink-3: #85857C;
+    --line: #33373D; --accent: #5FC1BF; --accent-soft: #163A39; --mark: #E0A64E; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-size: 17px; line-height: 1.6; }
+  article { max-width: 760px; margin: 0 auto; padding: 56px 24px 120px; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 40px; display: flex; flex-direction: column; gap: 12px; }
+  .eyebrow { font-family: "IBM Plex Sans", sans-serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  h1 { font-size: 38px; font-weight: 600; line-height: 1.12; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+  .subtitle { font-size: 21px; font-style: italic; color: var(--ink-2); margin: 0; text-wrap: balance; }
+  .byline { font-family: "IBM Plex Sans", sans-serif; font-size: 14px; color: var(--ink-2); margin: 0; }
+  h2 { font-size: 24px; font-weight: 600; margin: 48px 0 12px; text-wrap: balance; }
+  h3 { font-size: 18px; font-weight: 600; margin: 28px 0 8px; color: var(--ink); }
+  p { margin: 0 0 14px; }
+  h2 + p:first-of-type { margin-top: 4px; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 36px 0; }
+  ol, ul { padding-left: 24px; margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  strong { font-weight: 600; }
+  code { font-family: "IBM Plex Mono", Menlo, monospace; font-size: .86em; background: var(--accent-soft); color: var(--ink); padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+  pre code { background: transparent; padding: 0; font-size: inherit; }
+  .scroll { overflow-x: auto; margin: 16px 0 22px; }
+  table { border-collapse: collapse; width: 100%; font-family: "IBM Plex Sans", sans-serif; font-size: 14px; background: var(--paper); border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; background: var(--bg); }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--accent); }
+  /* Resumen: párrafo destacado */
+  #resumen + p, h2:first-of-type + p { font-size: 16.5px; color: var(--ink-2); border-left: 3px solid var(--accent); padding-left: 16px; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 640px) { h1 { font-size: 30px; } body { font-size: 16px; } article { padding: 32px 16px 80px; } }
+</style>
+<article>
+  <header>
+    <div class="eyebrow">Preprint · memory-tests · 2026-09-01</div>
+    <h1>Subcortex: una capa subcortical para agentes LLM</h1>
+    <p class="subtitle">Diseño a partir de la anatomía de una decisión y validación en tres mundos</p>
+    <p class="byline">Juan F. Castro Piccolo · con asistencia de Claude (Anthropic) · 1 de septiembre de 2026</p>
+  </header>
+
+
+
+<hr>
+<h2>Resumen</h2>
+<p>Un agente basado en un modelo de lenguaje decide en un solo disparo: el modelo propone y el
+sistema ejecuta. En el cerebro, la corteza propone y todo lo demás —ganglios basales, cerebelo,
+hipocampo, amígdala, ínsula, habénula— autoriza, predice, recuerda, compila y aprende. Partimos de
+un recorrido neuroanatómico de una decisión simple ("Anatomía de un sí") y lo usamos como mapa
+de lo que le falta a un agente donde el LLM es solo la corteza. Implementamos ese mapa como
+<code>subcortex</code>, una librería de cinco plugins para Google ADK que se adjunta a cualquier <code>LlmAgent</code>
+con una línea, sin modificar el modelo ni el prompt: predicción obligatoria antes de actuar
+(cerebelo), veto por defecto con desinhibición de una sola acción (ganglios basales), memoria
+episódica por situación que escribe ante sorpresa o éxito (hipocampo, amígdala, habénula),
+hábitos compilados que responden sin llamar al modelo (caudado → putamen), interocepción
+traducida a lenguaje (ínsula) y consolidación offline (sueño). Lo evaluamos con el mismo agente
+Gemini, con y sin la capa, en tres mundos: un simulador de operaciones (<code>opsworld</code>), bugs reales
+inyectados en una librería Python (<code>bugworld</code>) y un replay histórico del paper trader de momentum
+del autor (<code>marketworld</code>). En <code>opsworld</code> la capa sube el score 22 %, lleva la resolución al
+100 % y reduce las llamadas al modelo 34 % en el último tercio, con hábitos compilados. En
+<code>marketworld</code>, sobre 40 decisiones reales de mercado, cinco trayectorias terminan en 89 ± 20 de
+equity contra 50.5 del mismo agente sin la capa (5/5 por encima), y con cadencia semanal supera
+también a BTC; la ventaja proviene de un comportamiento estable en régimen bajista. En
+<code>bugworld</code> la capa no aporta nada en tres corridas, y explicamos por qué: sin repetición de
+situaciones ni acciones reutilizables, ningún mecanismo subcortical tiene palanca. Documentamos
+ocho lecciones de diseño surgidas de los fracasos, los costos (unos 9 USD de API en total) y los
+límites del estudio.</p>
+<hr>
+<h2>1. Introducción</h2>
+<p>Los frameworks de agentes actuales tratan al modelo de lenguaje como el sistema completo de
+decisión: perciben mediante herramientas, deliberan en el contexto del modelo y ejecutan lo que
+el modelo emite. El aprendizaje entre episodios, cuando existe, suele reducirse a resumir
+conversaciones o a recuperar texto por similitud con la pregunta. Nada distingue "la acción no se
+ejecutó" de "la acción no funcionó"; nada compila una decisión repetida; nada le dice al modelo
+cómo está.</p>
+<p>La hipótesis de este trabajo es que esa arquitectura reproduce solo la corteza y omite lo que en
+un cerebro hace que una decisión sea segura, barata y mejorable con el uso. Lo que un LLM hace
+mejor que cualquier otro artefacto es exactamente lo que hace la corteza orbitofrontal: convertir
+argumentos heterogéneos a una moneda común. Lo que no tiene es lo subcortical.</p>
+<p>Tomamos como punto de partida un ensayo previo del autor que recorre, paso a paso, una decisión
+mínima —salir a correr o no— desde la retina hasta la médula y de vuelta al aprendizaje, con
+énfasis en tres conclusiones: no hay un lugar donde se decide sino un bucle que converge; la
+emoción no interfiere con la razón sino que la habilita, porque traduce el estado corporal a una
+moneda comparable; y decidir es, mecánicamente, dejar de inhibir. Este paper convierte ese mapa
+en software y lo somete a experimentos A/B con el mismo modelo en tres dominios.</p>
+<p>Contribuciones:</p>
+<ol>
+<li>Un mapeo explícito de quince pasos neuroanatómicos a mecanismos implementables en un
+   agente, con las fórmulas concretas de cada uno (sección 3).</li>
+<li><code>subcortex</code>, una implementación sobre Google ADK que envuelve cualquier <code>LlmAgent</code> sin
+   tocarlo, con 82 tests que corren sin red (sección 4).</li>
+<li>Tres bancos de prueba y un protocolo A/B con referencias sin LLM, replicación y ablaciones
+   (sección 5), con resultados positivos en dos de ellos y un resultado nulo explicado (sección 6).</li>
+<li>Ocho lecciones de diseño que salieron de las corridas que no funcionaron, incluidas dos
+   incompatibilidades con la API de Gemini 3 y un bucle infinito de hábitos (sección 7).</li>
+</ol>
+<hr>
+<h2>2. Del cerebro al agente</h2>
+<p>La tabla resume el mapeo. La columna "ausente en un agente hoy" describe el estado de los
+frameworks de agentes LLM que conocemos; la columna "subcortex" nombra el componente que lo
+implementa.</p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>Paso del ensayo</th>
+<th>Mecanismo cerebral</th>
+<th>Ausente en un agente hoy</th>
+<th>subcortex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2, 4 — tálamo, formación reticular</td>
+<td>Ganancia según estado de alerta</td>
+<td>Todo entra al contexto con igual peso</td>
+<td><code>tone</code> modula cuántos precedentes se recuperan</td>
+</tr>
+<tr>
+<td>5 — amígdala</td>
+<td>Valencia antes de deliberar; recuerdos con etiqueta emocional</td>
+<td>Memorias neutras</td>
+<td>Episodios con <code>valence</code>, <code>habenula</code></td>
+</tr>
+<tr>
+<td>6–7 — hipotálamo, ínsula</td>
+<td>Estado corporal traducido a sentimiento comparable</td>
+<td>El agente no sabe cómo está</td>
+<td><code>InteroceptionPlugin</code>: presupuesto, fallos, bloqueos → texto + <code>tone</code></td>
+</tr>
+<tr>
+<td>8 — hipocampo, parahipocampal</td>
+<td>Recuperación por escena; simulación de futuros</td>
+<td>Recuperación por similitud con la pregunta</td>
+<td>Recall por features de la situación; la escena se enriquece con lo que el diagnóstico descubre</td>
+</tr>
+<tr>
+<td>9 — cingulado anterior</td>
+<td>Detección de conflicto; costo del esfuerzo</td>
+<td>Sin router rápido/lento; sin costo de acción</td>
+<td><code>reconsider</code> ante valor cercano al umbral; costo por clase de riesgo</td>
+</tr>
+<tr>
+<td>10 — prefrontal</td>
+<td>Moneda común, intención</td>
+<td>Es lo que el LLM hace bien</td>
+<td>El LLM, sin cambios</td>
+</tr>
+<tr>
+<td>11 — ganglios basales</td>
+<td>Veto universal; desinhibir una sola acción; vía hiperdirecta</td>
+<td>El default es actuar</td>
+<td><code>GatePlugin</code>: valor ≥ umbral, freno para irreversibles, una acción por turno</td>
+</tr>
+<tr>
+<td>13 — cerebelo</td>
+<td>Copia eferente, predicción de consecuencias, error</td>
+<td>No declara expectativa</td>
+<td><code>PredictionPlugin</code>: <code>expected_effect</code>, <code>confidence</code> obligatorios; error con signo</td>
+</tr>
+<tr>
+<td>15.1–15.2 — habénula, dopamina</td>
+<td>Error de predición como señal de aprendizaje; canal negativo separado</td>
+<td>Se escribe memoria por volumen</td>
+<td>Escritura solo ante sorpresa o éxito; <code>habenula=True</code> con prioridad de recuperación; dopamina por (escena, acción)</td>
+</tr>
+<tr>
+<td>15.4 — caudado → putamen</td>
+<td>Hábito: estímulo-respuesta que saltea la deliberación</td>
+<td>Todo pasa por el LLM</td>
+<td><code>HabitPlugin</code>: compila tras 3 éxitos de la misma acción; responde sin LLM; se des-habitúa</td>
+</tr>
+<tr>
+<td>0.4, 15.3 — microglía, sueño</td>
+<td>Poda, refuerzo, consolidación episódico → semántico</td>
+<td>La memoria crece monótona</td>
+<td><code>consolidate()</code>: decaimiento, poda, refuerzo, reglas destiladas</td>
+</tr>
+</tbody>
+</table></div>
+<p>Dos decisiones del mapeo merecen comentario. Primera: el bucle de tool-calls que ADK ya tiene
+—el modelo propone una llamada, la herramienta responde, el modelo vuelve a mirar— es
+estructuralmente el bucle córtico-estriado-tálamo-cortical; por eso un veto no rompe nada:
+devuelve un resultado de herramienta y el modelo re-itera. Segunda: el hábito se implementa como
+un <code>LlmResponse</code> sintético que el plugin devuelve antes de llamar al modelo; el modelo no se
+invoca, y esa es la única forma de que "compilar" signifique de verdad abaratar.</p>
+<hr>
+<h2>3. Diseño de subcortex</h2>
+<h3>3.1 Punto de entrada</h3>
+<pre><code class="language-python">app = App(name=&quot;ops&quot;, root_agent=my_agent)
+subcortex.attach(app, risk={&quot;restart&quot;: &quot;costly&quot;, &quot;rollback&quot;: &quot;irreversible&quot;, &quot;resolve&quot;: &quot;free&quot;},
+                 diagnostic_tools={&quot;inspect_service&quot;}, coarse_features=(&quot;symptom&quot;, &quot;finding&quot;))
+</code></pre>
+<p><code>attach()</code> envuelve las herramientas de acción del agente (les agrega dos parámetros
+obligatorios), registra cinco plugins en <code>App.plugins</code> en un orden fijo y abre un
+<code>EpisodicStore</code> SQLite. ADK ejecuta los plugins en orden y corta la cadena en el primer valor
+no nulo; el orden <code>[Prediction, Gate, Memory, Habit, Interoception]</code> garantiza que en
+<code>before_tool</code> la validación preceda al veto, y en <code>after_tool</code> el error de predicción se
+calcule antes de que memoria, hábito e interocepción lo consuman.</p>
+<h3>3.2 Escena a dos niveles</h3>
+<p>Una escena es el contexto observable de la decisión. Tiene dos claves: <code>key</code>, hash de todas las
+features (la usa el recuerdo episódico) y <code>coarse_key</code>, hash de un subconjunto configurado
+(<code>coarse_features</code>) que usan la dopamina, el gate y los hábitos. La distinción salió de un
+fracaso: con una sola clave fina, en 40 episodios ninguna situación se repetía y nada aprendía.
+La escena además se enriquece durante el episodio con lo que las herramientas diagnósticas
+descubren (<code>discover_fn</code> → campo <code>finding</code>), de modo que "síntoma latencia alta" y "síntoma
+latencia alta + pool de base de datos agotado" son clases distintas.</p>
+<h3>3.3 Predicción y error</h3>
+<p>Toda herramienta de acción exige <code>expected_effect ∈ {resolves, improves, no_change, worsens}</code> y
+<code>confidence ∈ [0, 1]</code>. Las herramientas devuelven <code>observed_effect</code> en la misma escala. Con
+rangos <code>worsens = −1, no_change = 0, improves = 1, resolves = 2</code>:</p>
+<pre><code>error = clamp((rank(observed) − rank(expected)) / 2, −1, 1) × confidence
+</code></pre>
+<p>Equivocarse con alta confianza pesa más. Un <code>error &lt; 0</code> es la señal de la habénula.</p>
+<h3>3.4 Gate</h3>
+<p>Por defecto todo está vetado. Una acción se autoriza si</p>
+<pre><code>value = confidence × dopamina(coarse_key, tool) − costo(riesgo) ≥ 0.10
+</code></pre>
+<p>con <code>costo = {free: 0, costly: 0.10, irreversible: 0.20}</code> y <code>dopamina = (éxitos + 0.6·2) /
+(éxitos + fallos + 2)</code> (prior 0.6). Una acción irreversible tiene además vía hiperdirecta: se veta
+si <code>confidence &lt; 0.6</code> o si el <code>tone</code> es bajo, salvo que la acción ya haya resuelto esa clase de
+escena dos veces sin fallar ("confianza ganada"). Si el modelo emite varias acciones en paralelo,
+solo pasa la de mayor valor (winner-take-all). Tras tres bloqueos seguidos, solo se autorizan las
+acciones de escape (<code>escalate</code>, <code>resolve</code>). Cada veto devuelve <code>reason</code> y <code>hint</code> con las acciones
+que sí funcionaron en esa clase de escena.</p>
+<p>Como extensión opcional (frente 2), la confianza que pesa el gate puede mezclar la declarada por
+el modelo con la dopamina según cuánta historia haya: <code>w = n/(n+2)</code>; con cero observaciones
+manda el modelo, con seis el historial pesa tres a uno.</p>
+<h3>3.5 Memoria</h3>
+<p>Un episodio se escribe cuando <code>|error| ≥ 0.25</code> (sorpresa), cuando la herramienta falló, o cuando
+la acción resolvió (éxito, incorporado tras el segundo mundo). Guarda escena, acción, argumentos,
+expectativa, resultado, error, valencia, <code>habenula</code> y una <code>strength</code>. El recuerdo, antes de cada
+llamada al modelo, recupera hasta cuatro episodios con la misma escena exacta o con al menos dos
+features en común, fracasos primero, y los inyecta como "Precedentes". La dopamina se actualiza
+en toda acción evaluada, con una definición de éxito que incluye cumplir una expectativa de
+<code>no_change</code>: mantener en un mercado que cae es acertar, no fallar.</p>
+<h3>3.6 Hábitos</h3>
+<p>Tras tres éxitos <strong>de la misma acción con los mismos argumentos</strong> (plantillados: un valor que
+coincide con una feature se guarda como <code>$feature</code>) en la misma clase de escena, sin fallos, se
+compila un hábito con fuerza 0.8. Al empezar un episodio cuya clase tiene un hábito fuerte, el
+plugin devuelve la llamada directamente; el modelo no se invoca. Un hábito se intenta a lo sumo
+una vez por episodio y se debilita a la mitad si su resultado es negativo, inválido o vetado.
+Nunca se compilan hábitos sobre acciones irreversibles.</p>
+<h3>3.7 Interocepción</h3>
+<p>Cuenta pasos, fallos reales, bloqueos, llamadas inválidas seguidas y acciones evaluadas. Produce
+un escalar <code>tone ∈ [0.05, 1]</code> que baja con fallos y con presupuesto consumido —no con vetos, para
+no realimentarlos— y un bloque de texto traducido ("llevás 2 fallos seguidos", "sin progreso:
+consumiste el 60 % del presupuesto sin ningún resultado evaluado; si no tenés un cambio concreto,
+escalá"). Es la ínsula: el estado interno en la misma moneda que la meta.</p>
+<h3>3.8 Consolidación</h3>
+<p><code>consolidate()</code> decae la fuerza de los episodios no accedidos, refuerza los recuperados a menudo,
+poda los débiles y viejos, y destila reglas: para cada (acción, resultado) con al menos tres
+episodios, la intersección de sus features es el patrón y se genera un texto ("en incidentes con
+<code>dispersion=wide</code>, <code>follow_momentum</code> tiende a <code>worsens</code> (n=5)"). Opcionalmente un LLM escribe
+reglas más ricas, pero solo se conservan las que al menos tres episodios respaldan: el modelo no
+puede inventar reglas sin evidencia. Una función auxiliar sugiere qué features separan mejor
+éxitos de fracasos (ganancia de información), candidatas a <code>coarse_features</code>.</p>
+<h3>3.9 Contrato de estados</h3>
+<p>Un resultado de herramienta lleva <code>status</code>. Cuatro estados no tocan el mundo y ningún plugin
+aprende de ellos: <code>rejected</code> (falta predicción), <code>vetoed</code> (gate), <code>invalid</code> (argumentos mal
+formados, episodio terminado) y <code>reconsider</code> (cingulado). La distinción entre <code>invalid</code> y <code>error</code>
+resultó decisiva (sección 7).</p>
+<hr>
+<h2>4. Implementación</h2>
+<p><code>subcortex</code> son ocho módulos Python (~1 100 líneas) sobre <code>google-adk</code> 2.8 y <code>pydantic</code>. Los
+plugins heredan de <code>BasePlugin</code> y usan seis hooks: <code>before_model</code>, <code>after_model</code>,
+<code>before_tool</code>, <code>after_tool</code>, <code>on_tool_error</code> y el estado de sesión. Todo el estado transitorio
+vive en <code>session.state["subcortex.*"]</code>; lo persistente, en SQLite (<code>episodes</code>, <code>dopamine</code>,
+<code>habits</code>, <code>habit_candidates</code>, <code>rules</code>). Cada plugin atrapa sus excepciones y degrada a
+comportamiento vanilla. Hay 82 tests unitarios y de integración que corren sin red; los de
+integración usan el <code>Runner</code> real de ADK con un modelo programado (<code>ScriptedLlm</code>) y verifican,
+entre otras cosas, que un veto hace re-iterar al modelo, que un hábito ejecuta sin llamarlo y que
+el historial que ve el modelo tras un hábito no contiene llamadas sintéticas.</p>
+<p>Dos mundos sintéticos y uno real acompañan a la librería (~1 900 líneas): un simulador de
+incidentes, un inyector de bugs por mutación AST sobre una librería vendorizada, y un replay de
+mercado sobre velas diarias reales. Un runner A/B genérico (<code>demo/ab.py</code>) ejecuta el mismo
+agente con y sin la capa sobre la misma secuencia, con reintentos ante errores transitorios,
+tope de llamadas y timeout por episodio, guardado incremental y <code>--resume</code>.</p>
+<hr>
+<h2>5. Metodología</h2>
+<p><strong>Diseño A/B.</strong> En cada mundo se construye un único <code>LlmAgent</code> (Gemini 3 Flash, instrucción
+fija, herramientas reales del mundo) y se corre dos veces sobre la misma secuencia de episodios:
+<em>baseline</em> (ADK vanilla) y <em>subcortex</em> (<code>attach()</code>). La única diferencia entre variantes es la
+línea de <code>attach()</code>. Cada episodio es una sesión ADK nueva; el <code>EpisodicStore</code> persiste entre
+episodios.</p>
+<p><strong>Métricas.</strong> Score del mundo por episodio, tasa de resolución, llamadas al LLM, tokens, pasos,
+acciones dañinas (<code>worsens</code>), vetos, episodios escritos, disparos de hábito, error de predicción
+medio. Todas se reportan por tercios de la secuencia para ver aprendizaje.</p>
+<p><strong>Referencias sin LLM.</strong> En <code>marketworld</code>, además, la regla momentum pura a dos cadencias y BTC
+buy &amp; hold sobre la misma ventana.</p>
+<p><strong>Replicación y ablaciones.</strong> En <code>marketworld</code> se corrieron cinco trayectorias de subcortex (el
+baseline resultó determinista) y ablaciones desactivando un plugin por vez.</p>
+<p><strong>Mundos.</strong></p>
+<p><em>opsworld</em> — operador de guardia sobre una flota simulada. Seis causas ocultas (memory leak,
+deploy roto, pico de tráfico, base saturada, dependencia caída, falsa alarma), síntomas
+observables, tres herramientas diagnósticas y seis de acción con riesgo declarado. Dinámica con
+trampas: <code>restart</code> arregla el leak pero empeora la base saturada; <code>rollback</code> es inútil y caro en
+un pico de tráfico; <code>failover_db</code> en una falsa alarma causa daño. Score +100 por resolver,
+−40 por empeorar, −5 por paso, costos por acción. 40 incidentes, seed fijo.</p>
+<p><em>bugworld</em> — 40 bugs reales inyectados por mutación AST (operadores aritméticos y de comparación
+invertidos, <code>and</code>↔<code>or</code>, condiciones negadas, off-by-one, <code>return None</code>, y bugs en el propio test
+donde lo correcto es escalar) en <code>toolz</code> 1.1.0 (181 tests, ~3 s). Herramientas reales: correr
+pytest, leer, buscar, editar, reescribir, revertir, cerrar, escalar. Cada edición reejecuta la
+suite completa. Presupuesto 10 llamadas.</p>
+<p><em>marketworld</em> — replay del paper trader de momentum del autor: 10 majors, velas diarias reales de
+Binance, regla exacta (top-2 por retorno 30d entre los que cotizan sobre su SMA-100, 0.15 % por
+lado). 40 decisiones cada 21 días entre marzo de 2024 y junio de 2026 (fase alcista y bajista),
+consecuencia medida a 21 días, cartera persistente; variante semanal con 120 decisiones. El agente
+no ve fechas. Escena: tendencia de BTC, amplitud, volatilidad, dispersión, cartera actual;
+<code>finding</code> = régimen. Acciones: <code>follow_momentum</code>, <code>hold</code>, <code>go_cash</code>, <code>rotate</code>.</p>
+<hr>
+<h2>6. Resultados</h2>
+<h3>6.1 opsworld: la capa funciona, en la segunda iteración</h3>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>métrica</th>
+<th>baseline</th>
+<th>subcortex v1</th>
+<th><strong>subcortex v2</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>score medio</td>
+<td>46.3</td>
+<td>37.1</td>
+<td><strong>56.3</strong> (+22 %)</td>
+</tr>
+<tr>
+<td>tasa de resolución</td>
+<td>0.93</td>
+<td>0.80</td>
+<td><strong>1.00</strong></td>
+</tr>
+<tr>
+<td>llamadas al LLM / episodio</td>
+<td>6.7</td>
+<td>7.4</td>
+<td><strong>5.0</strong></td>
+</tr>
+<tr>
+<td>llamadas al LLM, último tercio</td>
+<td>7.2</td>
+<td>9.1</td>
+<td><strong>4.8</strong> (−34 %)</td>
+</tr>
+<tr>
+<td>tokens / episodio</td>
+<td>11 574</td>
+<td>24 814</td>
+<td>12 066</td>
+</tr>
+<tr>
+<td>acciones dañinas</td>
+<td>4</td>
+<td>3</td>
+<td><strong>2</strong></td>
+</tr>
+<tr>
+<td>vetos</td>
+<td>—</td>
+<td>32</td>
+<td>0</td>
+</tr>
+<tr>
+<td>hábitos compilados / disparos</td>
+<td>—</td>
+<td>0 / 0</td>
+<td><strong>4 / 9</strong></td>
+</tr>
+<tr>
+<td>error de predicción por tercio</td>
+<td>—</td>
+<td>0.62 → 0.57</td>
+<td>0.55 → 0.46</td>
+</tr>
+</tbody>
+</table></div>
+<p>La primera iteración fue peor que el baseline. El diagnóstico —clave de escena demasiado fina,
+bucle veto → tono → veto, y un valor que multiplicaba el tono y hacía imposible autorizar una
+acción irreversible a mitad de episodio— produjo la iteración 2, que valida la hipótesis: mismo
+score en el primer tercio (no hay memoria todavía), 34 % menos llamadas en el último (cuatro
+decisiones ya compiladas en hábitos), la mitad de daño, tokens a la par. Por causa, la ganancia
+se concentra donde el baseline se equivoca repetidamente: <code>db_saturated</code> (−16 → +37) y
+<code>dependency_down</code> (−45 → +2.5). Un bug de Gemini 3 (rechaza function calls sin
+<code>thought_signature</code>) apareció en el primer disparo de hábito y se resolvió reescribiendo el par
+llamada sintética → resultado como texto en el historial, de forma independiente del proveedor.</p>
+<h3>6.2 bugworld: empate tres veces, explicado</h3>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>baseline</th>
+<th>subcortex v1</th>
+<th>subcortex v2 (+éxito, +no-progreso)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>score medio</td>
+<td>22.5</td>
+<td>25.0</td>
+<td>19.0</td>
+</tr>
+<tr>
+<td>resueltos</td>
+<td>28/40</td>
+<td>29/40</td>
+<td>26/40</td>
+</tr>
+<tr>
+<td>llamadas al LLM / bug</td>
+<td>12.6</td>
+<td>11.8</td>
+<td>11.8</td>
+</tr>
+<tr>
+<td>episodios escritos</td>
+<td>—</td>
+<td>0</td>
+<td>26 (20 escenas distintas)</td>
+</tr>
+<tr>
+<td>escalaciones en <code>broken_test</code></td>
+<td>0/5</td>
+<td>0/5</td>
+<td>0/5</td>
+</tr>
+</tbody>
+</table></div>
+<p>Las tres corridas caen dentro del ruido del modelo (±5). La fila decisiva es "episodios
+escritos": en la primera versión, cero. La única acción evaluable por episodio era la edición
+válida, y cuando una edición se aplica casi siempre es la correcta —esperaba <code>resolves</code>, obtuvo
+<code>resolves</code>, error cero, sin sorpresa—; todo lo demás eran llamadas inválidas que por contrato no
+son resultados. Agregar la escritura por éxito produjo 26 episodios en 20 escenas distintas: nada
+se repite a la granularidad en que se decide, y un precedente de otro bug con el mismo síntoma
+describe otra función y otro fix. La señal de no-progreso llegó al modelo y no cambió su
+conducta: con el problema delante, prefiere seguir probando a rendirse. Conclusión: donde cada
+episodio es único, la acción no es reutilizable y la conducta errónea es <em>no actuar</em>, ningún
+mecanismo subcortical tiene palanca. Es un límite del enfoque, no un ajuste pendiente.</p>
+<h3>6.3 marketworld: validación en el problema real</h3>
+<p><strong>Referencias sin LLM (misma ventana):</strong> regla momentum diaria 78.6; regla al ritmo del agente
+(cada 21 días) 50.5; BTC 95.3. Ventana dura para momentum.</p>
+<p><strong>Cinco trayectorias de subcortex, baseline determinista:</strong></p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>trayectoria</th>
+<th>equity final</th>
+<th>régimen bajista: media por decisión</th>
+<th><code>hold</code> / <code>follow</code> en bajista</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>run 1</td>
+<td>90.9</td>
+<td>−1.22 %</td>
+<td>12 / 4</td>
+</tr>
+<tr>
+<td>run 2</td>
+<td>121.0</td>
+<td>−1.29 %</td>
+<td>13 / 2</td>
+</tr>
+<tr>
+<td>run 3</td>
+<td>83.2</td>
+<td>−1.21 %</td>
+<td>13 / 3</td>
+</tr>
+<tr>
+<td>run 4</td>
+<td>68.3</td>
+<td>−1.29 %</td>
+<td>12 / 4</td>
+</tr>
+<tr>
+<td>run 5</td>
+<td>83.2</td>
+<td>−1.21 %</td>
+<td>13 / 3</td>
+</tr>
+<tr>
+<td><strong>subcortex, media ± desvío</strong></td>
+<td><strong>89.3 ± 19.5</strong></td>
+<td><strong>−1.24 %</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>baseline (40/40 decisiones idénticas en dos corridas)</td>
+<td>50.5</td>
+<td>−3.51 %</td>
+<td>9 / 5</td>
+</tr>
+</tbody>
+</table></div>
+<p>Cinco de cinco por encima del baseline; cuatro por encima de la regla diaria; dos por encima de
+BTC. El baseline es exactamente la regla a 21 días: siguió <code>follow_momentum</code> 26 veces y sus
+desvíos no cambiaron nada. La conducta de subcortex en régimen bajista es casi idéntica en las
+cinco trayectorias (12–13 <code>hold</code> de 19, −1.2 a −1.3 % por decisión): ese es el mecanismo, y es
+estable; la dispersión del equity (68–121) proviene de las decisiones en régimen alcista, donde
+la varianza del modelo domina. La capa destiló reglas correctas sin etiquetas —"con BTC en
+tendencia, <code>follow_momentum</code> tiende a <code>resolves</code> (n=5)", "con dispersión amplia, tiende a
+<code>worsens</code> (n=5)", "con BTC bajista, <code>go_cash</code> tiende a <code>no_change</code> (n=4)"— y en varias
+trayectorias compiló un hábito <code>hold</code> para el régimen bajista dominante; en una, un hábito de
+<code>follow_momentum</code> falló una vez y se des-habituó.</p>
+<p><strong>Variante semanal (120 decisiones, horizonte 7):</strong></p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>corredor</th>
+<th>equity final</th>
+<th>régimen bajista (58 decisiones)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>baseline</td>
+<td>91.4</td>
+<td>−0.62 %</td>
+</tr>
+<tr>
+<td><strong>subcortex</strong></td>
+<td><strong>101.6</strong></td>
+<td><strong>+0.16 %</strong></td>
+</tr>
+<tr>
+<td>regla al ritmo del agente</td>
+<td>90.9</td>
+<td></td>
+</tr>
+<tr>
+<td>regla diaria</td>
+<td>78.6</td>
+<td></td>
+</tr>
+<tr>
+<td>BTC</td>
+<td>95.3</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Con tres veces más muestras, los hábitos se dispararon 11 veces (2 compilados, 6 reglas) y
+subcortex quedó por encima de BTC. Una sola trayectoria.</p>
+<p><strong>Ablaciones (baseline reutilizado, en curso al cierre del texto):</strong> sin memoria, 69.2 — entre el
+baseline (50.5) y la capa completa (89 ± 20): la memoria explica la mayor parte de la ganancia,
+pero no toda. Las ablaciones restantes (sin gate, sin hábito, sin interocepción) y las variantes
+con confianza por historial, reconsider y reglas con LLM se agregan al reporte de resultados
+del repositorio a medida que terminan.</p>
+<h3>6.4 Costos</h3>
+<p>Toda la investigación —tres mundos, unas 25 corridas A/B, ~20 millones de tokens registrados—
+costó alrededor de 9 USD de API a 0.46 USD por millón de tokens. Una corrida de 40 decisiones de
+una variante en <code>marketworld</code> cuesta 0.20 USD; un A/B completo en <code>opsworld</code>, 0.45; en
+<code>bugworld</code>, 1.5 (cada edición reejecuta 181 tests y las lecturas de archivo pesan). La capa no
+encarece por episodio: en <code>opsworld</code> y <code>marketworld</code> los tokens quedan a la par y las llamadas
+bajan.</p>
+<hr>
+<h2>7. Lecciones de diseño</h2>
+<p>Cada una salió de una corrida que no funcionó y quedó en el código con su test.</p>
+<ol>
+<li><strong>La escena necesita dos niveles.</strong> Con una sola clave fina nada se repite y nada aprende;
+   con una gruesa el recuerdo pierde precisión. Dopamina, gate y hábitos usan la gruesa; el
+   recuerdo, la fina.</li>
+<li><strong>La escena se enriquece con lo que el diagnóstico descubre.</strong> El precedente correcto es el que
+   comparte lo que se supo <em>después</em> de mirar, no solo lo que se vio al entrar.</li>
+<li><strong>El tono no multiplica el valor ni baja con los vetos.</strong> Multiplicarlo hacía imposible autorizar
+   una irreversible a mitad de episodio; bajarlo con vetos producía un bucle que forzaba
+   escalaciones innecesarias.</li>
+<li><strong>Cumplir una expectativa de "no cambio" es éxito.</strong> Con recompensa absoluta, <code>hold</code> en régimen
+   bajista tenía 0 éxitos y 8 fallos; con error de predicción, acierta. Es el paso 15 del ensayo,
+   no el paso 5.</li>
+<li><strong>Una llamada inválida no es un resultado.</strong> Sin el estado <code>invalid</code>, tres argumentos mal
+   copiados hundían el tono a 0.05 y la dopamina de <code>edit_file</code> a 0.2, y el gate vetaba ediciones
+   con confianza 0.8.</li>
+<li><strong>Un hábito es la misma acción con los mismos argumentos</strong>, se intenta una vez por episodio y
+   se debilita si falla. Sin eso se compilaban ediciones de otro bug y el agente entraba en un
+   bucle infinito sin llamar al modelo (54 minutos colgado).</li>
+<li><strong>El horizonte de consecuencia debe cubrir hasta la decisión siguiente.</strong> Medir a 7 días con
+   decisiones a 21 hacía que el score y el equity se contradijeran.</li>
+<li><strong>Las function calls sintéticas se reescriben como texto.</strong> Gemini 3 rechaza en el historial
+   llamadas que el modelo no generó; no hay firma dummy documentada. Marcar la llamada del hábito y
+   convertir el par llamada → resultado a texto antes de cada invocación es independiente del
+   proveedor y cubierto por tests.</li>
+</ol>
+<hr>
+<h2>8. Límites y amenazas a la validez</h2>
+<ul>
+<li><strong>Tamaño de muestra.</strong> 40 episodios por mundo (120 en la variante semanal). Las direcciones son
+  robustas (replicación 5/5 en <code>marketworld</code>); las magnitudes tienen desvíos del orden de la
+  mitad de la ventaja.</li>
+<li><strong>Un solo modelo.</strong> Todo se corrió con Gemini 3 Flash. La comparación con un segundo modelo se
+  planificó y se descartó por presupuesto; la afirmación es sobre la arquitectura con este modelo.</li>
+<li><strong>No determinismo dependiente del camino.</strong> El baseline resultó determinista en <code>marketworld</code>;
+  subcortex no, porque una decisión distinta cambia qué episodios existen después. La varianza
+  observada es una propiedad del sistema, no solo ruido de muestreo.</li>
+<li><strong>Mundos.</strong> <code>opsworld</code> es sintético y sus trampas las diseñó quien diseñó la capa. <code>bugworld</code>
+  usa un solo repositorio. <code>marketworld</code> usa una ventana elegida por su mezcla de regímenes, no
+  por ser favorable a la capa (la regla pierde en ella), y las 34 primeras filas de baseline de
+  <code>bugworld</code> se reconstruyeron del log sin tokens.</li>
+<li><strong>Calibración de la confianza.</strong> El gate pesa la confianza que el modelo declara, y los modelos
+  están mal calibrados. La mezcla con el historial se implementó pero su medición estaba en curso
+  al cierre.</li>
+<li><strong>Las herramientas devuelven <code>observed_effect</code>.</strong> En un despliegue real ese campo debe
+  producirlo el mundo (tests, métricas, retorno), no el modelo; los tres mundos lo hacen, pero es
+  una exigencia de integración que no siempre se cumple.</li>
+</ul>
+<hr>
+<h2>9. Trabajo futuro</h2>
+<p>Tres a cinco trayectorias por variante en todos los mundos y un segundo modelo, para reportar
+medias con desvío. Un cuarto mundo con acciones irreversibles reales (operaciones sobre una
+instancia de automatización, en sandbox) donde el veto por defecto pueda mostrar su valor, que en
+los tres mundos fue marginal. Aprendizaje de la escena: <code>coarse_features</code> se eligió a mano por
+mundo; la sugerencia por ganancia de información existe, pero aplicarla sin invalidar dopamina y
+hábitos requiere una migración de claves. Y el paso natural del proyecto de origen: correr la
+capa al lado del paper trader real como segunda opinión, sin tocar la estrategia, empezando por el
+hábito <code>hold</code> en régimen bajista y las reglas de dispersión que la regla pura no tiene.</p>
+<hr>
+<h2>10. Reproducibilidad</h2>
+<p>Repositorio <code>memory-tests</code>, rama <code>worktree-subcortex-poc</code>. <code>uv sync</code> instala todo; <code>uv run
+pytest</code> corre los 87 tests (5 lentos en <code>bugworld</code>) sin red. <code>demo/run_ab.py</code>,
+<code>demo/run_bugs_ab.py</code> y <code>demo/run_market_ab.py</code> corren los A/B con <code>GOOGLE_API_KEY</code> en
+<code>demo/.env</code>; aceptan <code>--baseline-from</code>, <code>--resume</code>, <code>--ablate</code>, <code>--spacing/--horizon</code>,
+<code>--history-confidence</code>, <code>--reconsider</code>, <code>--llm-rules</code>. Los datos de <code>marketworld</code> son 10 CSV de
+velas diarias incluidos en el repositorio. Los resultados crudos de cada corrida están en
+<code>results-*.json</code>; los reportes con diagnóstico, en <code>docs/superpowers/results/</code>; las
+especificaciones, en <code>docs/superpowers/specs/</code>; el ensayo de origen, en
+<code>documentation/anatomia-de-una-decision.md</code>.</p>
+<hr>
+<h2>Referencias</h2>
+<ul>
+<li>Castro Piccolo, J. F. (2026). <em>Anatomía de un "sí": recorrido completo de una decisión simple, de la primera sinapsis a la última.</em> Ensayo, documento del repositorio.</li>
+<li>Damasio, A. R. (1994). <em>Descartes' Error: Emotion, Reason, and the Human Brain.</em> Putnam. (Hipótesis del marcador somático.)</li>
+<li>Schultz, W., Dayan, P., &amp; Montague, P. R. (1997). A neural substrate of prediction and reward. <em>Science</em>, 275(5306).</li>
+<li>Redgrave, P., Prescott, T. J., &amp; Gurney, K. (1999). The basal ganglia: a vertebrate solution to the selection problem? <em>Neuroscience</em>, 89(4).</li>
+<li>Ratcliff, R. (1978). A theory of memory retrieval. <em>Psychological Review</em>, 85(2). (Modelos de difusión-deriva.)</li>
+<li>Anderson, J. R., et al. (2004). An integrated theory of the mind. <em>Psychological Review</em>, 111(4). (ACT-R.)</li>
+<li>Laird, J. E. (2012). <em>The Soar Cognitive Architecture.</em> MIT Press.</li>
+<li>Shinn, N., et al. (2023). Reflexion: language agents with verbal reinforcement learning. <em>NeurIPS</em>.</li>
+<li>Wang, G., et al. (2023). Voyager: an open-ended embodied agent with large language models. <em>arXiv</em>.</li>
+<li>Park, J. S., et al. (2023). Generative agents: interactive simulacra of human behavior. <em>UIST</em>.</li>
+<li>Google. <em>Agent Development Kit (ADK) — Python</em>, versión 2.8. Documentación en línea.</li>
+</ul>
+</article>
