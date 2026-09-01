@@ -74,8 +74,9 @@ def test_world_decision_and_forced_hold(market):
 
 
 def test_effect_buckets_and_benchmarks(market):
-    assert effect_of(0.05) == "resolves" and effect_of(0.01) == "improves"
-    assert effect_of(-0.01) == "no_change" and effect_of(-0.05) == "worsens"
+    assert effect_of(0.08) == "resolves" and effect_of(0.01) == "improves"
+    assert effect_of(-0.01) == "no_change" and effect_of(-0.08) == "worsens"
+    assert HORIZON == SPACING  # la consecuencia se mide hasta la decisión siguiente
     t = decision_days(market, 40)[0]
     rule = Portfolio()
     rr, br = benchmark_week(market, t, rule)

@@ -14,6 +14,13 @@ EFFECTS: tuple[str, ...] = ("resolves", "improves", "no_change", "worsens", "dia
 EFFECT_RANK: dict[str, int] = {"worsens": -1, "no_change": 0, "improves": 1, "resolves": 2}
 SUCCESS_EFFECTS = {"improves", "resolves"}
 
+
+def is_success(expected: str, observed: str) -> bool:
+    """Éxito para la dopamina: mejorar/resolver, o cumplir una expectativa de 'no cambio' sin
+    pérdida. Mantener la cartera en un mercado que cae es acertar, no fallar; sin esto, `hold`
+    nunca acumula historial (visto en marketworld corrida 1: hold 0 éxitos / 8 fallos)."""
+    return observed in SUCCESS_EFFECTS or (observed == "no_change" and expected == "no_change")
+
 RiskClass = Literal["free", "costly", "irreversible"]
 
 # Claves de estado de sesión (persisten dentro de la sesión; legibles tras el run).

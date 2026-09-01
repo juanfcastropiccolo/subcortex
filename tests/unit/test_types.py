@@ -17,6 +17,14 @@ def test_scene_coarse_key_ignores_other_features():
     assert a.key != b.key and a.coarse_key == b.coarse_key
 
 
+def test_success_includes_expected_no_change():
+    from subcortex.types import is_success
+    assert is_success("resolves", "resolves") and is_success("no_change", "improves")
+    assert is_success("no_change", "no_change")          # mantener y que no pase nada: acierto
+    assert not is_success("resolves", "no_change")       # esperaba resolver y no pasó nada: fallo
+    assert not is_success("no_change", "worsens")
+
+
 def test_prediction_error_signed_and_scaled_by_confidence():
     assert prediction_error("resolves", "resolves", 0.9) == 0.0
     assert prediction_error("resolves", "worsens", 1.0) == -1.0      # -3/2 clamp

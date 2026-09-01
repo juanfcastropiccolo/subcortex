@@ -58,6 +58,16 @@ async def test_diagnostic_discovery_enriches_scene():
 
 
 @pytest.mark.asyncio
+async def test_hold_that_meets_expectation_counts_as_success_for_dopamine():
+    store = EpisodicStore(":memory:")
+    m = MemoryPlugin(CFG, store)
+    le_ = {**le(0.0, observed="no_change"), "expected": "no_change"}
+    await m.after_tool_callback(tool=Tool("restart"), tool_args={}, tool_context=ctx(le_), result={"status": "success"})
+    coarse = Scene.from_features(FEATS, coarse=CFG.coarse_features).coarse_key
+    assert store.outcome_counts(coarse, "restart") == (1, 0)
+
+
+@pytest.mark.asyncio
 async def test_success_is_written_even_without_surprise():
     """Una acción que resuelve como se esperaba también es un episodio (qué funcionó)."""
     store = EpisodicStore(":memory:")

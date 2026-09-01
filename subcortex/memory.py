@@ -10,7 +10,7 @@ from google.adk.plugins.base_plugin import BasePlugin
 from .config import SubcortexConfig
 from .metrics import bump
 from .store import EpisodicStore
-from .types import K_DISCOVERED, K_LAST_ERROR, K_TONE, SUCCESS_EFFECTS, Episode, Rule, Scene
+from .types import K_DISCOVERED, K_LAST_ERROR, K_TONE, Episode, Rule, Scene, is_success
 
 log = logging.getLogger("subcortex")
 BLOCK_STATUSES = {"vetoed", "rejected", "invalid"}
@@ -82,7 +82,7 @@ class MemoryPlugin(BasePlugin):
             if scene is None:
                 return
             observed = le["observed"]
-            self.store.record_outcome(scene.coarse_key, tool.name, observed in SUCCESS_EFFECTS)
+            self.store.record_outcome(scene.coarse_key, tool.name, is_success(le["expected"], observed))
             err = float(le["error"])
             surprised = abs(err) >= self.cfg.surprise_threshold or le.get("status") == "error"
             success = self.cfg.write_on_success and observed == "resolves"

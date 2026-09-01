@@ -19,7 +19,7 @@ TOP_K = 2
 LOOKBACK = 30
 TREND_W = 100
 COST = 0.0015
-HORIZON = 7
+HORIZON = 21  # = SPACING: la consecuencia de una decisión se mide hasta la decisión siguiente
 MAX_STEPS = 5
 VOL_HIST = 180  # días de historia para la mediana de volatilidad del régimen
 
@@ -28,8 +28,8 @@ DIAGNOSTIC_TOOLS = frozenset({"market_snapshot", "asset_detail", "portfolio"})
 ALWAYS_ALLOWED = frozenset({"hold"})
 COARSE_FEATURES = ("finding", "holding")
 
-RESOLVE_T = 0.03   # retorno semanal > +3 % → resolves
-WORSEN_T = -0.03   # < −3 % → worsens
+RESOLVE_T = 0.06   # retorno a 21 días > +6 % → resolves
+WORSEN_T = -0.06   # < −6 % → worsens
 
 
 def _sym_file(sym: str) -> Path:
@@ -166,8 +166,8 @@ class MarketWorld:
     def intro(self) -> str:
         m, t = self.market, self.t
         held = ", ".join(f"{s} {q * m.price(s, t):.0f} USD" for s, q in self.portfolio.holdings.items()) or "cash"
-        return (f"Semana de decisión. Cartera: {held}; cash {self.portfolio.cash:.0f} USD; "
-                f"equity {self.portfolio.equity(m, t):.2f} USD. Decidí qué hacer esta semana.")
+        return (f"Día de decisión (la próxima es en {HORIZON} días). Cartera: {held}; cash "
+                f"{self.portfolio.cash:.0f} USD; equity {self.portfolio.equity(m, t):.2f} USD. Decidí qué hacer.")
 
     def _step(self) -> None:
         self.steps += 1
@@ -255,8 +255,8 @@ class MarketWorld:
                          "ret_pct": round(100 * self.ret, 2), "forced": forced, "step": self.steps})
         return {"status": "success", "observed_effect": effect,
                 "message": (f"Cartera → {target or ['cash']}; costo {self.cost:.2f} USD. "
-                            f"Una semana después: {100 * self.ret:+.2f} %."),
-                "ret_7d_pct": round(100 * self.ret, 2)}
+                            f"{HORIZON} días después: {100 * self.ret:+.2f} %."),
+                "ret_pct": round(100 * self.ret, 2)}
 
 
 def benchmark_week(m: Market, t: int, rule: Portfolio) -> tuple[float, float]:

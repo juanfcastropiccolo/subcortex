@@ -11,7 +11,7 @@ from google.genai import types
 from .config import SubcortexConfig
 from .metrics import bump
 from .store import EpisodicStore
-from .types import K_ACTED, K_HABIT_HIT, K_LAST_ERROR, SUCCESS_EFFECTS, Habit, Scene
+from .types import K_ACTED, K_HABIT_HIT, K_LAST_ERROR, Habit, Scene, is_success
 
 K_HABIT_TRIED = "subcortex.habit_tried"
 
@@ -140,7 +140,7 @@ class HabitPlugin(BasePlugin):
                 if err < 0:
                     self._weaken(state, habit, f"error {err:.2f}")
                     return
-            if le["observed"] not in SUCCESS_EFFECTS or self.cfg.risk_of(tool.name) == "irreversible":
+            if not is_success(le["expected"], le["observed"]) or self.cfg.risk_of(tool.name) == "irreversible":
                 return
             args = templatize_args(le["args"], scene.features)
             same = self.store.record_habit_candidate(scene.coarse_key, tool.name, args)
