@@ -38,14 +38,14 @@ def test_diagnostics_cost_a_step_and_run_tests_has_finding(world):
         "numeric_mismatch", "boundary", "exception", "none_result", "bool_flip", "order", "unknown")
     r = world.diagnose("read_file", path="toolz/itertoolz.py", start=1, end=5)
     assert "   1|" in r["content"] and r["total_lines"] > 100
-    assert world.diagnose("read_file", path="../secret.py", start=1, end=2)["status"] == "error"
+    assert world.diagnose("read_file", path="../secret.py", start=1, end=2)["status"] == "invalid"
     assert world.diagnose("search", pattern=r"def interleave")["hits"]
     assert world.steps == 4 and world.score == -20
 
 
 def test_edit_guards_and_revert_resolves(world):
-    assert world.act("edit_file", path="toolz/tests/test_itertoolz.py", old="x", new="y")["status"] == "error"
-    assert world.act("edit_file", path="toolz/itertoolz.py", old="NO_EXISTE_ESTO", new="y")["status"] == "error"
+    assert world.act("edit_file", path="toolz/tests/test_itertoolz.py", old="x", new="y")["status"] == "invalid"
+    assert world.act("edit_file", path="toolz/itertoolz.py", old="NO_EXISTE_ESTO", new="y")["status"] == "invalid"
     # deshacer el bug a mano: aplicar la mutación inversa vía el fuente limpio
     clean = (VENDOR / "toolz/itertoolz.py").read_text()
     mutated = (world.workdir / "toolz/itertoolz.py").read_text()
@@ -55,7 +55,10 @@ def test_edit_guards_and_revert_resolves(world):
     new = next(ln[2:] for ln in diff if ln.startswith("+ "))
     r = world.act("edit_file", path="toolz/itertoolz.py", old=old, new=new)
     assert r["observed_effect"] == "resolves" and world.resolved and world.done
-    assert world.score == -20 - 5 - 5 - 5 - 10 + 100  # 4 diag + 2 errores (paso c/u) + edición + resolve
+    assert world.score == -20 - 5 - 5 - 5 - 10 + 100  # 4 diag + 2 inválidas (paso c/u) + edición + resolve
+    r = world.act("edit_file", path="toolz/itertoolz.py", old="x", new="y")
+    assert r["status"] == "invalid" and "FIN" in r["message"]
+    assert world.diagnose("run_tests", pattern="")["status"] == "invalid"
 
 
 def test_false_finish_and_escalate(tmp_path):

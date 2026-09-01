@@ -80,6 +80,20 @@ acciones con args. Lo que puede rendir es la memoria por escena y las reglas ("e
 `numeric_mismatch` el fix suele ser un límite"), el gate sobre `rewrite_file` e insistencia, y la
 interocepción con el presupuesto. Si hay ventaja, será por mecanismos distintos que en opsworld.
 
+## 6b. Ajustes tras la prueba de humo
+
+- **Estado `invalid`.** Una llamada con argumentos inválidos (ruta inexistente, `old` no único,
+  editar tests, episodio ya terminado) devuelve `status: "invalid"`. Los cinco plugins la tratan
+  como `vetoed`/`rejected`: no es un resultado de la acción sobre el mundo, así que no genera error
+  de predicción, no toca la dopamina y no cuenta como fallo para el `tone`. Sin esto, tres `old`
+  mal copiados hundían el `tone` a 0.05 y la dopamina de `edit_file` a 0.2, y el gate vetaba
+  ediciones con confianza 0.8 (visto en la prueba de humo).
+- **`edit_file` y `revert_file` son `free`.** En código, la identidad de la acción es el contenido
+  del edit, no la tool; penalizar la tool por ediciones sin efecto bloquea la única vía de arreglo.
+  El score ya cobra −10 por edición. `rewrite_file` sigue siendo irreversible.
+- **Tope de 40 llamadas al LLM por episodio** (`RunConfig.max_llm_calls`); al superarlo el
+  episodio termina con el score que tenga. Tras `done`, toda tool responde `invalid` con "FIN".
+
 ## 7. Tests
 
 `mutate` (cada clase produce código válido y distinto; determinismo por seed; `generate_bugs` filtra),

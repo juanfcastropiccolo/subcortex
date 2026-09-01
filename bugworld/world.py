@@ -9,7 +9,7 @@ from pathlib import Path
 from .classify import classify_failure
 from .mutate import VENDOR, Bug, apply_mutation, copy_template, run_suite
 
-RISK = {"edit_file": "costly", "rewrite_file": "irreversible", "revert_file": "costly",
+RISK = {"edit_file": "free", "rewrite_file": "irreversible", "revert_file": "free",
         "finish": "free", "escalate_to_human": "free"}
 DIAGNOSTIC_TOOLS = frozenset({"run_tests", "read_file", "search"})
 ALWAYS_ALLOWED = frozenset({"finish", "escalate_to_human"})
@@ -116,8 +116,10 @@ class BugWorld:
 
     # --- diagnósticas ---------------------------------------------------------
     def diagnose(self, tool: str, **args) -> dict:
-        if not self.done:
-            self._step()
+        if self.done:
+            return {"status": "invalid", "observed_effect": "diagnostic",
+                    "message": "FIN: el episodio ya terminó. No llames más herramientas; escribí tu resumen."}
+        self._step()
         if tool == "run_tests":
             res = run_suite(self.workdir, args.get("pattern") or None)
             first = _first_failure(res["output"])
@@ -127,7 +129,7 @@ class BugWorld:
         if tool == "read_file":
             p = self._safe_path(args.get("path", ""))
             if p is None:
-                return {"status": "error", "observed_effect": "diagnostic",
+                return {"status": "invalid", "observed_effect": "diagnostic",
                         "message": "ruta inválida (relativa al repo, .py, existente)"}
             lines = p.read_text().splitlines()
             start = max(1, int(args.get("start") or 1))
@@ -140,7 +142,7 @@ class BugWorld:
             try:
                 rx = re.compile(pat)
             except re.error as e:
-                return {"status": "error", "observed_effect": "diagnostic", "message": f"regex inválida: {e}"}
+                return {"status": "invalid", "observed_effect": "diagnostic", "message": f"regex inválida: {e}"}
             hits = []
             for p in sorted(self.workdir.rglob("*.py")):
                 rel = p.relative_to(self.workdir)
@@ -152,12 +154,13 @@ class BugWorld:
                 if len(hits) >= MAX_SEARCH_HITS:
                     break
             return {"status": "success", "observed_effect": "diagnostic", "hits": hits}
-        return {"status": "error", "observed_effect": "diagnostic", "message": f"tool desconocida {tool}"}
+        return {"status": "invalid", "observed_effect": "diagnostic", "message": f"tool desconocida {tool}"}
 
     # --- acciones ---------------------------------------------------------------
     def act(self, action: str, **args) -> dict:
         if self.done:
-            return {"status": "error", "observed_effect": "no_change", "message": "El episodio ya terminó."}
+            return {"status": "invalid", "observed_effect": "no_change",
+                    "message": "FIN: el episodio ya terminó. No llames más herramientas; escribí tu resumen."}
         self._step()
         if action == "finish":
             res = run_suite(self.workdir)
@@ -186,16 +189,16 @@ class BugWorld:
             path = str(args.get("path", ""))
             p = self._safe_path(path)
             if p is None:
-                return {"status": "error", "observed_effect": "no_change",
+                return {"status": "invalid", "observed_effect": "no_change",
                         "message": "ruta inválida (relativa al repo, .py, existente)"}
             if "/tests/" in f"/{path}" and action != "revert_file":
-                return {"status": "error", "observed_effect": "no_change",
+                return {"status": "invalid", "observed_effect": "no_change",
                         "message": "No se pueden modificar los tests. Si creés que el test está mal, escalá."}
             if action == "edit_file":
                 old, new = str(args.get("old", "")), str(args.get("new", ""))
                 text = p.read_text()
                 if not old or text.count(old) != 1:
-                    return {"status": "error", "observed_effect": "no_change",
+                    return {"status": "invalid", "observed_effect": "no_change",
                             "message": f"`old` debe aparecer exactamente una vez (apariciones: {text.count(old)})."}
                 p.write_text(text.replace(old, new, 1))
                 self.edits += 1
@@ -213,7 +216,7 @@ class BugWorld:
                 self.edits += 1
                 self.score -= EDIT_COST
             return self._evaluate(action, **args)
-        return {"status": "error", "observed_effect": "no_change", "message": f"acción desconocida {action}"}
+        return {"status": "invalid", "observed_effect": "no_change", "message": f"acción desconocida {action}"}
 
 
 def _first_failure(output: str) -> str:

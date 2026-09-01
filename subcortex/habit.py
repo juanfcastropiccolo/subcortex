@@ -14,7 +14,7 @@ from .store import EpisodicStore
 from .types import K_ACTED, K_HABIT_HIT, K_LAST_ERROR, SUCCESS_EFFECTS, Habit, Scene
 
 log = logging.getLogger("subcortex")
-BLOCK_STATUSES = {"vetoed", "rejected"}
+BLOCK_STATUSES = {"vetoed", "rejected", "invalid"}
 
 
 def templatize_args(args: dict[str, Any], features: dict[str, str]) -> dict[str, Any]:

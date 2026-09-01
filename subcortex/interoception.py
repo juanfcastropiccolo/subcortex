@@ -12,7 +12,7 @@ from .metrics import bump
 from .types import K_INTERO, K_TONE
 
 log = logging.getLogger("subcortex")
-BLOCK_STATUSES = {"vetoed", "rejected"}
+BLOCK_STATUSES = {"vetoed", "rejected", "invalid"}
 
 
 def _intero(state: Any) -> dict:

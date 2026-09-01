@@ -58,3 +58,16 @@ async def test_after_tool_computes_error_and_skips_blocked():
     await p.after_tool_callback(tool=Tool("restart"), tool_args=args, tool_context=c2,
                                 result={"status": "vetoed"})
     assert c2.state.get(K_LAST_ERROR) is None
+
+
+@pytest.mark.asyncio
+async def test_invalid_call_is_not_an_outcome():
+    """Una llamada inválida (args mal formados) no toca el mundo: no genera error de predicción."""
+    p = PredictionPlugin(CFG)
+    c = ctx("c9")
+    args = {"service": "api", "expected_effect": "resolves", "confidence": 0.9}
+    await p.before_tool_callback(tool=Tool("restart"), tool_args=args, tool_context=c)
+    await p.after_tool_callback(tool=Tool("restart"), tool_args=args, tool_context=c,
+                                result={"status": "invalid", "observed_effect": "no_change"})
+    assert c.state.get(K_LAST_ERROR) is None
+    assert c.state.get("subcortex.metrics", {}).get("error_count", 0) == 0
