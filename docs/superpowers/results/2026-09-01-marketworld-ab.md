@@ -131,6 +131,27 @@ El baseline es determinista (50.5); subcortex se corrió cinco veces sobre las m
   modelo domina.
 - Datos: `results-market-run{1..5}.json`.
 
+## Variante semanal: 120 decisiones cada 7 días, horizonte 7 (loop, 2026-09-01)
+
+Misma ventana (mar-2024 → jun-2026), tres veces más decisiones y consecuencias a una semana.
+Datos: `results-market-weekly.json`.
+
+| corredor | equity final | acciones | régimen bajista (58 decisiones): media | episodios / hábitos disparados / vetos |
+|---|---|---|---|---|
+| baseline | 91.4 | follow 48 · hold 65 · cash 5 | −0.62 % | — |
+| **subcortex** | **101.6** | follow 41 · hold 73 · cash 6 | **+0.16 %** | 77 / 11 / 5 |
+| regla al ritmo del agente (semanal) | 90.9 | | | |
+| regla diaria | 78.6 | | | |
+| BTC | 95.3 | | | |
+
+- Con cadencia semanal el baseline ya no es la regla pura (91.4 vs 90.9, casi): el target semanal
+  cambia poco y el modelo mantiene 65 veces. subcortex igual lo supera (+10) y **queda por encima de
+  BTC**, que a 21 días no había logrado en 3 de 5 trayectorias.
+- **Los hábitos se dispararon 11 veces** (2 compilados, 6 reglas) — con 120 muestras la repetición
+  por clase de escena alcanza para que el putamen trabaje; a 40 decisiones apenas 0–2.
+- La ventaja sigue viniendo del régimen bajista (+0.16 % vs −0.62 % por decisión).
+- Una sola trayectoria: misma advertencia de varianza que a 21 días.
+
 ## Advertencias
 
 - **n = 40 decisiones, cinco trayectorias de subcortex, una de baseline (determinista).** La dirección es
