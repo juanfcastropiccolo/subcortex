@@ -70,6 +70,25 @@ adk web .                   # inspección manual del agente `demo`
 Detalle, diagnóstico de la corrida 1 (que no funcionó) y lo que queda pendiente en
 [`docs/superpowers/results/`](docs/superpowers/results/).
 
+## Proyecto Momentum en replay: marketworld
+
+`marketworld/` reproduce la regla del paper trader (top-2 por momentum 30d sobre SMA-100, 10 majors,
+0.15 % por lado) sobre velas diarias reales, con 40 decisiones cada 21 días (mar-2024 → jun-2026)
+y consecuencia medida a 21 días. El agente no ve fechas. `demo/run_market_ab.py` corre el A/B y
+las referencias sin LLM (regla diaria, regla al ritmo del agente, BTC).
+
+| corredor | equity final |
+|---|---|
+| baseline (LLM sin capa) | 50.5 |
+| **subcortex** | **90.9** |
+| regla diaria | 78.6 |
+| BTC | 95.3 |
+
+La diferencia está en los regímenes bajistas: subcortex mantiene en vez de rotar. La capa destiló
+reglas correctas ("con dispersión amplia, follow_momentum tiende a empeorar") pero no formó hábitos
+ni vetó nada: la ganancia vino de la memoria en contexto. Con n = 40 y un modelo no determinista, el
+número necesita replicación; ver `docs/superpowers/results/2026-09-01-marketworld-ab.md`.
+
 ## Fuera del simulador: bugworld
 
 `bugworld/` inyecta 40 bugs reales por mutación AST en `toolz` (vendorizado) y el agente los

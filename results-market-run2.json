@@ -1,0 +1,140 @@
+{
+  "rows": {
+    "baseline": [
+      {
+        "variant": "baseline",
+        "i": 0,
+        "cause": "up_high_high",
+        "score": -131,
+        "resolved": false,
+        "steps": 2,
+        "worsens": 1,
+        "seconds": 12.4,
+        "llm_calls": 5,
+        "tokens": 10863,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "actions": [
+          "follow_momentum"
+        ],
+        "veto_log": [],
+        "t": 254,
+        "action": "follow_momentum",
+        "target": [
+          "DOGE/USDT",
+          "SOL/USDT"
+        ],
+        "ret_pct": -13.08,
+        "cost": 0.15,
+        "equity_after": 86.92
+      },
+      {
+        "variant": "baseline",
+        "i": 1,
+        "cause": "up_mid_high",
+        "score": -18,
+        "resolved": false,
+        "steps": 2,
+        "worsens": 0,
+        "seconds": 9.6,
+        "llm_calls": 4,
+        "tokens": 7950,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "actions": [
+          "follow_momentum"
+        ],
+        "veto_log": [],
+        "t": 275,
+        "action": "follow_momentum",
+        "target": [
+          "DOGE/USDT",
+          "BTC/USDT"
+        ],
+        "ret_pct": -1.75,
+        "cost": 0.13,
+        "equity_after": 85.4
+      }
+    ]
+  },
+  "summary": {
+    "baseline": {
+      "overall": {
+        "n": 2,
+        "score_mean": -74.5,
+        "resolved_rate": 0.0,
+        "llm_calls_mean": 4.5,
+        "tokens_mean": 9406.5,
+        "steps_mean": 2,
+        "worsens_total": 1,
+        "vetoes_total": 0,
+        "vetoes_irreversible_total": 0,
+        "episodes_written_total": 0,
+        "habit_hits_total": 0,
+        "dehabituations_total": 0,
+        "mean_abs_error": 0.0
+      },
+      "thirds": [
+        {
+          "n": 1,
+          "score_mean": -131,
+          "resolved_rate": 0.0,
+          "llm_calls_mean": 5,
+          "tokens_mean": 10863,
+          "steps_mean": 2,
+          "worsens_total": 1,
+          "vetoes_total": 0,
+          "vetoes_irreversible_total": 0,
+          "episodes_written_total": 0,
+          "habit_hits_total": 0,
+          "dehabituations_total": 0,
+          "mean_abs_error": 0.0
+        },
+        {
+          "n": 1,
+          "score_mean": -18,
+          "resolved_rate": 0.0,
+          "llm_calls_mean": 4,
+          "tokens_mean": 7950,
+          "steps_mean": 2,
+          "worsens_total": 0,
+          "vetoes_total": 0,
+          "vetoes_irreversible_total": 0,
+          "episodes_written_total": 0,
+          "habit_hits_total": 0,
+          "dehabituations_total": 0,
+          "mean_abs_error": 0.0
+        },
+        {
+          "n": 0,
+          "score_mean": 0.0,
+          "resolved_rate": 0.0,
+          "llm_calls_mean": 0.0,
+          "tokens_mean": 0.0,
+          "steps_mean": 0.0,
+          "worsens_total": 0,
+          "vetoes_total": 0,
+          "vetoes_irreversible_total": 0,
+          "episodes_written_total": 0,
+          "habit_hits_total": 0,
+          "dehabituations_total": 0,
+          "mean_abs_error": 0.0
+        }
+      ]
+    }
+  }
+}
