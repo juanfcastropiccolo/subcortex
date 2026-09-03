@@ -2,7 +2,7 @@
 
 ## Diseño a partir de la anatomía de una decisión y validación en tres mundos
 
-**Juan F. Castro Piccolo** · con asistencia de Claude (Anthropic) · 1 de septiembre de 2026
+**Juan F. Castro Piccolo** · 1 de septiembre de 2026
 
 ---
 
@@ -28,7 +28,7 @@ equity contra 50.5 del mismo agente sin la capa (5/5 por encima), y con cadencia
 también a BTC; la ventaja proviene de un comportamiento estable en régimen bajista. En
 `bugworld` la capa no aporta nada en tres corridas, y explicamos por qué: sin repetición de
 situaciones ni acciones reutilizables, ningún mecanismo subcortical tiene palanca. Documentamos
-ocho lecciones de diseño surgidas de los fracasos, los costos (unos 9 USD de API en total) y los
+ocho lecciones de diseño surgidas de los fracasos, el costo operativo por episodio y los
 límites del estudio.
 
 ---
@@ -86,6 +86,8 @@ implementa.
 | 15.1–15.2 — habénula, dopamina | Error de predición como señal de aprendizaje; canal negativo separado | Se escribe memoria por volumen | Escritura solo ante sorpresa o éxito; `habenula=True` con prioridad de recuperación; dopamina por (escena, acción) |
 | 15.4 — caudado → putamen | Hábito: estímulo-respuesta que saltea la deliberación | Todo pasa por el LLM | `HabitPlugin`: compila tras 3 éxitos de la misma acción; responde sin LLM; se des-habitúa |
 | 0.4, 15.3 — microglía, sueño | Poda, refuerzo, consolidación episódico → semántico | La memoria crece monótona | `consolidate()`: decaimiento, poda, refuerzo, reglas destiladas |
+
+{{fig:f1-arquitectura}}
 
 Dos decisiones del mapeo merecen comentario. Primera: el bucle de tool-calls que ADK ya tiene
 —el modelo propone una llamada, la herramienta responde, el modelo vuelve a mirar— es
@@ -279,6 +281,8 @@ no ve fechas. Escena: tendencia de BTC, amplitud, volatilidad, dispersión, cart
 | hábitos compilados / disparos | — | 0 / 0 | **4 / 9** |
 | error de predicción por tercio | — | 0.62 → 0.57 | 0.55 → 0.46 |
 
+{{fig:f2-opsworld}}
+
 La primera iteración fue peor que el baseline. El diagnóstico —clave de escena demasiado fina,
 bucle veto → tono → veto, y un valor que multiplicaba el tono y hacía imposible autorizar una
 acción irreversible a mitad de episodio— produjo la iteración 2, que valida la hipótesis: mismo
@@ -327,6 +331,8 @@ mecanismo subcortical tiene palanca. Es un límite del enfoque, no un ajuste pen
 | **subcortex, media ± desvío** | **89.3 ± 19.5** | **−1.24 %** | |
 | baseline (40/40 decisiones idénticas en dos corridas) | 50.5 | −3.51 % | 9 / 5 |
 
+{{fig:f3-marketworld}}
+
 Cinco de cinco por encima del baseline; cuatro por encima de la regla diaria; dos por encima de
 BTC. El baseline es exactamente la regla a 21 días: siguió `follow_momentum` 26 veces y sus
 desvíos no cambiaron nada. La conducta de subcortex en régimen bajista es casi idéntica en las
@@ -362,22 +368,27 @@ subcortex quedó por encima de BTC. Una sola trayectoria.
 | sin gate | 91.5 | −1.28 % |
 | baseline | 50.5 | −3.51 % |
 
+{{fig:f4-ablaciones}}
+
 Con la cautela de que cada ablación es una sola trayectoria contra una media con σ ≈ 20, la señal
 conductual es nítida: **sin memoria, la conducta en régimen bajista vuelve exactamente a la del
 baseline** (−3.50 % vs −3.51 %); la interocepción aporta prudencia adicional; los hábitos algo; el
 gate, nada en este dominio —consistente con los cero vetos de todas las corridas: no hay acciones
 irreversibles que frenar. Las variantes de confianza por historial y reconsider quedaron dentro
 del rango de la capa completa (92.3 y 69.8; no concluyente con una trayectoria), y la corrida de
-reglas con LLM quedó incompleta por presupuesto (14/40).
+reglas con LLM quedó incompleta (14/40), por lo que no se reporta.
 
-### 6.4 Costos
+### 6.4 Eficiencia operativa
 
-Toda la investigación —tres mundos, unas 25 corridas A/B, ~20 millones de tokens registrados—
-costó alrededor de 9 USD de API a 0.46 USD por millón de tokens. Una corrida de 40 decisiones de
-una variante en `marketworld` cuesta 0.20 USD; un A/B completo en `opsworld`, 0.45; en
-`bugworld`, 1.5 (cada edición reejecuta 181 tests y las lecturas de archivo pesan). La capa no
-encarece por episodio: en `opsworld` y `marketworld` los tokens quedan a la par y las llamadas
-bajan.
+La capa no encarece por diseño: su costo depende de si abarata llamadas (hábitos) más de lo que
+agrega contexto (precedentes). La figura 5 compara llamadas al modelo, tokens y tiempo de pared
+por episodio. En `opsworld`, subcortex es más barato que el baseline en las tres dimensiones
+(5.0 vs 6.7 llamadas, tokens a la par, 10.2 vs 12.2 s). En `marketworld` paga un sobrecosto de
+tokens (~2×) y de segundos por los precedentes en contexto y por la evaluación de cada decisión,
+con llamadas comparables. La regla general que observamos: donde hay repetición, los hábitos
+terminan pagando la memoria; donde no la hay, la memoria es solo sobrecosto.
+
+{{fig:f5-eficiencia}}
 
 ---
 
@@ -416,8 +427,8 @@ Cada una salió de una corrida que no funcionó y quedó en el código con su te
 - **Tamaño de muestra.** 40 episodios por mundo (120 en la variante semanal). Las direcciones son
   robustas (replicación 5/5 en `marketworld`); las magnitudes tienen desvíos del orden de la
   mitad de la ventaja.
-- **Un solo modelo.** Todo se corrió con Gemini 3 Flash. La comparación con un segundo modelo se
-  planificó y se descartó por presupuesto; la afirmación es sobre la arquitectura con este modelo.
+- **Un solo modelo.** Todo se corrió con Gemini 3 Flash. La comparación con un segundo modelo queda
+  pendiente; la afirmación es sobre la arquitectura con este modelo.
 - **No determinismo dependiente del camino.** El baseline resultó determinista en `marketworld`;
   subcortex no, porque una decisión distinta cambia qué episodios existen después. La varianza
   observada es una propiedad del sistema, no solo ruido de muestreo.
