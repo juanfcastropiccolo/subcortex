@@ -31,6 +31,7 @@ def test_prompt_carries_system_tools_transcript_and_contract():
     assert "[user] Incidente" in p and "[model→tool] inspect_service" in p
     assert '[tool:inspect_service] {"finding": "memory_high"}' in p
     assert '"kind": "tool"' in p and "Una sola herramienta por turno" in p
+    assert "NUNCA respondas kind=text en tu primer turno" in p
 
 
 def test_parse_tool_and_text():

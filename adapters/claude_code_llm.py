@@ -38,7 +38,9 @@ CONTRACT = """## Cómo responder (obligatorio)
 Respondés SIEMPRE con un único JSON que cumple el schema dado.
 - Para llamar a una herramienta: {"kind": "tool", "tool": "<nombre>", "args": {...}} con TODOS los
   argumentos requeridos por su schema.
-- Para tu respuesta final en texto (cuando la tarea terminó): {"kind": "text", "text": "..."}.
+- Para tu respuesta final en texto: {"kind": "text", "text": "..."} — SOLO cuando la tarea ya está
+  terminada y ejecutaste las herramientas necesarias. NUNCA respondas kind=text en tu primer turno
+  ni sin haber ejecutado al menos una herramienta: trabajás usando herramientas, no opinando.
 Una sola herramienta por turno. No inventes herramientas ni argumentos fuera de sus schemas."""
 
 
