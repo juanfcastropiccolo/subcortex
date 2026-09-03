@@ -3,17 +3,20 @@
 <style>
   :root {
     --bg: #F6F5F1; --paper: #FFFFFF; --ink: #1F1F1B; --ink-2: #4E4E47; --ink-3: #8A8A80;
-    --line: #DAD9D1; --accent: #0E6B6A; --accent-soft: #DCEEED; --mark: #B8741A; color-scheme: light;
+    --line: #DAD9D1; --accent: #0E6B6A; --accent-soft: #DCEEED; color-scheme: light;
+    --viz-s1: #2a78d6; --viz-neutral: #eb6834; --viz-ref: #cfcec6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #15171A; --paper: #1D2024; --ink: #EAEAE4; --ink-2: #BDBDB4; --ink-3: #85857C;
-      --line: #33373D; --accent: #5FC1BF; --accent-soft: #163A39; --mark: #E0A64E; color-scheme: dark;
+      --line: #33373D; --accent: #5FC1BF; --accent-soft: #163A39; color-scheme: dark;
+      --viz-s1: #3987e5; --viz-neutral: #d95926; --viz-ref: #45494f;
     }
   }
   :root[data-theme="dark"] {
     --bg: #15171A; --paper: #1D2024; --ink: #EAEAE4; --ink-2: #BDBDB4; --ink-3: #85857C;
-    --line: #33373D; --accent: #5FC1BF; --accent-soft: #163A39; --mark: #E0A64E; color-scheme: dark;
+    --line: #33373D; --accent: #5FC1BF; --accent-soft: #163A39; color-scheme: dark;
+    --viz-s1: #3987e5; --viz-neutral: #d95926; --viz-ref: #45494f;
   }
   body { background: var(--bg); color: var(--ink); font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-size: 17px; line-height: 1.6; }
   article { max-width: 760px; margin: 0 auto; padding: 56px 24px 120px; }
@@ -25,7 +28,6 @@
   h2 { font-size: 24px; font-weight: 600; margin: 48px 0 12px; text-wrap: balance; }
   h3 { font-size: 18px; font-weight: 600; margin: 28px 0 8px; color: var(--ink); }
   p { margin: 0 0 14px; }
-  h2 + p:first-of-type { margin-top: 4px; }
   hr { border: 0; border-top: 1px solid var(--line); margin: 36px 0; }
   ol, ul { padding-left: 24px; margin: 0 0 14px; }
   li { margin-bottom: 6px; }
@@ -36,21 +38,27 @@
   .scroll { overflow-x: auto; margin: 16px 0 22px; }
   figure { margin: 26px 0; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 18px 16px 12px; overflow-x: auto; }
   figcaption { font-family: "IBM Plex Sans", sans-serif; font-size: 13px; color: var(--ink-3); margin-top: 10px; max-width: 70ch; }
-  :root { --viz-s1: #2a78d6; --viz-neutral: #eb6834; --viz-ref: #cfcec6; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --viz-s1: #3987e5; --viz-neutral: #d95926; --viz-ref: #45494f; } }
-  :root[data-theme="dark"] { --viz-s1: #3987e5; --viz-neutral: #d95926; --viz-ref: #45494f; }
   table { border-collapse: collapse; width: 100%; font-family: "IBM Plex Sans", sans-serif; font-size: 14px; background: var(--paper); border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; background: var(--bg); }
   tr:last-child td { border-bottom: none; }
   td strong { color: var(--accent); }
-  /* Resumen: párrafo destacado */
-  #resumen + p, h2:first-of-type + p { font-size: 16.5px; color: var(--ink-2); border-left: 3px solid var(--accent); padding-left: 16px; }
+  article > h2:first-of-type + p { font-size: 16.5px; color: var(--ink-2); border-left: 3px solid var(--accent); padding-left: 16px; }
   a { color: var(--accent); }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  a:focus-visible, .lang-switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .lang-switch { position: fixed; top: 14px; right: 16px; z-index: 10; display: flex; border: 1px solid var(--line);
+                  border-radius: 999px; overflow: hidden; background: var(--paper); font-family: "IBM Plex Sans", sans-serif;
+                  box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .lang-switch button { border: 0; background: transparent; color: var(--ink-2); font-size: 13px; font-weight: 600;
+                         padding: 6px 14px; cursor: pointer; }
+  .lang-switch button[aria-pressed="true"] { background: var(--accent); color: var(--paper); }
   @media (max-width: 640px) { h1 { font-size: 30px; } body { font-size: 16px; } article { padding: 32px 16px 80px; } }
 </style>
-<article>
+<div class="lang-switch" role="group" aria-label="Idioma / Language">
+  <button type="button" data-lang="es" aria-pressed="true">ES</button>
+  <button type="button" data-lang="en" aria-pressed="false">EN</button>
+</div>
+<article lang="es" id="art-es">
   <header>
     <div class="eyebrow">Preprint · memory-tests · 2026-09-01</div>
     <h1>Subcortex: una capa subcortical para agentes LLM</h1>
@@ -196,7 +204,7 @@ implementa.</p>
 </tr>
 </tbody>
 </table></div>
-<figure><svg viewBox="0 0 920 310" role="img" aria-label="Diagrama del flujo de un turno: before_model con memoria, hábito e interocepción; LLM; after_model con winner-take-all; before_tool con validación y veto; herramienta; after_tool con aprendizaje." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="currentColor"/></marker></defs><rect x="20" y="40" width="190" height="78" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" /><text x="115.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">before_model</text><text x="115.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="11">memoria: precedentes y reglas · hábito: ¿bypass? · interocepción: estado</text><rect x="280" y="40" width="150" height="52" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" /><text x="355.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">LLM</text><text x="355.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="11">propone acción + predicción</text><rect x="500" y="40" width="170" height="66" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" /><text x="585.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">after_model</text><text x="585.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="11">gate: una sola acción (winner-take-all)</text><line x1="210" y1="79" x2="278" y2="70" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><line x1="430" y1="66" x2="498" y2="66" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><line x1="115" y1="118" x2="115" y2="156" stroke="var(--viz-s1)" stroke-width="1.4" marker-end="url(#a)" /><text x="115.0" y="151.0" text-anchor="middle" fill="var(--ink-3)" font-size="11">hábito compilado</text><path d="M 115 156 C 115 190, 690 190, 740 130" fill="none" stroke="var(--viz-s1)" stroke-width="1.6" marker-end="url(#a)"/><text x="400" y="205" text-anchor="middle" fill="var(--viz-s1)" font-size="11">sin llamar al modelo</text><rect x="500" y="130" width="170" height="66" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" /><text x="585.0" y="150" text-anchor="middle" fill="currentColor" font-weight="600">before_tool</text><text x="585.0" y="166" text-anchor="middle" fill="var(--ink-2)" font-size="11">predicción válida · veto por defecto</text><line x1="585" y1="106" x2="585" y2="128" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><rect x="740" y="80" width="150" height="66" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" /><text x="815.0" y="100" text-anchor="middle" fill="currentColor" font-weight="600">herramienta</text><text x="815.0" y="116" text-anchor="middle" fill="var(--ink-2)" font-size="11">mundo real → observed_effect</text><line x1="670" y1="150" x2="738" y2="122" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><text x="704.0" y="128.0" text-anchor="middle" fill="var(--ink-3)" font-size="11">autorizada</text><path d="M 500 170 C 380 170, 300 140, 296 94" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a)"/><text x="360" y="150" text-anchor="middle" fill="var(--ink-3)" font-size="11">vetada / rechazada: el modelo re-itera</text><rect x="740" y="200" width="150" height="92" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" /><text x="815.0" y="220" text-anchor="middle" fill="currentColor" font-weight="600">after_tool</text><text x="815.0" y="236" text-anchor="middle" fill="var(--ink-2)" font-size="11">error de predicción → memoria (sorpresa/éxito) → dopamina → hábitos → tono</text><line x1="815" y1="146" x2="815" y2="198" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><path d="M 740 250 C 300 260, 120 240, 112 122" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#a)"/><text x="380" y="242" text-anchor="middle" fill="var(--ink-3)" font-size="11">lo aprendido alimenta la próxima decisión</text></svg><figcaption>Figura 1. Un turno del bucle: los cinco plugins se cuelgan de los hooks del ciclo de tool-calls. Un veto no rompe el bucle (vuelve como resultado y el modelo re-itera); un hábito compilado ejecuta la acción sin invocar al modelo.</figcaption></figure>
+<figure><svg viewBox="0 0 930 320" role="img" aria-label="Diagrama del flujo de un turno: before_model con memoria, hábito e interocepción; LLM; after_model con winner-take-all; before_tool con validación y veto; herramienta; after_tool con aprendizaje." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="currentColor"/></marker></defs><rect x="20" y="40" width="200" height="84" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="120.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">before_model</text><text x="120.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">memoria: precedentes y reglas ·</text><text x="120.0" y="89" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">hábito: ¿bypass? · interocepción:</text><text x="120.0" y="102" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">estado</text><rect x="290" y="40" width="150" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="365.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">LLM</text><text x="365.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">propone acción + predicción</text><rect x="510" y="40" width="170" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="595.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">after_model</text><text x="595.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">gate: una sola acción</text><text x="595.0" y="89" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">(winner-take-all)</text><line x1="220" y1="79" x2="288" y2="70" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><line x1="440" y1="66" x2="508" y2="66" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><line x1="120" y1="124" x2="120" y2="158" stroke="var(--viz-s1)" stroke-width="1.4" marker-end="url(#a)" /><text x="120.0" y="155.0" text-anchor="middle" fill="var(--ink-3)" font-size="11">hábito compilado</text><path d="M 120 158 C 120 195, 700 195, 750 132" fill="none" stroke="var(--viz-s1)" stroke-width="1.6" marker-end="url(#a)"/><text x="410" y="210" text-anchor="middle" fill="var(--viz-s1)" font-size="11">sin llamar al modelo</text><rect x="510" y="134" width="170" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="595.0" y="154" text-anchor="middle" fill="currentColor" font-weight="600">before_tool</text><text x="595.0" y="170" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">predicción válida · veto por</text><text x="595.0" y="183" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">defecto</text><line x1="595" y1="110" x2="595" y2="132" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><rect x="750" y="66" width="150" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="825.0" y="86" text-anchor="middle" fill="currentColor" font-weight="600">herramienta</text><text x="825.0" y="102" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">mundo real → observed_effect</text><line x1="680" y1="158" x2="748" y2="118" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><text x="714.0" y="130.0" text-anchor="middle" fill="var(--ink-3)" font-size="11">autorizada</text><path d="M 510 176 C 390 176, 310 144, 306 98" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a)"/><text x="368" y="155" text-anchor="middle" fill="var(--ink-3)" font-size="11">vetada / rechazada: el modelo re-itera</text><rect x="750" y="210" width="150" height="96" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="825.0" y="230" text-anchor="middle" fill="currentColor" font-weight="600">after_tool</text><text x="825.0" y="246" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">error de predicción → memoria</text><text x="825.0" y="259" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">(sorpresa/éxito) → dopamina →</text><text x="825.0" y="272" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">hábitos → tono</text><line x1="825" y1="136" x2="825" y2="208" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><path d="M 750 262 C 300 272, 125 248, 117 128" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#a)"/><text x="390" y="252" text-anchor="middle" fill="var(--ink-3)" font-size="11">lo aprendido alimenta la próxima decisión</text></svg><figcaption>Figura 1. Un turno del bucle: los cinco plugins se cuelgan de los hooks del ciclo de tool-calls. Un veto no rompe el bucle (vuelve como resultado y el modelo re-itera); un hábito compilado ejecuta la acción sin invocar al modelo.</figcaption></figure>
 <p>Dos decisiones del mapeo merecen comentario. Primera: el bucle de tool-calls que ADK ya tiene
 —el modelo propone una llamada, la herramienta responde, el modelo vuelve a mirar— es
 estructuralmente el bucle córtico-estriado-tálamo-cortical; por eso un veto no rompe nada:
@@ -396,7 +404,7 @@ no ve fechas. Escena: tendencia de BTC, amplitud, volatilidad, dispersión, cart
 </tr>
 </tbody>
 </table></div>
-<figure><svg viewBox="0 0 920 200" role="img" aria-label="Barras: score medio 46.3 baseline contra 56.3 subcortex; llamadas al modelo por tercio: baseline 6.2, 6.7, 7.2; subcortex 5.9, 4.5, 4.6." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><text x="20" y="20" fill="currentColor" font-weight="600">Score medio</text><text x="112" y="49" text-anchor="end" fill="var(--ink-2)">baseline</text><rect x="120" y="36" width="170" height="18" rx="4" fill="var(--viz-neutral)"><title>baseline: 46.3</title></rect><text x="296" y="49" fill="currentColor" font-weight="600">46.3</text><text x="112" y="73" text-anchor="end" fill="var(--ink-2)">subcortex</text><rect x="120" y="60" width="206" height="18" rx="4" fill="var(--viz-s1)"><title>subcortex: 56.3</title></rect><text x="332" y="73" fill="currentColor" font-weight="600">56.3</text><text x="480" y="20" fill="currentColor" font-weight="600">Llamadas al LLM por episodio, por tercio</text><rect x="500" y="77" width="44" height="93" rx="4" fill="var(--viz-neutral)"><title>baseline · tercio 1: 6.23</title></rect><text x="522.0" y="71" text-anchor="middle" fill="currentColor">6.23</text><rect x="548" y="81" width="44" height="89" rx="4" fill="var(--viz-s1)"><title>subcortex · tercio 1: 5.92</title></rect><text x="570.0" y="75" text-anchor="middle" fill="currentColor">5.92</text><text x="546" y="188" text-anchor="middle" fill="var(--ink-2)">T1</text><rect x="638" y="70" width="44" height="100" rx="4" fill="var(--viz-neutral)"><title>baseline · tercio 2: 6.69</title></rect><text x="660.0" y="64" text-anchor="middle" fill="currentColor">6.69</text><rect x="686" y="102" width="44" height="68" rx="4" fill="var(--viz-s1)"><title>subcortex · tercio 2: 4.54</title></rect><text x="708.0" y="96" text-anchor="middle" fill="currentColor">4.54</text><text x="684" y="188" text-anchor="middle" fill="var(--ink-2)">T2</text><rect x="776" y="62" width="44" height="108" rx="4" fill="var(--viz-neutral)"><title>baseline · tercio 3: 7.21</title></rect><text x="798.0" y="56" text-anchor="middle" fill="currentColor">7.21</text><rect x="824" y="100" width="44" height="70" rx="4" fill="var(--viz-s1)"><title>subcortex · tercio 3: 4.64</title></rect><text x="846.0" y="94" text-anchor="middle" fill="currentColor">4.64</text><text x="822" y="188" text-anchor="middle" fill="var(--ink-2)">T3</text><line x1="490" y1="170" x2="900" y2="170" stroke="var(--line)"/><rect x="120" y="100" width="12" height="12" rx="3" fill="var(--viz-neutral)"/><text x="138" y="110" fill="var(--ink-2)">baseline</text><rect x="120" y="120" width="12" height="12" rx="3" fill="var(--viz-s1)"/><text x="138" y="130" fill="var(--ink-2)">subcortex</text></svg><figcaption>Figura 2. opsworld (40 incidentes): score medio y llamadas al modelo por tercio de la secuencia. El baseline no cambia con la experiencia; subcortex baja un tercio sus llamadas cuando los hábitos ya están compilados.</figcaption></figure>
+<figure><svg viewBox="0 0 920 200" role="img" aria-label="Barras: score medio 46.3 baseline contra 56.3 subcortex; llamadas al modelo por tercio: baseline 6.2, 6.7, 7.2; subcortex 5.9, 4.5, 4.6." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><text x="20" y="20" fill="currentColor" font-weight="600">Score medio</text><text x="112" y="49" text-anchor="end" fill="var(--ink-2)">baseline</text><rect x="120" y="36" width="170" height="18" rx="4" fill="var(--viz-neutral)"><title>baseline: 46.3</title></rect><text x="296" y="49" fill="currentColor" font-weight="600">46.3</text><text x="112" y="73" text-anchor="end" fill="var(--ink-2)">subcortex</text><rect x="120" y="60" width="206" height="18" rx="4" fill="var(--viz-s1)"><title>subcortex: 56.3</title></rect><text x="332" y="73" fill="currentColor" font-weight="600">56.3</text><text x="480" y="20" fill="currentColor" font-weight="600">Llamadas al LLM por episodio, por tercio</text><rect x="500" y="77" width="44" height="93" rx="4" fill="var(--viz-neutral)"><title>baseline · T1: 6.23</title></rect><text x="522.0" y="71" text-anchor="middle" fill="currentColor">6.23</text><rect x="548" y="81" width="44" height="89" rx="4" fill="var(--viz-s1)"><title>subcortex · T1: 5.92</title></rect><text x="570.0" y="75" text-anchor="middle" fill="currentColor">5.92</text><text x="546" y="188" text-anchor="middle" fill="var(--ink-2)">T1</text><rect x="638" y="70" width="44" height="100" rx="4" fill="var(--viz-neutral)"><title>baseline · T2: 6.69</title></rect><text x="660.0" y="64" text-anchor="middle" fill="currentColor">6.69</text><rect x="686" y="102" width="44" height="68" rx="4" fill="var(--viz-s1)"><title>subcortex · T2: 4.54</title></rect><text x="708.0" y="96" text-anchor="middle" fill="currentColor">4.54</text><text x="684" y="188" text-anchor="middle" fill="var(--ink-2)">T2</text><rect x="776" y="62" width="44" height="108" rx="4" fill="var(--viz-neutral)"><title>baseline · T3: 7.21</title></rect><text x="798.0" y="56" text-anchor="middle" fill="currentColor">7.21</text><rect x="824" y="100" width="44" height="70" rx="4" fill="var(--viz-s1)"><title>subcortex · T3: 4.64</title></rect><text x="846.0" y="94" text-anchor="middle" fill="currentColor">4.64</text><text x="822" y="188" text-anchor="middle" fill="var(--ink-2)">T3</text><line x1="490" y1="170" x2="900" y2="170" stroke="var(--line)"/><rect x="120" y="100" width="12" height="12" rx="3" fill="var(--viz-neutral)"/><text x="138" y="110" fill="var(--ink-2)">baseline</text><rect x="120" y="120" width="12" height="12" rx="3" fill="var(--viz-s1)"/><text x="138" y="130" fill="var(--ink-2)">subcortex</text></svg><figcaption>Figura 2. opsworld (40 incidentes): score medio y llamadas al modelo por tercio de la secuencia. El baseline no cambia con la experiencia; subcortex baja un tercio sus llamadas cuando los hábitos ya están compilados.</figcaption></figure>
 <p>La primera iteración fue peor que el baseline. El diagnóstico —clave de escena demasiado fina,
 bucle veto → tono → veto, y un valor que multiplicaba el tono y hacía imposible autorizar una
 acción irreversible a mitad de episodio— produjo la iteración 2, que valida la hipótesis: mismo
@@ -713,3 +721,683 @@ especificaciones, en <code>docs/superpowers/specs/</code>; el ensayo de origen, 
 <li>Google. <em>Agent Development Kit (ADK) — Python</em>, versión 2.8. Documentación en línea.</li>
 </ul>
 </article>
+<article lang="en" id="art-en">
+  <header>
+    <div class="eyebrow">Preprint · memory-tests · 2026-09-01</div>
+    <h1>Subcortex: a subcortical layer for LLM agents</h1>
+    <p class="subtitle">Design from the anatomy of a decision, and validation across three worlds</p>
+    <p class="byline">Juan F. Castro Piccolo · September 1, 2026</p>
+  </header>
+
+
+
+<hr>
+<h2>Abstract</h2>
+<p>An agent built on a language model decides in a single shot: the model proposes and the system
+executes. In the brain, the cortex proposes and everything else — basal ganglia, cerebellum,
+hippocampus, amygdala, insula, habenula — authorizes, predicts, remembers, compiles and learns.
+We start from a neuroanatomical walkthrough of a simple decision ("Anatomy of a Yes") and use it
+as a map of what is missing from an agent in which the LLM is only the cortex. We implement that
+map as <code>subcortex</code>, a library of five plugins for Google ADK that attaches to any <code>LlmAgent</code>
+with one line, without modifying the model or the prompt: mandatory prediction before acting
+(cerebellum), veto-by-default with disinhibition of a single action (basal ganglia), episodic
+memory by situation that writes on surprise or success (hippocampus, amygdala, habenula),
+compiled habits that respond without calling the model (caudate → putamen), interoception
+translated into language (insula), and offline consolidation (sleep). We evaluate it with the
+same Gemini agent, with and without the layer, in three worlds: an operations simulator
+(<code>opsworld</code>), real bugs injected into a Python library (<code>bugworld</code>), and a historical replay of
+the author's momentum paper trader (<code>marketworld</code>). In <code>opsworld</code> the layer raises the score by
+22 %, brings resolution to 100 % and cuts model calls by 34 % in the last third, with compiled
+habits. In <code>marketworld</code>, over 40 real market decisions, five trajectories end at 89 ± 20 equity
+against 50.5 for the same agent without the layer (5/5 above), and at weekly cadence it also
+beats BTC; the advantage comes from stable behavior in bear regimes. In <code>bugworld</code> the layer
+contributes nothing across three runs, and we explain why: without recurring situations or
+reusable actions, no subcortical mechanism has leverage. We document eight design lessons that
+emerged from the failures, the per-episode operating cost, and the limits of the study.</p>
+<hr>
+<h2>1. Introduction</h2>
+<p>Today's agent frameworks treat the language model as the complete decision system: they perceive
+through tools, deliberate inside the model's context, and execute whatever the model emits.
+Learning across episodes, where it exists at all, usually reduces to summarizing conversations
+or retrieving text by similarity to the question. Nothing distinguishes "the action did not run"
+from "the action did not work"; nothing compiles a repeated decision; nothing tells the model how
+it is doing.</p>
+<p>The hypothesis of this work is that this architecture reproduces only the cortex and omits what,
+in a brain, makes a decision safe, cheap and improvable with use. What an LLM does better than
+any other artifact is exactly what the orbitofrontal cortex does: convert heterogeneous arguments
+into a common currency. What it lacks is the subcortical machinery.</p>
+<p>Our starting point is a previous essay by the author that walks, step by step, through a minimal
+decision — going for a run or not — from the retina to the spinal cord and back to learning,
+emphasizing three conclusions: there is no single place where the decision happens, only a loop
+that converges; emotion does not interfere with reason but enables it, by translating bodily
+state into a comparable currency; and deciding is, mechanically, ceasing to inhibit. This paper
+turns that map into software and subjects it to A/B experiments with the same model in three
+domains.</p>
+<p>Contributions:</p>
+<ol>
+<li>An explicit mapping from fifteen neuroanatomical steps to mechanisms implementable in an
+   agent, with the concrete formulas for each (section 3).</li>
+<li><code>subcortex</code>, an implementation on Google ADK that wraps any <code>LlmAgent</code> without touching it,
+   with 82 tests that run without network access (section 4).</li>
+<li>Three test beds and an A/B protocol with LLM-free references, replication and ablations
+   (section 5), with positive results in two of them and an explained null result (section 6).</li>
+<li>Eight design lessons that came out of the runs that did not work, including two
+   incompatibilities with the Gemini 3 API and an infinite habit loop (section 7).</li>
+</ol>
+<hr>
+<h2>2. From the brain to the agent</h2>
+<p>The table summarizes the mapping. The column "missing from agents today" describes the state of
+the LLM agent frameworks we know; the "subcortex" column names the component that implements it.</p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>Essay step</th>
+<th>Brain mechanism</th>
+<th>Missing from agents today</th>
+<th>subcortex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2, 4 — thalamus, reticular formation</td>
+<td>Gain set by alertness</td>
+<td>Everything enters the context with equal weight</td>
+<td><code>tone</code> modulates how many precedents are recalled</td>
+</tr>
+<tr>
+<td>5 — amygdala</td>
+<td>Valence before deliberation; memories carry emotional tags</td>
+<td>Neutral memories</td>
+<td>Episodes with <code>valence</code>, <code>habenula</code></td>
+</tr>
+<tr>
+<td>6–7 — hypothalamus, insula</td>
+<td>Bodily state translated into a comparable feeling</td>
+<td>The agent doesn't know how it is doing</td>
+<td><code>InteroceptionPlugin</code>: budget, failures, blocks → text + <code>tone</code></td>
+</tr>
+<tr>
+<td>8 — hippocampus, parahippocampal</td>
+<td>Retrieval by scene; simulation of futures</td>
+<td>Retrieval by similarity to the question</td>
+<td>Recall by situation features; the scene is enriched by what diagnosis discovers</td>
+</tr>
+<tr>
+<td>9 — anterior cingulate</td>
+<td>Conflict detection; effort cost</td>
+<td>No fast/slow router; no action cost</td>
+<td><code>reconsider</code> when value is near the threshold; cost per risk class</td>
+</tr>
+<tr>
+<td>10 — prefrontal</td>
+<td>Common currency, intention</td>
+<td>This is what the LLM does well</td>
+<td>The LLM, unchanged</td>
+</tr>
+<tr>
+<td>11 — basal ganglia</td>
+<td>Universal veto; disinhibit a single action; hyperdirect pathway</td>
+<td>The default is to act</td>
+<td><code>GatePlugin</code>: value ≥ threshold, brake on irreversibles, one action per turn</td>
+</tr>
+<tr>
+<td>13 — cerebellum</td>
+<td>Efference copy, predicted consequences, error</td>
+<td>No declared expectation</td>
+<td><code>PredictionPlugin</code>: mandatory <code>expected_effect</code>, <code>confidence</code>; signed error</td>
+</tr>
+<tr>
+<td>15.1–15.2 — habenula, dopamine</td>
+<td>Prediction error as the learning signal; a separate negative channel</td>
+<td>Memory written by volume</td>
+<td>Writing only on surprise or success; <code>habenula=True</code> with retrieval priority; dopamine per (scene, action)</td>
+</tr>
+<tr>
+<td>15.4 — caudate → putamen</td>
+<td>Habit: stimulus-response that skips deliberation</td>
+<td>Everything goes through the LLM</td>
+<td><code>HabitPlugin</code>: compiles after 3 successes of the same action; responds without the LLM; de-habituates</td>
+</tr>
+<tr>
+<td>0.4, 15.3 — microglia, sleep</td>
+<td>Pruning, reinforcement, episodic → semantic consolidation</td>
+<td>Memory grows monotonically</td>
+<td><code>consolidate()</code>: decay, pruning, reinforcement, distilled rules</td>
+</tr>
+</tbody>
+</table></div>
+<figure><svg viewBox="0 0 930 320" role="img" aria-label="Diagram of one turn: before_model with memory, habit and interoception; LLM; after_model with winner-take-all; before_tool with validation and veto; tool; after_tool with learning." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="currentColor"/></marker></defs><rect x="20" y="40" width="200" height="84" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="120.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">before_model</text><text x="120.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">memory: precedents & rules · habit:</text><text x="120.0" y="89" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">bypass? · interoception: state</text><rect x="290" y="40" width="150" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="365.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">LLM</text><text x="365.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">proposes action + prediction</text><rect x="510" y="40" width="170" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="595.0" y="60" text-anchor="middle" fill="currentColor" font-weight="600">after_model</text><text x="595.0" y="76" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">gate: a single action</text><text x="595.0" y="89" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">(winner-take-all)</text><line x1="220" y1="79" x2="288" y2="70" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><line x1="440" y1="66" x2="508" y2="66" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><line x1="120" y1="124" x2="120" y2="158" stroke="var(--viz-s1)" stroke-width="1.4" marker-end="url(#a)" /><text x="120.0" y="155.0" text-anchor="middle" fill="var(--ink-3)" font-size="11">compiled habit</text><path d="M 120 158 C 120 195, 700 195, 750 132" fill="none" stroke="var(--viz-s1)" stroke-width="1.6" marker-end="url(#a)"/><text x="410" y="210" text-anchor="middle" fill="var(--viz-s1)" font-size="11">without calling the model</text><rect x="510" y="134" width="170" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="595.0" y="154" text-anchor="middle" fill="currentColor" font-weight="600">before_tool</text><text x="595.0" y="170" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">valid prediction · veto by default</text><line x1="595" y1="110" x2="595" y2="132" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><rect x="750" y="66" width="150" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="825.0" y="86" text-anchor="middle" fill="currentColor" font-weight="600">tool</text><text x="825.0" y="102" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">real world → observed_effect</text><line x1="680" y1="158" x2="748" y2="118" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><text x="714.0" y="130.0" text-anchor="middle" fill="var(--ink-3)" font-size="11">authorized</text><path d="M 510 176 C 390 176, 310 144, 306 98" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a)"/><text x="368" y="155" text-anchor="middle" fill="var(--ink-3)" font-size="11">vetoed / rejected: the model re-iterates</text><rect x="750" y="210" width="150" height="96" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="825.0" y="230" text-anchor="middle" fill="currentColor" font-weight="600">after_tool</text><text x="825.0" y="246" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">prediction error → memory</text><text x="825.0" y="259" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">(surprise/success) → dopamine →</text><text x="825.0" y="272" text-anchor="middle" fill="var(--ink-2)" font-size="10.5">habits → tone</text><line x1="825" y1="136" x2="825" y2="208" stroke="currentColor" stroke-width="1.4" marker-end="url(#a)" /><path d="M 750 262 C 300 272, 125 248, 117 128" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#a)"/><text x="390" y="252" text-anchor="middle" fill="var(--ink-3)" font-size="11">what was learned feeds the next decision</text></svg><figcaption>Figure 1. One turn of the loop: the five plugins hook into the tool-calling cycle. A veto does not break the loop (it returns as a tool result and the model re-iterates); a compiled habit executes the action without invoking the model.</figcaption></figure>
+<p>Two mapping decisions deserve comment. First: the tool-calling loop ADK already has — the model
+proposes a call, the tool responds, the model looks again — is structurally the
+cortico-striato-thalamo-cortical loop; that is why a veto breaks nothing: it returns as a tool
+result and the model re-iterates. Second: a habit is implemented as a synthetic <code>LlmResponse</code>
+the plugin returns before calling the model; the model is not invoked, and that is the only way
+"compiling" can genuinely mean getting cheaper.</p>
+<hr>
+<h2>3. Design of subcortex</h2>
+<h3>3.1 Entry point</h3>
+<pre><code class="language-python">app = App(name=&quot;ops&quot;, root_agent=my_agent)
+subcortex.attach(app, risk={&quot;restart&quot;: &quot;costly&quot;, &quot;rollback&quot;: &quot;irreversible&quot;, &quot;resolve&quot;: &quot;free&quot;},
+                 diagnostic_tools={&quot;inspect_service&quot;}, coarse_features=(&quot;symptom&quot;, &quot;finding&quot;))
+</code></pre>
+<p><code>attach()</code> wraps the agent's action tools (adding two mandatory parameters), registers five
+plugins in <code>App.plugins</code> in a fixed order, and opens a SQLite <code>EpisodicStore</code>. ADK executes
+plugins in order and short-circuits the chain at the first non-null value; the order
+<code>[Prediction, Gate, Memory, Habit, Interoception]</code> guarantees that in <code>before_tool</code> validation
+precedes the veto, and in <code>after_tool</code> the prediction error is computed before memory, habit and
+interoception consume it.</p>
+<h3>3.2 A two-level scene</h3>
+<p>A scene is the observable context of the decision. It has two keys: <code>key</code>, a hash of all
+features (used by episodic recall), and <code>coarse_key</code>, a hash of a configured subset
+(<code>coarse_features</code>) used by dopamine, the gate and habits. The distinction came out of a
+failure: with a single fine key, no situation recurred within 40 episodes and nothing learned.
+The scene is also enriched during the episode with what diagnostic tools discover
+(<code>discover_fn</code> → a <code>finding</code> field), so that "symptom: high latency" and "symptom: high latency
++ database pool exhausted" are different classes.</p>
+<h3>3.3 Prediction and error</h3>
+<p>Every action tool requires <code>expected_effect ∈ {resolves, improves, no_change, worsens}</code> and
+<code>confidence ∈ [0, 1]</code>. Tools return <code>observed_effect</code> on the same scale. With ranks
+<code>worsens = −1, no_change = 0, improves = 1, resolves = 2</code>:</p>
+<pre><code>error = clamp((rank(observed) − rank(expected)) / 2, −1, 1) × confidence
+</code></pre>
+<p>Being wrong with high confidence weighs more. An <code>error &lt; 0</code> is the habenula's signal.</p>
+<h3>3.4 Gate</h3>
+<p>By default everything is vetoed. An action is authorized if</p>
+<pre><code>value = confidence × dopamine(coarse_key, tool) − cost(risk) ≥ 0.10
+</code></pre>
+<p>with <code>cost = {free: 0, costly: 0.10, irreversible: 0.20}</code> and <code>dopamine = (successes + 0.6·2) /
+(successes + failures + 2)</code> (prior 0.6). An irreversible action also has a hyperdirect pathway:
+it is vetoed if <code>confidence &lt; 0.6</code> or if <code>tone</code> is low, unless the action has already resolved
+that scene class twice without failing ("earned trust"). If the model emits several actions in
+parallel, only the highest-value one passes (winner-take-all). After three consecutive blocks,
+only the escape actions (<code>escalate</code>, <code>resolve</code>) are authorized. Every veto returns a <code>reason</code>
+and a <code>hint</code> listing the actions that did work in that scene class.</p>
+<p>As an optional extension (front 2), the confidence the gate weighs can blend the model's declared
+confidence with dopamine according to how much history exists: <code>w = n/(n+2)</code>; with zero
+observations the model rules, with six the history outweighs it three to one.</p>
+<h3>3.5 Memory</h3>
+<p>An episode is written when <code>|error| ≥ 0.25</code> (surprise), when the tool failed, or when the action
+resolved (success, added after the second world). It stores scene, action, arguments,
+expectation, outcome, error, valence, <code>habenula</code> and a <code>strength</code>. Recall, before every model
+call, retrieves up to four episodes with the exact same scene or at least two shared features,
+failures first, and injects them as "Precedents". Dopamine is updated on every evaluated action,
+with a definition of success that includes meeting a <code>no_change</code> expectation: holding steady in a
+falling market is being right, not failing.</p>
+<h3>3.6 Habits</h3>
+<p>After three successes of <strong>the same action with the same arguments</strong> (templated: a value that
+matches a feature is stored as <code>$feature</code>) in the same scene class, without failures, a habit is
+compiled with strength 0.8. At the start of an episode whose class has a strong habit, the plugin
+returns the call directly; the model is not invoked. A habit is attempted at most once per
+episode and is halved in strength if its outcome is negative, invalid or vetoed. Habits are never
+compiled over irreversible actions.</p>
+<h3>3.7 Interoception</h3>
+<p>It counts steps, real failures, blocks, consecutive invalid calls, and evaluated actions. It
+produces a scalar <code>tone ∈ [0.05, 1]</code> that decreases with failures and with consumed budget — not
+with vetoes, to avoid feeding them back — and a translated text block ("2 consecutive failures";
+"NO PROGRESS: you used 60 % of the budget without a single evaluated result; if you don't have a
+concrete change, escalate"). It is the insula: internal state in the same currency as the goal.</p>
+<h3>3.8 Consolidation</h3>
+<p><code>consolidate()</code> decays the strength of unaccessed episodes, reinforces frequently recalled ones,
+prunes the weak and old, and distills rules: for each (action, outcome) with at least three
+episodes, the intersection of their features is the pattern and a text is generated ("in
+incidents with <code>dispersion=wide</code>, <code>follow_momentum</code> tends to <code>worsens</code> (n=5)"). Optionally an
+LLM writes richer rules, but only those backed by at least three episodes are kept: the model
+cannot invent rules without evidence. A helper function suggests which features best separate
+successes from failures (information gain), candidates for <code>coarse_features</code>.</p>
+<h3>3.9 Status contract</h3>
+<p>A tool result carries a <code>status</code>. Four statuses do not touch the world and no plugin learns from
+them: <code>rejected</code> (missing prediction), <code>vetoed</code> (gate), <code>invalid</code> (malformed arguments, episode
+already over) and <code>reconsider</code> (cingulate). The distinction between <code>invalid</code> and <code>error</code> turned
+out to be decisive (section 7).</p>
+<hr>
+<h2>4. Implementation</h2>
+<p><code>subcortex</code> is eight Python modules (~1,100 lines) on <code>google-adk</code> 2.8 and <code>pydantic</code>. The
+plugins inherit from <code>BasePlugin</code> and use six hooks: <code>before_model</code>, <code>after_model</code>,
+<code>before_tool</code>, <code>after_tool</code>, <code>on_tool_error</code> and session state. All transient state lives in
+<code>session.state["subcortex.*"]</code>; persistent state in SQLite (<code>episodes</code>, <code>dopamine</code>, <code>habits</code>,
+<code>habit_candidates</code>, <code>rules</code>). Every plugin catches its own exceptions and degrades to vanilla
+behavior. There are 82 unit and integration tests that run without network access; the
+integration tests use ADK's real <code>Runner</code> with a scripted model (<code>ScriptedLlm</code>) and verify,
+among other things, that a veto makes the model re-iterate, that a habit executes without
+calling it, and that the history the model sees after a habit contains no synthetic calls.</p>
+<p>Two synthetic worlds and one real one accompany the library (~1,900 lines): an incident
+simulator, an AST-mutation bug injector over a vendored library, and a market replay over real
+daily candles. A generic A/B runner (<code>demo/ab.py</code>) executes the same agent with and without the
+layer over the same sequence, with retries on transient errors, a per-episode call cap and
+wall-clock timeout, incremental saving and <code>--resume</code>.</p>
+<hr>
+<h2>5. Methodology</h2>
+<p><strong>A/B design.</strong> In each world a single <code>LlmAgent</code> is built (Gemini 3 Flash, fixed instruction,
+the world's real tools) and run twice over the same episode sequence: <em>baseline</em> (vanilla ADK)
+and <em>subcortex</em> (<code>attach()</code>). The only difference between variants is the <code>attach()</code> line. Each
+episode is a fresh ADK session; the <code>EpisodicStore</code> persists across episodes.</p>
+<p><strong>Metrics.</strong> World score per episode, resolution rate, model calls, tokens, steps, harmful
+actions (<code>worsens</code>), vetoes, episodes written, habit firings, mean prediction error. All are
+reported by thirds of the sequence to expose learning.</p>
+<p><strong>LLM-free references.</strong> In <code>marketworld</code>, additionally, the pure momentum rule at two cadences
+and BTC buy &amp; hold over the same window.</p>
+<p><strong>Replication and ablations.</strong> In <code>marketworld</code>, five subcortex trajectories were run (the
+baseline turned out deterministic) plus ablations disabling one plugin at a time.</p>
+<p><strong>Worlds.</strong></p>
+<p><em>opsworld</em> — an on-call operator over a simulated fleet. Six hidden causes (memory leak, bad
+deploy, traffic spike, saturated database, dependency down, false alarm), observable symptoms,
+three diagnostic tools and six action tools with declared risk. Dynamics with traps: <code>restart</code>
+fixes the leak but worsens the saturated database; <code>rollback</code> is useless and expensive in a
+traffic spike; <code>failover_db</code> on a false alarm causes real damage. Score +100 for resolving,
+−40 per worsening, −5 per step, per-action costs. 40 incidents, fixed seed.</p>
+<p><em>bugworld</em> — 40 real bugs injected by AST mutation (inverted arithmetic and comparison
+operators, <code>and</code>↔<code>or</code>, negated conditions, off-by-one, <code>return None</code>, and bugs in the test
+itself, where the right move is to escalate) into <code>toolz</code> 1.1.0 (181 tests, ~3 s). Real tools:
+run pytest, read, search, edit, rewrite, revert, finish, escalate. Every edit re-runs the whole
+suite. Budget: 10 calls.</p>
+<p><em>marketworld</em> — a replay of the author's momentum paper trader: 10 majors, real Binance daily
+candles, the exact rule (top-2 by 30-day return among those above their SMA-100, 0.15 % per
+side). 40 decisions every 21 days between March 2024 and June 2026 (bull and bear phases),
+consequences measured at 21 days, persistent portfolio; a weekly variant with 120 decisions. The
+agent never sees dates. Scene: BTC trend, breadth, volatility, dispersion, current holdings;
+<code>finding</code> = regime. Actions: <code>follow_momentum</code>, <code>hold</code>, <code>go_cash</code>, <code>rotate</code>.</p>
+<hr>
+<h2>6. Results</h2>
+<h3>6.1 opsworld: the layer works — on the second iteration</h3>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>metric</th>
+<th>baseline</th>
+<th>subcortex v1</th>
+<th><strong>subcortex v2</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mean score</td>
+<td>46.3</td>
+<td>37.1</td>
+<td><strong>56.3</strong> (+22 %)</td>
+</tr>
+<tr>
+<td>resolution rate</td>
+<td>0.93</td>
+<td>0.80</td>
+<td><strong>1.00</strong></td>
+</tr>
+<tr>
+<td>LLM calls / episode</td>
+<td>6.7</td>
+<td>7.4</td>
+<td><strong>5.0</strong></td>
+</tr>
+<tr>
+<td>LLM calls, last third</td>
+<td>7.2</td>
+<td>9.1</td>
+<td><strong>4.8</strong> (−34 %)</td>
+</tr>
+<tr>
+<td>tokens / episode</td>
+<td>11,574</td>
+<td>24,814</td>
+<td>12,066</td>
+</tr>
+<tr>
+<td>harmful actions</td>
+<td>4</td>
+<td>3</td>
+<td><strong>2</strong></td>
+</tr>
+<tr>
+<td>vetoes</td>
+<td>—</td>
+<td>32</td>
+<td>0</td>
+</tr>
+<tr>
+<td>habits compiled / fired</td>
+<td>—</td>
+<td>0 / 0</td>
+<td><strong>4 / 9</strong></td>
+</tr>
+<tr>
+<td>prediction error by third</td>
+<td>—</td>
+<td>0.62 → 0.57</td>
+<td>0.55 → 0.46</td>
+</tr>
+</tbody>
+</table></div>
+<figure><svg viewBox="0 0 920 200" role="img" aria-label="Bars: mean score 46.3 baseline versus 56.3 subcortex; model calls per third: baseline 6.2, 6.7, 7.2; subcortex 5.9, 4.5, 4.6." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><text x="20" y="20" fill="currentColor" font-weight="600">Mean score</text><text x="112" y="49" text-anchor="end" fill="var(--ink-2)">baseline</text><rect x="120" y="36" width="170" height="18" rx="4" fill="var(--viz-neutral)"><title>baseline: 46.3</title></rect><text x="296" y="49" fill="currentColor" font-weight="600">46.3</text><text x="112" y="73" text-anchor="end" fill="var(--ink-2)">subcortex</text><rect x="120" y="60" width="206" height="18" rx="4" fill="var(--viz-s1)"><title>subcortex: 56.3</title></rect><text x="332" y="73" fill="currentColor" font-weight="600">56.3</text><text x="480" y="20" fill="currentColor" font-weight="600">LLM calls per episode, by third</text><rect x="500" y="77" width="44" height="93" rx="4" fill="var(--viz-neutral)"><title>baseline · T1: 6.23</title></rect><text x="522.0" y="71" text-anchor="middle" fill="currentColor">6.23</text><rect x="548" y="81" width="44" height="89" rx="4" fill="var(--viz-s1)"><title>subcortex · T1: 5.92</title></rect><text x="570.0" y="75" text-anchor="middle" fill="currentColor">5.92</text><text x="546" y="188" text-anchor="middle" fill="var(--ink-2)">T1</text><rect x="638" y="70" width="44" height="100" rx="4" fill="var(--viz-neutral)"><title>baseline · T2: 6.69</title></rect><text x="660.0" y="64" text-anchor="middle" fill="currentColor">6.69</text><rect x="686" y="102" width="44" height="68" rx="4" fill="var(--viz-s1)"><title>subcortex · T2: 4.54</title></rect><text x="708.0" y="96" text-anchor="middle" fill="currentColor">4.54</text><text x="684" y="188" text-anchor="middle" fill="var(--ink-2)">T2</text><rect x="776" y="62" width="44" height="108" rx="4" fill="var(--viz-neutral)"><title>baseline · T3: 7.21</title></rect><text x="798.0" y="56" text-anchor="middle" fill="currentColor">7.21</text><rect x="824" y="100" width="44" height="70" rx="4" fill="var(--viz-s1)"><title>subcortex · T3: 4.64</title></rect><text x="846.0" y="94" text-anchor="middle" fill="currentColor">4.64</text><text x="822" y="188" text-anchor="middle" fill="var(--ink-2)">T3</text><line x1="490" y1="170" x2="900" y2="170" stroke="var(--line)"/><rect x="120" y="100" width="12" height="12" rx="3" fill="var(--viz-neutral)"/><text x="138" y="110" fill="var(--ink-2)">baseline</text><rect x="120" y="120" width="12" height="12" rx="3" fill="var(--viz-s1)"/><text x="138" y="130" fill="var(--ink-2)">subcortex</text></svg><figcaption>Figure 2. opsworld (40 incidents): mean score and model calls per third of the sequence. The baseline does not change with experience; subcortex cuts its calls by a third once habits are compiled.</figcaption></figure>
+<p>The first iteration was worse than the baseline. The diagnosis — a scene key that was too fine,
+a veto → tone → veto loop, and a value formula that multiplied by tone and made it impossible to
+authorize an irreversible action mid-episode — produced iteration 2, which validates the
+hypothesis: equal score in the first third (no memory yet), 34 % fewer calls in the last (four
+decisions already compiled into habits), half the damage, tokens at par. By cause, the gain
+concentrates where the baseline fails repeatedly: <code>db_saturated</code> (−16 → +37) and
+<code>dependency_down</code> (−45 → +2.5). A Gemini 3 issue (it rejects function calls lacking a
+<code>thought_signature</code>) surfaced at the first habit firing and was solved by rewriting the
+synthetic-call/result pair as text in the history, in a provider-independent way.</p>
+<h3>6.2 bugworld: a three-way tie, explained</h3>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>baseline</th>
+<th>subcortex v1</th>
+<th>subcortex v2 (+success, +no-progress)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mean score</td>
+<td>22.5</td>
+<td>25.0</td>
+<td>19.0</td>
+</tr>
+<tr>
+<td>solved</td>
+<td>28/40</td>
+<td>29/40</td>
+<td>26/40</td>
+</tr>
+<tr>
+<td>LLM calls / bug</td>
+<td>12.6</td>
+<td>11.8</td>
+<td>11.8</td>
+</tr>
+<tr>
+<td>episodes written</td>
+<td>—</td>
+<td>0</td>
+<td>26 (20 distinct scenes)</td>
+</tr>
+<tr>
+<td>escalations on <code>broken_test</code></td>
+<td>0/5</td>
+<td>0/5</td>
+<td>0/5</td>
+</tr>
+</tbody>
+</table></div>
+<p>All three runs fall within the model's noise (±5). The decisive row is "episodes written": in
+the first version, zero. The only evaluable action per episode was the valid edit, and when an
+edit applies it is almost always the right one — expected <code>resolves</code>, observed <code>resolves</code>, zero
+error, no surprise; everything else was invalid calls which, by contract, are not outcomes.
+Adding success-writing produced 26 episodes across 20 distinct scenes: nothing recurs at the
+granularity where decisions happen, and a precedent from another bug with the same symptom
+describes another function and another fix. The no-progress signal reached the model and did not
+change its behavior: with the problem in front of it, it prefers to keep trying over giving up.
+Conclusion: where every episode is unique, the action is not reusable, and the wrong behavior is
+<em>not acting</em>, no subcortical mechanism has leverage. This is a limit of the approach, not a
+pending tweak.</p>
+<h3>6.3 marketworld: validation on the real problem</h3>
+<p><strong>LLM-free references (same window):</strong> daily momentum rule 78.6; the rule at the agent's cadence
+(every 21 days) 50.5; BTC 95.3. A hard window for momentum.</p>
+<p><strong>Five subcortex trajectories, deterministic baseline:</strong></p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>trajectory</th>
+<th>final equity</th>
+<th>bear regime: mean per decision</th>
+<th><code>hold</code> / <code>follow</code> in bear</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>run 1</td>
+<td>90.9</td>
+<td>−1.22 %</td>
+<td>12 / 4</td>
+</tr>
+<tr>
+<td>run 2</td>
+<td>121.0</td>
+<td>−1.29 %</td>
+<td>13 / 2</td>
+</tr>
+<tr>
+<td>run 3</td>
+<td>83.2</td>
+<td>−1.21 %</td>
+<td>13 / 3</td>
+</tr>
+<tr>
+<td>run 4</td>
+<td>68.3</td>
+<td>−1.29 %</td>
+<td>12 / 4</td>
+</tr>
+<tr>
+<td>run 5</td>
+<td>83.2</td>
+<td>−1.21 %</td>
+<td>13 / 3</td>
+</tr>
+<tr>
+<td><strong>subcortex, mean ± sd</strong></td>
+<td><strong>89.3 ± 19.5</strong></td>
+<td><strong>−1.24 %</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>baseline (40/40 identical decisions across two runs)</td>
+<td>50.5</td>
+<td>−3.51 %</td>
+<td>9 / 5</td>
+</tr>
+</tbody>
+</table></div>
+<figure><svg viewBox="0 0 920 300" role="img" aria-label="Final-equity bars: at 21 days, baseline 50.5, subcortex 89.3 plus/minus 19.5 with five trajectories between 68 and 121, daily rule 78.6, BTC 95.3. Weekly: baseline 91.4, subcortex 101.6, BTC 95.3." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><text x="20" y="20" fill="currentColor" font-weight="600">Final equity from 100 · 40 decisions (21 d)</text><text x="222" y="53" text-anchor="end" fill="var(--ink-2)">baseline (= rule @ 21 d)</text><rect x="230" y="40" width="163" height="18" rx="4" fill="var(--viz-neutral)"><title>baseline (= rule @ 21 d): 50.5</title></rect><text x="399" y="53" fill="currentColor" font-weight="600">50.5</text><text x="222" y="81" text-anchor="end" fill="var(--ink-2)">subcortex · mean of 5</text><rect x="230" y="68" width="289" height="18" rx="4" fill="var(--viz-s1)"><title>subcortex · mean of 5: 89.3 ±19.5</title></rect><text x="525" y="81" fill="currentColor" font-weight="600">89.3 ±19.5</text><text x="222" y="109" text-anchor="end" fill="var(--ink-2)">daily momentum rule</text><rect x="230" y="96" width="254" height="18" rx="4" fill="var(--viz-ref)"><title>daily momentum rule: 78.6</title></rect><text x="490" y="109" fill="currentColor" font-weight="600">78.6</text><text x="222" y="137" text-anchor="end" fill="var(--ink-2)">BTC buy & hold</text><rect x="230" y="124" width="308" height="18" rx="4" fill="var(--viz-ref)"><title>BTC buy & hold: 95.3</title></rect><text x="544" y="137" fill="currentColor" font-weight="600">95.3</text><circle cx="524" cy="77" r="4" fill="none" stroke="var(--viz-s1)" stroke-width="1.6"><title>trajectory: 90.9</title></circle><circle cx="621" cy="77" r="4" fill="none" stroke="var(--viz-s1)" stroke-width="1.6"><title>trajectory: 121.0</title></circle><circle cx="499" cy="77" r="4" fill="none" stroke="var(--viz-s1)" stroke-width="1.6"><title>trajectory: 83.2</title></circle><circle cx="451" cy="77" r="4" fill="none" stroke="var(--viz-s1)" stroke-width="1.6"><title>trajectory: 68.3</title></circle><circle cx="499" cy="77" r="4" fill="none" stroke="var(--viz-s1)" stroke-width="1.6"><title>trajectory: 83.2</title></circle><line x1="230" y1="152" x2="880" y2="152" stroke="var(--line)"/><text x="20" y="185" fill="currentColor" font-weight="600">Weekly variant · 120 decisions (7 d)</text><text x="222" y="213" text-anchor="end" fill="var(--ink-2)">baseline</text><rect x="230" y="200" width="295" height="18" rx="4" fill="var(--viz-neutral)"><title>baseline: 91.4</title></rect><text x="531" y="213" fill="currentColor" font-weight="600">91.4</text><text x="222" y="241" text-anchor="end" fill="var(--ink-2)">subcortex</text><rect x="230" y="228" width="328" height="18" rx="4" fill="var(--viz-s1)"><title>subcortex: 101.6</title></rect><text x="564" y="241" fill="currentColor" font-weight="600">101.6</text><text x="222" y="269" text-anchor="end" fill="var(--ink-2)">BTC buy & hold</text><rect x="230" y="256" width="308" height="18" rx="4" fill="var(--viz-ref)"><title>BTC buy & hold: 95.3</title></rect><text x="544" y="269" fill="currentColor" font-weight="600">95.3</text></svg><figcaption>Figure 3. marketworld: final equity per runner. Top: 40 decisions every 21 days (rings are the five subcortex trajectories; the baseline is deterministic). Bottom: the weekly variant, where subcortex also beats BTC.</figcaption></figure>
+<p>Five out of five above the baseline; four above the daily rule; two above BTC. The baseline is
+exactly the 21-day rule: it followed <code>follow_momentum</code> 26 times and its deviations changed
+nothing. Subcortex's bear-regime behavior is nearly identical across the five trajectories
+(12–13 <code>hold</code> out of 19, −1.2 to −1.3 % per decision): that is the mechanism, and it is stable;
+the equity dispersion (68–121) comes from bull-regime decisions, where the model's variance
+dominates. The layer distilled correct rules with no labels — "with BTC trending,
+<code>follow_momentum</code> tends to <code>resolves</code> (n=5)", "with wide dispersion, it tends to <code>worsens</code>
+(n=5)", "with BTC bearish, <code>go_cash</code> tends to <code>no_change</code> (n=4)" — and in several trajectories
+compiled a <code>hold</code> habit for the dominant bear regime; in one, a <code>follow_momentum</code> habit failed
+once and de-habituated.</p>
+<p><strong>Weekly variant (120 decisions, 7-day horizon):</strong></p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>runner</th>
+<th>final equity</th>
+<th>bear regime (58 decisions)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>baseline</td>
+<td>91.4</td>
+<td>−0.62 %</td>
+</tr>
+<tr>
+<td><strong>subcortex</strong></td>
+<td><strong>101.6</strong></td>
+<td><strong>+0.16 %</strong></td>
+</tr>
+<tr>
+<td>rule at the agent's cadence</td>
+<td>90.9</td>
+<td></td>
+</tr>
+<tr>
+<td>daily rule</td>
+<td>78.6</td>
+<td></td>
+</tr>
+<tr>
+<td>BTC</td>
+<td>95.3</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>With three times more samples, habits fired 11 times (2 compiled, 6 rules) and subcortex ended
+above BTC. A single trajectory.</p>
+<p><strong>Ablations (baseline reused; one trajectory per variant, same 40 decisions):</strong></p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>variant</th>
+<th>final equity</th>
+<th>bear regime: mean per decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>full layer (5 trajectories)</td>
+<td>89.3 ± 19.5</td>
+<td>−1.24 %</td>
+</tr>
+<tr>
+<td>no memory</td>
+<td>69.2</td>
+<td><strong>−3.50 %</strong> (= baseline)</td>
+</tr>
+<tr>
+<td>no interoception</td>
+<td>69.7</td>
+<td>−2.27 %</td>
+</tr>
+<tr>
+<td>no habits</td>
+<td>74.9</td>
+<td>−1.22 %</td>
+</tr>
+<tr>
+<td>no gate</td>
+<td>91.5</td>
+<td>−1.28 %</td>
+</tr>
+<tr>
+<td>baseline</td>
+<td>50.5</td>
+<td>−3.51 %</td>
+</tr>
+</tbody>
+</table></div>
+<figure><svg viewBox="0 0 920 210" role="img" aria-label="Ablation bars: equity with the full layer 89.3, no gate 91.5, no habits 74.9, no interoception 69.7, no memory 69.2, baseline 50.5; and bear-regime return per decision from −1.24 percent with the full layer to −3.50 without memory, equal to the baseline." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><text x="20" y="20" fill="currentColor" font-weight="600">Final equity</text><text x="222" y="49" text-anchor="end" fill="var(--ink-2)">full layer (mean of 5)</text><rect x="230" y="36" width="223" height="18" rx="4" fill="var(--viz-s1)"><title>full layer (mean of 5): 89.3</title></rect><text x="459" y="49" fill="currentColor" font-weight="600">89.3</text><text x="222" y="75" text-anchor="end" fill="var(--ink-2)">no gate</text><rect x="230" y="62" width="229" height="18" rx="4" fill="var(--viz-s1)"><title>no gate: 91.5</title></rect><text x="465" y="75" fill="currentColor" font-weight="600">91.5</text><text x="222" y="101" text-anchor="end" fill="var(--ink-2)">no habits</text><rect x="230" y="88" width="187" height="18" rx="4" fill="var(--viz-s1)"><title>no habits: 74.9</title></rect><text x="423" y="101" fill="currentColor" font-weight="600">74.9</text><text x="222" y="127" text-anchor="end" fill="var(--ink-2)">no interoception</text><rect x="230" y="114" width="174" height="18" rx="4" fill="var(--viz-s1)"><title>no interoception: 69.7</title></rect><text x="410" y="127" fill="currentColor" font-weight="600">69.7</text><text x="222" y="153" text-anchor="end" fill="var(--ink-2)">no memory</text><rect x="230" y="140" width="173" height="18" rx="4" fill="var(--viz-s1)"><title>no memory: 69.2</title></rect><text x="409" y="153" fill="currentColor" font-weight="600">69.2</text><text x="222" y="179" text-anchor="end" fill="var(--ink-2)">baseline</text><rect x="230" y="166" width="126" height="18" rx="4" fill="var(--viz-neutral)"><title>baseline: 50.5</title></rect><text x="362" y="179" fill="currentColor" font-weight="600">50.5</text><text x="560" y="20" fill="currentColor" font-weight="600">Bear regime: return per decision</text><text x="692" y="49" text-anchor="end" fill="var(--ink-2)">full layer</text><rect x="700" y="36" width="69" height="18" rx="4" fill="var(--viz-s1)"><title>full layer: -1.24 %</title></rect><text x="775" y="49" fill="currentColor" font-weight="600">-1.24 %</text><text x="692" y="75" text-anchor="end" fill="var(--ink-2)">no gate</text><rect x="700" y="62" width="71" height="18" rx="4" fill="var(--viz-s1)"><title>no gate: -1.28 %</title></rect><text x="777" y="75" fill="currentColor" font-weight="600">-1.28 %</text><text x="692" y="101" text-anchor="end" fill="var(--ink-2)">no habits</text><rect x="700" y="88" width="68" height="18" rx="4" fill="var(--viz-s1)"><title>no habits: -1.22 %</title></rect><text x="774" y="101" fill="currentColor" font-weight="600">-1.22 %</text><text x="692" y="127" text-anchor="end" fill="var(--ink-2)">no interoception</text><rect x="700" y="114" width="126" height="18" rx="4" fill="var(--viz-s1)"><title>no interoception: -2.27 %</title></rect><text x="832" y="127" fill="currentColor" font-weight="600">-2.27 %</text><text x="692" y="153" text-anchor="end" fill="var(--ink-2)">no memory</text><rect x="700" y="140" width="194" height="18" rx="4" fill="var(--viz-s1)"><title>no memory: -3.5 %</title></rect><text x="900" y="153" fill="currentColor" font-weight="600">-3.5 %</text><text x="692" y="179" text-anchor="end" fill="var(--ink-2)">baseline</text><rect x="700" y="166" width="195" height="18" rx="4" fill="var(--viz-neutral)"><title>baseline: -3.51 %</title></rect><text x="901" y="179" fill="currentColor" font-weight="600">-3.51 %</text></svg><figcaption>Figure 4. Ablations in marketworld (one trajectory per variant, same 40 decisions). The behavioral signal is the sharp one: without memory, bear-regime behavior returns exactly to the baseline's (−3.50 % vs −3.51 %).</figcaption></figure>
+<p>With the caveat that each ablation is a single trajectory against a mean with σ ≈ 20, the
+behavioral signal is sharp: <strong>without memory, bear-regime behavior returns exactly to the
+baseline's</strong> (−3.50 % vs −3.51 %); interoception adds prudence; habits add something; the gate
+adds nothing in this domain — consistent with the zero vetoes across all runs: there are no
+irreversible actions to brake. The history-confidence and reconsider variants landed within the
+full layer's range (92.3 and 69.8; inconclusive with one trajectory), and the LLM-rules run was
+left incomplete (14/40), so it is not reported.</p>
+<h3>6.4 Operating efficiency</h3>
+<p>The layer is not expensive by design: its cost depends on whether it saves calls (habits) faster
+than it adds context (precedents). Figure 5 compares model calls, tokens and wall-clock time per
+episode. In <code>opsworld</code>, subcortex is cheaper than the baseline on all three dimensions (5.0 vs
+6.7 calls, tokens at par, 10.2 vs 12.2 s). In <code>marketworld</code> it pays a token overhead (~2×) and
+extra seconds for in-context precedents and per-decision evaluation, with comparable calls. The
+general rule we observed: where there is repetition, habits end up paying for the memory; where
+there is not, memory is pure overhead.</p>
+<figure><svg viewBox="0 0 920 205" role="img" aria-label="Per-world comparison of model calls, tokens and seconds per episode between baseline and subcortex; subcortex uses fewer calls in opsworld and more tokens in marketworld." xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif" font-size="12" style="max-width:100%;height:auto;color:var(--ink)"><text x="20" y="20" fill="currentColor" font-weight="600">LLM calls / episode</text><rect x="110" y="40" width="130" height="12" rx="3" fill="var(--viz-neutral)"><title>opsworld · baseline: 6.7</title></rect><text x="245" y="50" fill="currentColor" font-size="11">6.7</text><rect x="110" y="55" width="97" height="12" rx="3" fill="var(--viz-s1)"><title>opsworld · subcortex: 5.0</title></rect><text x="212" y="65" fill="currentColor" font-size="11">5.0</text><text x="102" y="52" text-anchor="end" fill="var(--ink-2)" font-size="11">opsworld</text><rect x="110" y="80" width="80" height="12" rx="3" fill="var(--viz-neutral)"><title>market 21 d · baseline: 4.1</title></rect><text x="195" y="90" fill="currentColor" font-size="11">4.1</text><rect x="110" y="95" width="97" height="12" rx="3" fill="var(--viz-s1)"><title>market 21 d · subcortex: 5.0</title></rect><text x="212" y="105" fill="currentColor" font-size="11">5.0</text><text x="102" y="92" text-anchor="end" fill="var(--ink-2)" font-size="11">market 21 d</text><rect x="110" y="120" width="76" height="12" rx="3" fill="var(--viz-neutral)"><title>market 7 d · baseline: 3.9</title></rect><text x="191" y="130" fill="currentColor" font-size="11">3.9</text><rect x="110" y="135" width="95" height="12" rx="3" fill="var(--viz-s1)"><title>market 7 d · subcortex: 4.9</title></rect><text x="210" y="145" fill="currentColor" font-size="11">4.9</text><text x="102" y="132" text-anchor="end" fill="var(--ink-2)" font-size="11">market 7 d</text><text x="320" y="20" fill="currentColor" font-weight="600">Tokens / episode (thousands)</text><rect x="410" y="40" width="93" height="12" rx="3" fill="var(--viz-neutral)"><title>opsworld · baseline: 11.6</title></rect><text x="508" y="50" fill="currentColor" font-size="11">11.6</text><rect x="410" y="55" width="97" height="12" rx="3" fill="var(--viz-s1)"><title>opsworld · subcortex: 12.1</title></rect><text x="512" y="65" fill="currentColor" font-size="11">12.1</text><text x="402" y="52" text-anchor="end" fill="var(--ink-2)" font-size="11">opsworld</text><rect x="410" y="80" width="64" height="12" rx="3" fill="var(--viz-neutral)"><title>market 21 d · baseline: 8.0</title></rect><text x="479" y="90" fill="currentColor" font-size="11">8.0</text><rect x="410" y="95" width="128" height="12" rx="3" fill="var(--viz-s1)"><title>market 21 d · subcortex: 15.9</title></rect><text x="543" y="105" fill="currentColor" font-size="11">15.9</text><text x="402" y="92" text-anchor="end" fill="var(--ink-2)" font-size="11">market 21 d</text><rect x="410" y="120" width="59" height="12" rx="3" fill="var(--viz-neutral)"><title>market 7 d · baseline: 7.3</title></rect><text x="474" y="130" fill="currentColor" font-size="11">7.3</text><rect x="410" y="135" width="130" height="12" rx="3" fill="var(--viz-s1)"><title>market 7 d · subcortex: 16.2</title></rect><text x="545" y="145" fill="currentColor" font-size="11">16.2</text><text x="402" y="132" text-anchor="end" fill="var(--ink-2)" font-size="11">market 7 d</text><text x="620" y="20" fill="currentColor" font-weight="600">Seconds / episode</text><rect x="710" y="40" width="92" height="12" rx="3" fill="var(--viz-neutral)"><title>opsworld · baseline: 12.2</title></rect><text x="807" y="50" fill="currentColor" font-size="11">12.2</text><rect x="710" y="55" width="77" height="12" rx="3" fill="var(--viz-s1)"><title>opsworld · subcortex: 10.2</title></rect><text x="792" y="65" fill="currentColor" font-size="11">10.2</text><text x="702" y="52" text-anchor="end" fill="var(--ink-2)" font-size="11">opsworld</text><rect x="710" y="80" width="70" height="12" rx="3" fill="var(--viz-neutral)"><title>market 21 d · baseline: 9.3</title></rect><text x="785" y="90" fill="currentColor" font-size="11">9.3</text><rect x="710" y="95" width="108" height="12" rx="3" fill="var(--viz-s1)"><title>market 21 d · subcortex: 14.3</title></rect><text x="823" y="105" fill="currentColor" font-size="11">14.3</text><text x="702" y="92" text-anchor="end" fill="var(--ink-2)" font-size="11">market 21 d</text><rect x="710" y="120" width="109" height="12" rx="3" fill="var(--viz-neutral)"><title>market 7 d · baseline: 14.4</title></rect><text x="824" y="130" fill="currentColor" font-size="11">14.4</text><rect x="710" y="135" width="130" height="12" rx="3" fill="var(--viz-s1)"><title>market 7 d · subcortex: 17.3</title></rect><text x="845" y="145" fill="currentColor" font-size="11">17.3</text><text x="702" y="132" text-anchor="end" fill="var(--ink-2)" font-size="11">market 7 d</text><rect x="20" y="180" width="12" height="12" rx="3" fill="var(--viz-neutral)"/><text x="38" y="190" fill="var(--ink-2)">baseline</text><rect x="110" y="180" width="12" height="12" rx="3" fill="var(--viz-s1)"/><text x="128" y="190" fill="var(--ink-2)">subcortex</text></svg><figcaption>Figure 5. Operating cost per episode (model calls, tokens and wall-clock time) per world. In opsworld the layer is cheaper than the baseline; in marketworld it pays extra tokens and seconds for in-context precedents and evaluation runs.</figcaption></figure>
+<hr>
+<h2>7. Design lessons</h2>
+<p>Each one came out of a run that did not work, and stayed in the code with its test.</p>
+<ol>
+<li><strong>The scene needs two levels.</strong> With a single fine key nothing recurs and nothing learns;
+   with a coarse one, recall loses precision. Dopamine, gate and habits use the coarse key;
+   recall, the fine one.</li>
+<li><strong>The scene is enriched by what diagnosis discovers.</strong> The right precedent is the one that
+   shares what was learned <em>after</em> looking, not only what was visible on entry.</li>
+<li><strong>Tone neither multiplies value nor drops with vetoes.</strong> Multiplying made it impossible to
+   authorize an irreversible action mid-episode; dropping it with vetoes produced a loop that
+   forced needless escalations.</li>
+<li><strong>Meeting a "no change" expectation is success.</strong> With absolute reward, <code>hold</code> in a bear
+   regime had 0 successes and 8 failures; with prediction error, it is a hit. This is step 15 of
+   the essay, not step 5.</li>
+<li><strong>An invalid call is not an outcome.</strong> Without the <code>invalid</code> status, three miscopied
+   arguments sank the tone to 0.05 and <code>edit_file</code>'s dopamine to 0.2, and the gate vetoed edits
+   made with 0.8 confidence.</li>
+<li><strong>A habit is the same action with the same arguments</strong>, attempted once per episode, weakened
+   when it fails. Without that, edits from another bug were being compiled and the agent entered
+   an infinite loop without calling the model (hung for 54 minutes).</li>
+<li><strong>The consequence horizon must reach the next decision.</strong> Measuring at 7 days with decisions
+   every 21 made score and equity contradict each other.</li>
+<li><strong>Synthetic function calls are rewritten as text.</strong> Gemini 3 rejects history entries with
+   calls the model did not generate; there is no documented dummy signature. Marking the habit's
+   call and converting the call → result pair to text before each invocation is
+   provider-independent and covered by tests.</li>
+</ol>
+<hr>
+<h2>8. Limits and threats to validity</h2>
+<ul>
+<li><strong>Sample size.</strong> 40 episodes per world (120 in the weekly variant). Directions are robust
+  (5/5 replication in <code>marketworld</code>); magnitudes carry deviations on the order of half the
+  advantage.</li>
+<li><strong>A single model.</strong> Everything ran on Gemini 3 Flash. The comparison with a second model
+  remains pending; the claim is about the architecture with this model.</li>
+<li><strong>Path-dependent non-determinism.</strong> The baseline turned out deterministic in <code>marketworld</code>;
+  subcortex did not, because a different decision changes which episodes exist afterwards. The
+  observed variance is a property of the system, not just sampling noise.</li>
+<li><strong>Worlds.</strong> <code>opsworld</code> is synthetic and its traps were designed by whoever designed the layer.
+  <code>bugworld</code> uses a single repository. <code>marketworld</code> uses a window chosen for its mix of
+  regimes, not for favoring the layer (the rule loses money in it), and the first 34 baseline
+  rows of <code>bugworld</code> were reconstructed from logs without token counts.</li>
+<li><strong>Confidence calibration.</strong> The gate weighs the confidence the model declares, and models are
+  poorly calibrated. The blend with history was implemented but its measurement was still in
+  progress at the time of writing.</li>
+<li><strong>Tools must return <code>observed_effect</code>.</strong> In a real deployment that field must be produced by
+  the world (tests, metrics, returns), not by the model; all three worlds do this, but it is an
+  integration requirement that is not always met.</li>
+</ul>
+<hr>
+<h2>9. Future work</h2>
+<p>Three to five trajectories per variant in all worlds and a second model, to report means with
+deviations. A fourth world with genuinely irreversible actions (operations on an automation
+instance, sandboxed) where veto-by-default can show its value, which was marginal in all three
+worlds. Scene learning: <code>coarse_features</code> was hand-picked per world; the information-gain
+suggestion exists, but applying it without invalidating dopamine and habits requires a key
+migration. And the natural next step of the originating project: running the layer alongside the
+real paper trader as a second opinion, without touching the strategy, starting with the <code>hold</code>
+habit in bear regimes and the dispersion rules the pure rule does not have.</p>
+<hr>
+<h2>10. Reproducibility</h2>
+<p>Repository <code>memory-tests</code>, branch <code>worktree-subcortex-poc</code>. <code>uv sync</code> installs everything;
+<code>uv run pytest</code> runs the 87 tests (5 slow ones in <code>bugworld</code>) without network access.
+<code>demo/run_ab.py</code>, <code>demo/run_bugs_ab.py</code> and <code>demo/run_market_ab.py</code> run the A/Bs with
+<code>GOOGLE_API_KEY</code> in <code>demo/.env</code>; they accept <code>--baseline-from</code>, <code>--resume</code>, <code>--ablate</code>,
+<code>--spacing/--horizon</code>, <code>--history-confidence</code>, <code>--reconsider</code>, <code>--llm-rules</code>. The <code>marketworld</code>
+data are 10 daily-candle CSVs included in the repository. Raw results for every run live in
+<code>results-*.json</code>; the reports with diagnoses in <code>docs/superpowers/results/</code>; the specifications
+in <code>docs/superpowers/specs/</code>; the source essay in <code>documentation/anatomia-de-una-decision.md</code>.</p>
+<hr>
+<h2>References</h2>
+<ul>
+<li>Castro Piccolo, J. F. (2026). <em>Anatomía de un "sí": recorrido completo de una decisión simple, de la primera sinapsis a la última.</em> Essay, repository document.</li>
+<li>Damasio, A. R. (1994). <em>Descartes' Error: Emotion, Reason, and the Human Brain.</em> Putnam. (Somatic marker hypothesis.)</li>
+<li>Schultz, W., Dayan, P., &amp; Montague, P. R. (1997). A neural substrate of prediction and reward. <em>Science</em>, 275(5306).</li>
+<li>Redgrave, P., Prescott, T. J., &amp; Gurney, K. (1999). The basal ganglia: a vertebrate solution to the selection problem? <em>Neuroscience</em>, 89(4).</li>
+<li>Ratcliff, R. (1978). A theory of memory retrieval. <em>Psychological Review</em>, 85(2). (Drift-diffusion models.)</li>
+<li>Anderson, J. R., et al. (2004). An integrated theory of the mind. <em>Psychological Review</em>, 111(4). (ACT-R.)</li>
+<li>Laird, J. E. (2012). <em>The Soar Cognitive Architecture.</em> MIT Press.</li>
+<li>Shinn, N., et al. (2023). Reflexion: language agents with verbal reinforcement learning. <em>NeurIPS</em>.</li>
+<li>Wang, G., et al. (2023). Voyager: an open-ended embodied agent with large language models. <em>arXiv</em>.</li>
+<li>Park, J. S., et al. (2023). Generative agents: interactive simulacra of human behavior. <em>UIST</em>.</li>
+<li>Google. <em>Agent Development Kit (ADK) — Python</em>, version 2.8. Online documentation.</li>
+</ul>
+</article>
+<script>
+(function () {
+  var current = "es";
+  try { var saved = localStorage.getItem("subcortex-paper-lang"); if (saved === "en" || saved === "es") current = saved; } catch (e) {}
+  function apply(lang) {
+    current = lang;
+    document.getElementById("art-es").hidden = lang !== "es";
+    document.getElementById("art-en").hidden = lang !== "en";
+    document.querySelectorAll(".lang-switch button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+    });
+    try { localStorage.setItem("subcortex-paper-lang", lang); } catch (e) {}
+  }
+  document.querySelectorAll(".lang-switch button").forEach(function (b) {
+    b.addEventListener("click", function () { apply(b.dataset.lang); });
+  });
+  apply(current);
+})();
+</script>
