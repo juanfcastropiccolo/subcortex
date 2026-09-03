@@ -21,11 +21,27 @@ except ImportError:  # pragma: no cover
     pass
 
 MODEL = os.environ.get("SUBCORTEX_MODEL", "gemini-3-flash-preview")
+
+
+def resolve_model(name: str | object = None):
+    """"claude-code" o "claude-code:opus[:effort]" → ClaudeCodeLlm (plan de Claude, sin API key);
+    cualquier otro string → modelo Gemini nativo de ADK."""
+    name = name or MODEL
+    if isinstance(name, str) and name.startswith("claude-code"):
+        from adapters.claude_code_llm import ClaudeCodeLlm
+        parts = name.split(":")
+        kw = {}
+        if len(parts) > 1 and parts[1]:
+            kw["cli_model"] = parts[1]
+        if len(parts) > 2 and parts[2]:
+            kw["effort"] = parts[2]
+        return ClaudeCodeLlm(**kw)
+    return name
 INSTRUCTION = (Path(__file__).parent / "instruction.md").read_text()
 
 
 def build_agent(model: str | object = MODEL) -> LlmAgent:
-    return LlmAgent(name="ops_operator", model=model, description="Operador de guardia",
+    return LlmAgent(name="ops_operator", model=resolve_model(model), description="Operador de guardia",
                     instruction=INSTRUCTION, tools=list(ALL_TOOLS))
 
 

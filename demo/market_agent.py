@@ -7,7 +7,7 @@ from google.adk.agents import LlmAgent
 from google.adk.apps.app import App
 
 import subcortex
-from demo.agent import MODEL
+from demo.agent import MODEL, resolve_model
 from marketworld.tools import ALL_TOOLS
 from marketworld.world import ALWAYS_ALLOWED, COARSE_FEATURES, DIAGNOSTIC_TOOLS, MAX_STEPS, RISK
 from subcortex.config import SubcortexConfig, default_scene_fn
@@ -16,7 +16,7 @@ INSTRUCTION = (Path(__file__).parent / "market_instruction.md").read_text()
 
 
 def build_agent(model: str | object = MODEL) -> LlmAgent:
-    return LlmAgent(name="manager", model=model, description="Gestor de cartera semanal",
+    return LlmAgent(name="manager", model=resolve_model(model), description="Gestor de cartera semanal",
                     instruction=INSTRUCTION, tools=list(ALL_TOOLS))
 
 

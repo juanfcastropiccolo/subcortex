@@ -9,14 +9,14 @@ from google.adk.apps.app import App
 import subcortex
 from bugworld.tools import ALL_TOOLS
 from bugworld.world import ALWAYS_ALLOWED, COARSE_FEATURES, DIAGNOSTIC_TOOLS, RISK
-from demo.agent import MODEL
+from demo.agent import MODEL, resolve_model
 from subcortex.config import SubcortexConfig, default_scene_fn
 
 INSTRUCTION = (Path(__file__).parent / "bug_instruction.md").read_text()
 
 
 def build_agent(model: str | object = MODEL) -> LlmAgent:
-    return LlmAgent(name="maintainer", model=model, description="Mantenedor que arregla bugs",
+    return LlmAgent(name="maintainer", model=resolve_model(model), description="Mantenedor que arregla bugs",
                     instruction=INSTRUCTION, tools=list(ALL_TOOLS))
 
 
