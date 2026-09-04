@@ -19,7 +19,7 @@ with one line, without modifying the model or the prompt: mandatory prediction b
 memory by situation that writes on surprise or success (hippocampus, amygdala, habenula),
 compiled habits that respond without calling the model (caudate → putamen), interoception
 translated into language (insula), and offline consolidation (sleep). We evaluate it with the
-same Gemini agent, with and without the layer, in three worlds: an operations simulator
+same agent (Gemini 3 Flash), with and without the layer, in three worlds: an operations simulator
 (`opsworld`), real bugs injected into a Python library (`bugworld`), and a historical replay of
 the author's momentum paper trader (`marketworld`). In `opsworld` the layer raises the score by
 22 %, brings resolution to 100 % and cuts model calls by 34 % in the last third, with compiled
@@ -268,6 +268,10 @@ agent never sees dates. Scene: BTC trend, breadth, volatility, dispersion, curre
 
 ## 6. Results
 
+Two engines, always identified by exact model: sections 6.1–6.4 run on **Gemini 3 Flash**
+(`gemini-3-flash-preview`); section 6.5 replicates opsworld and marketworld on
+**Claude Sonnet 5** (`claude-code:sonnet`). No other model was tested.
+
 ### 6.1 opsworld: the layer works — on the second iteration
 
 | metric | baseline | subcortex v1 | **subcortex v2** |
@@ -392,7 +396,7 @@ there is not, memory is pure overhead.
 
 {{fig:f5-eficiencia}}
 
-### 6.5 A second engine: Claude
+### 6.5 A second engine: Claude Sonnet 5
 
 To separate the architecture from the model that runs it, we repeated the `opsworld` and
 `marketworld` A/Bs with Claude Sonnet 5 as the engine, through an adapter that implements ADK's
@@ -400,7 +404,7 @@ To separate the architecture from the model that runs it, we repeated the `opswo
 and the reply comes back as a native `FunctionCall`, so the five plugins run without a single
 change. Same methodology, n=40 per arm.
 
-| metric | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
+| metric (engine: Claude Sonnet 5) | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
 |---|---|---|---|---|
 | mean score | 42.0 | 41.0 | 1.7 | **9.6** |
 | resolution rate | 0.82 | 0.72 | — | — |
@@ -411,10 +415,11 @@ change. Same methodology, n=40 per arm.
 {{fig:f6-motores}}
 
 Three readings. In `marketworld` the direction reproduces — subcortex ends above the baseline,
-within the range of the five Gemini trajectories — and for the first time habits fired in this
+within the range of the five Gemini 3 Flash trajectories — and for the first time habits fired in this
 world (11 times, with one correct dehabituation when the regime changed): Claude declares higher
-confidences and its repeated successes compile earlier. In `opsworld`, Claude's baseline already
-solves the causes that cost Gemini dearly and the score margin disappears; what remains is the
+confidences and its repeated successes compile earlier — the "Claude declares" above is
+Claude Sonnet 5 specifically. In `opsworld`, Claude Sonnet 5's baseline already
+solves the causes that cost Gemini 3 Flash dearly and the score margin disappears; what remains is the
 structural part — 21 % fewer calls, a third of the harmful actions, a final third with zero
 worsening actions — which is what the analogy predicts: the basal ganglia do not make the cortex
 smarter, they make it cheaper and less dangerous. The honest reading: resolution dropped ten
@@ -490,7 +495,7 @@ Each one came out of a run that did not work, and stayed in the code with its te
 ## 9. Future work
 
 Three to five trajectories per variant in all worlds and per engine, to report means with
-deviations. The Claude replication also leaves a question of its own: with a stronger base
+deviations. The Claude Sonnet 5 replication also leaves a question of its own: with a stronger base
 model, episodic recall can over-anchor (ten resolution points in `opsworld`); the natural fix is
 a recall threshold adaptive to the model's own hit rate. A fourth world with genuinely irreversible actions (operations on an automation
 instance, sandboxed) where veto-by-default can show its value, which was marginal in all three

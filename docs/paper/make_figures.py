@@ -63,12 +63,12 @@ T = {
         "f6cap": ("Figura 6. Mismos A/B con un segundo motor (Claude Sonnet 5, n=40 por brazo). En opsworld, "
                   "contra un baseline más fuerte, la capa mantiene el recorte de llamadas y reduce las acciones "
                   "dañinas a un tercio; en marketworld la dirección se reproduce: subcortex por encima del "
-                  "baseline con ambos motores (Gemini: media de cinco trayectorias)."),
-        "f6aria": ("Comparación por motor: llamadas por episodio en opsworld, Gemini de 6.7 a 5.0 y Claude de "
-                   "6.0 a 4.8; acciones dañinas, Gemini de 4 a 2 y Claude de 6 a 2; score medio de marketworld, "
-                   "Gemini de −4.1 a 8.4 y Claude de 1.7 a 9.6."),
+                  "baseline con ambos motores (Gemini 3 Flash: media de cinco trayectorias)."),
+        "f6aria": ("Comparación por motor: llamadas por episodio en opsworld, Gemini 3 Flash de 6.7 a 5.0 y "
+                   "Claude Sonnet 5 de 6.0 a 4.8; acciones dañinas, Gemini 3 Flash de 4 a 2 y Claude Sonnet 5 "
+                   "de 6 a 2; score medio de marketworld, Gemini 3 Flash de −4.1 a 8.4 y Claude Sonnet 5 de 1.7 a 9.6."),
         "f6t": ["opsworld: llamadas / episodio", "opsworld: acciones dañinas", "marketworld: score medio"],
-        "f6rows": ["Gemini", "Claude"],
+        "f6rows": ["Gemini 3 Flash", "Claude Sonnet 5"],
         "f5rows": ["opsworld", "market 21 d", "market 7 d"],
         "baseline": "baseline", "subcortex": "subcortex", "weekly_rule": None,
     },
@@ -116,12 +116,12 @@ T = {
         "f6cap": ("Figure 6. Same A/Bs on a second engine (Claude Sonnet 5, n=40 per arm). In opsworld, "
                   "against a stronger baseline, the layer keeps the call reduction and cuts harmful actions "
                   "to a third; in marketworld the direction reproduces: subcortex above the baseline on both "
-                  "engines (Gemini: mean of five trajectories)."),
-        "f6aria": ("Per-engine comparison: opsworld calls per episode, Gemini 6.7 to 5.0 and Claude 6.0 to "
-                   "4.8; harmful actions, Gemini 4 to 2 and Claude 6 to 2; marketworld mean score, Gemini "
-                   "−4.1 to 8.4 and Claude 1.7 to 9.6."),
+                  "engines (Gemini 3 Flash: mean of five trajectories)."),
+        "f6aria": ("Per-engine comparison: opsworld calls per episode, Gemini 3 Flash 6.7 to 5.0 and Claude "
+                   "Sonnet 5 6.0 to 4.8; harmful actions, Gemini 3 Flash 4 to 2 and Claude Sonnet 5 6 to 2; "
+                   "marketworld mean score, Gemini 3 Flash −4.1 to 8.4 and Claude Sonnet 5 1.7 to 9.6."),
         "f6t": ["opsworld: calls / episode", "opsworld: harmful actions", "marketworld: mean score"],
-        "f6rows": ["Gemini", "Claude"],
+        "f6rows": ["Gemini 3 Flash", "Claude Sonnet 5"],
         "f5rows": ["opsworld", "market 21 d", "market 7 d"],
         "baseline": "baseline", "subcortex": "subcortex", "weekly_rule": None,
     },
@@ -284,15 +284,15 @@ def f6(out, t):
         y = 40
         for (a, s), rlab in zip(rows, t["f6rows"]):
             for v, c, name in ((a, NEU, t["baseline"]), (s, S1, t["subcortex"])):
-                bw = round(150 * v / vmax)
-                b += (f'<rect x="{gx + 90}" y="{y}" width="{bw}" height="12" rx="3" fill="{c}">'
+                bw = round(140 * v / vmax)
+                b += (f'<rect x="{gx + 108}" y="{y}" width="{bw}" height="12" rx="3" fill="{c}">'
                       f'<title>{rlab} · {name}: {v}</title></rect>'
-                      f'<text x="{gx + 90 + bw + 5}" y="{y + 10}" fill="currentColor" font-size="11">{v}</text>')
+                      f'<text x="{gx + 108 + bw + 5}" y="{y + 10}" fill="currentColor" font-size="11">{v}</text>')
                 y += 15
-            b += f'<text x="{gx + 82}" y="{y - 18}" text-anchor="end" fill="{INK2}" font-size="11">{rlab}</text>'
+            b += f'<text x="{gx + 102}" y="{y - 18}" text-anchor="end" fill="{INK2}" font-size="10">{rlab}</text>'
             y += 10
-    gx, k = 620, 11
-    zx = gx + 150
+    gx, k = 620, 10
+    zx = gx + 152
     b += f'<text x="{gx}" y="20" fill="currentColor" font-weight="600">{t["f6t"][2]}</text>'
     b += f'<line x1="{zx}" y1="32" x2="{zx}" y2="150" stroke="{LINE}"/>'
     y = 40
@@ -305,7 +305,7 @@ def f6(out, t):
             tx, anchor = (zx - bw - 5, "end") if v < 0 else (zx + bw + 5, "start")
             b += f'<text x="{tx}" y="{y + 10}" text-anchor="{anchor}" fill="currentColor" font-size="11">{v}</text>'
             y += 15
-        b += f'<text x="{gx + 82}" y="{y - 18}" text-anchor="end" fill="{INK2}" font-size="11">{rlab}</text>'
+        b += f'<text x="{gx + 102}" y="{y - 18}" text-anchor="end" fill="{INK2}" font-size="10">{rlab}</text>'
         y += 10
     b += (f'<rect x="20" y="150" width="12" height="12" rx="3" fill="{NEU}"/><text x="38" y="160" fill="{INK2}">{t["baseline"]}</text>'
           f'<rect x="110" y="150" width="12" height="12" rx="3" fill="{S1}"/><text x="128" y="160" fill="{INK2}">{t["subcortex"]}</text>')

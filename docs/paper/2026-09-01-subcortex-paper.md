@@ -19,7 +19,7 @@ con una línea, sin modificar el modelo ni el prompt: predicción obligatoria an
 episódica por situación que escribe ante sorpresa o éxito (hipocampo, amígdala, habénula),
 hábitos compilados que responden sin llamar al modelo (caudado → putamen), interocepción
 traducida a lenguaje (ínsula) y consolidación offline (sueño). Lo evaluamos con el mismo agente
-Gemini, con y sin la capa, en tres mundos: un simulador de operaciones (`opsworld`), bugs reales
+(Gemini 3 Flash), con y sin la capa, en tres mundos: un simulador de operaciones (`opsworld`), bugs reales
 inyectados en una librería Python (`bugworld`) y un replay histórico del paper trader de momentum
 del autor (`marketworld`). En `opsworld` la capa sube el score 22 %, lleva la resolución al
 100 % y reduce las llamadas al modelo 34 % en el último tercio, con hábitos compilados. En
@@ -270,6 +270,10 @@ no ve fechas. Escena: tendencia de BTC, amplitud, volatilidad, dispersión, cart
 
 ## 6. Resultados
 
+Dos motores, siempre identificados por modelo exacto: las secciones 6.1–6.4 corren con
+**Gemini 3 Flash** (`gemini-3-flash-preview`); la sección 6.5 replica opsworld y marketworld con
+**Claude Sonnet 5** (`claude-code:sonnet`). Ningún otro modelo fue probado.
+
 ### 6.1 opsworld: la capa funciona, en la segunda iteración
 
 | métrica | baseline | subcortex v1 | **subcortex v2** |
@@ -393,7 +397,7 @@ terminan pagando la memoria; donde no la hay, la memoria es solo sobrecosto.
 
 {{fig:f5-eficiencia}}
 
-### 6.5 Un segundo motor: Claude
+### 6.5 Un segundo motor: Claude Sonnet 5
 
 Para separar la arquitectura del modelo que la corre, repetimos los A/B de `opsworld` y
 `marketworld` con Claude Sonnet 5 como motor, mediante un adaptador que implementa el `BaseLlm`
@@ -401,7 +405,7 @@ de ADK sobre el CLI local de Claude Code: las herramientas viajan como un contra
 por schema y la respuesta vuelve como `FunctionCall` nativa, así que los cinco plugins corren sin
 un solo cambio. Misma metodología, n=40 por brazo.
 
-| métrica | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
+| métrica (motor: Claude Sonnet 5) | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
 |---|---|---|---|---|
 | score medio | 42.0 | 41.0 | 1.7 | **9.6** |
 | tasa de resolución | 0.82 | 0.72 | — | — |
@@ -412,10 +416,11 @@ un solo cambio. Misma metodología, n=40 por brazo.
 {{fig:f6-motores}}
 
 Tres lecturas. En `marketworld` la dirección se reproduce —subcortex termina por encima del
-baseline, dentro del rango de las cinco trayectorias con Gemini— y por primera vez los hábitos
+baseline, dentro del rango de las cinco trayectorias con Gemini 3 Flash— y por primera vez los hábitos
 se dispararon en este mundo (11 veces, con una des-habituación correcta al cambiar el régimen):
-Claude declara confianzas más altas y sus éxitos repetidos compilan antes. En `opsworld` el
-baseline de Claude ya resuelve las causas que a Gemini le costaban y el margen de score
+Claude Sonnet 5 declara confianzas más altas y sus éxitos repetidos compilan antes. En
+`opsworld` el baseline de Claude Sonnet 5 ya resuelve las causas que a Gemini 3 Flash le
+costaban y el margen de score
 desaparece; lo que queda es lo estructural —21 % menos llamadas, un tercio de las acciones
 dañinas, último tercio sin empeoramientos— que es lo que la analogía predice: los ganglios
 basales no hacen más inteligente a la corteza, la hacen más barata y menos peligrosa. La lectura
@@ -492,7 +497,7 @@ Cada una salió de una corrida que no funcionó y quedó en el código con su te
 ## 9. Trabajo futuro
 
 Tres a cinco trayectorias por variante en todos los mundos y por motor, para reportar medias
-con desvío. La réplica con Claude deja además una pregunta propia: con un modelo base más fuerte,
+con desvío. La réplica con Claude Sonnet 5 deja además una pregunta propia: con un modelo base más fuerte,
 el recall episódico puede anclar de más (diez puntos de resolución en `opsworld`); el ajuste
 natural es un umbral de recuperación adaptativo a la tasa de acierto del propio modelo. Un cuarto mundo con acciones irreversibles reales (operaciones sobre una
 instancia de automatización, en sandbox) donde el veto por defecto pueda mostrar su valor, que en
