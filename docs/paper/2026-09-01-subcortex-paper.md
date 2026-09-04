@@ -27,8 +27,11 @@ del autor (`marketworld`). En `opsworld` la capa sube el score 22 %, lleva la re
 equity contra 50.5 del mismo agente sin la capa (5/5 por encima), y con cadencia semanal supera
 también a BTC; la ventaja proviene de un comportamiento estable en régimen bajista. En
 `bugworld` la capa no aporta nada en tres corridas, y explicamos por qué: sin repetición de
-situaciones ni acciones reutilizables, ningún mecanismo subcortical tiene palanca. Documentamos
-ocho lecciones de diseño surgidas de los fracasos, el costo operativo por episodio y los
+situaciones ni acciones reutilizables, ningún mecanismo subcortical tiene palanca. Una réplica con un segundo motor (Claude Sonnet 5,
+mediante un adaptador que traduce el tool-calling a un contrato JSON) reproduce la dirección en
+`marketworld` y muda la ganancia de `opsworld` del score a la eficiencia y la seguridad: con un
+modelo base más fuerte, la capa recorta 21 % las llamadas y dos tercios de las acciones dañinas
+sin ceder score. Documentamos nueve lecciones de diseño surgidas de los fracasos, el costo operativo por episodio y los
 límites del estudio.
 
 ---
@@ -390,6 +393,40 @@ terminan pagando la memoria; donde no la hay, la memoria es solo sobrecosto.
 
 {{fig:f5-eficiencia}}
 
+### 6.5 Un segundo motor: Claude
+
+Para separar la arquitectura del modelo que la corre, repetimos los A/B de `opsworld` y
+`marketworld` con Claude Sonnet 5 como motor, mediante un adaptador que implementa el `BaseLlm`
+de ADK sobre el CLI local de Claude Code: las herramientas viajan como un contrato JSON validado
+por schema y la respuesta vuelve como `FunctionCall` nativa, así que los cinco plugins corren sin
+un solo cambio. Misma metodología, n=40 por brazo.
+
+| métrica | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
+|---|---|---|---|---|
+| score medio | 42.0 | 41.0 | 1.7 | **9.6** |
+| tasa de resolución | 0.82 | 0.72 | — | — |
+| llamadas al LLM / episodio | 6.0 | **4.8** | 3.1 | 2.8 |
+| acciones dañinas | 6 | **2** | 11 | **6** |
+| hábitos: disparos | 0 | 6 | 0 | **11** |
+
+{{fig:f6-motores}}
+
+Tres lecturas. En `marketworld` la dirección se reproduce —subcortex termina por encima del
+baseline, dentro del rango de las cinco trayectorias con Gemini— y por primera vez los hábitos
+se dispararon en este mundo (11 veces, con una des-habituación correcta al cambiar el régimen):
+Claude declara confianzas más altas y sus éxitos repetidos compilan antes. En `opsworld` el
+baseline de Claude ya resuelve las causas que a Gemini le costaban y el margen de score
+desaparece; lo que queda es lo estructural —21 % menos llamadas, un tercio de las acciones
+dañinas, último tercio sin empeoramientos— que es lo que la analogía predice: los ganglios
+basales no hacen más inteligente a la corteza, la hacen más barata y menos peligrosa. La lectura
+honesta: la resolución bajó diez puntos, concentrada en episodios donde un precedente parecido
+pero no idéntico ancló al agente y lo hizo cerrar antes de tiempo; cuanto más fuerte el modelo
+base, más fino debe ser el umbral de recuperación para que la memoria no compita con un juicio
+en frío que ya era bueno (§9). El adaptador dejó una lección propia (lección 9): con
+tool-calling por contrato, la obligación de actuar hay que escribirla. Operativamente el motor
+es ~2× más lento (un proceso de CLI por llamada) y sus contadores de tokens no son comparables
+con los de la API, por lo que la figura 6 compara llamadas, daño y score.
+
 ---
 
 ## 7. Lecciones de diseño
@@ -419,6 +456,11 @@ Cada una salió de una corrida que no funcionó y quedó en el código con su te
    llamadas que el modelo no generó; no hay firma dummy documentada. Marcar la llamada del hábito y
    convertir el par llamada → resultado a texto antes de cada invocación es independiente del
    proveedor y cubierto por tests.
+9. **Un contrato de salida debe obligar a actuar.** Con tool-calling nativo, el canal empuja al
+   modelo a llamar herramientas; sobre un contrato JSON en texto, "responder sin actuar" es una
+   salida válida, y apareció en el 25 % de los primeros episodios con el segundo motor. La
+   prohibición explícita —nunca texto final sin haber ejecutado al menos una herramienta— la
+   eliminó por completo (0 en 160 episodios).
 
 ---
 
@@ -427,8 +469,10 @@ Cada una salió de una corrida que no funcionó y quedó en el código con su te
 - **Tamaño de muestra.** 40 episodios por mundo (120 en la variante semanal). Las direcciones son
   robustas (replicación 5/5 en `marketworld`); las magnitudes tienen desvíos del orden de la
   mitad de la ventaja.
-- **Un solo modelo.** Todo se corrió con Gemini 3 Flash. La comparación con un segundo modelo queda
-  pendiente; la afirmación es sobre la arquitectura con este modelo.
+- **Dos motores, una corrida por par.** Las corridas principales usan Gemini 3 Flash; la réplica
+  con Claude Sonnet 5 (§6.5) confirma la dirección en `marketworld` y la lectura de eficiencia en
+  `opsworld`, pero es una trayectoria por mundo y las magnitudes entre motores no son directamente
+  comparables: los contratos de tool-calling difieren.
 - **No determinismo dependiente del camino.** El baseline resultó determinista en `marketworld`;
   subcortex no, porque una decisión distinta cambia qué episodios existen después. La varianza
   observada es una propiedad del sistema, no solo ruido de muestreo.
@@ -447,8 +491,10 @@ Cada una salió de una corrida que no funcionó y quedó en el código con su te
 
 ## 9. Trabajo futuro
 
-Tres a cinco trayectorias por variante en todos los mundos y un segundo modelo, para reportar
-medias con desvío. Un cuarto mundo con acciones irreversibles reales (operaciones sobre una
+Tres a cinco trayectorias por variante en todos los mundos y por motor, para reportar medias
+con desvío. La réplica con Claude deja además una pregunta propia: con un modelo base más fuerte,
+el recall episódico puede anclar de más (diez puntos de resolución en `opsworld`); el ajuste
+natural es un umbral de recuperación adaptativo a la tasa de acierto del propio modelo. Un cuarto mundo con acciones irreversibles reales (operaciones sobre una
 instancia de automatización, en sandbox) donde el veto por defecto pueda mostrar su valor, que en
 los tres mundos fue marginal. Aprendizaje de la escena: `coarse_features` se eligió a mano por
 mundo; la sugerencia por ganancia de información existe, pero aplicarla sin invalidar dopamina y
@@ -461,10 +507,13 @@ hábito `hold` en régimen bajista y las reglas de dispersión que la regla pura
 ## 10. Reproducibilidad
 
 Repositorio `memory-tests`, rama `worktree-subcortex-poc`. `uv sync` instala todo; `uv run
-pytest` corre los 87 tests (5 lentos en `bugworld`) sin red. `demo/run_ab.py`,
+pytest` corre los 91 tests (5 lentos en `bugworld`) sin red. `demo/run_ab.py`,
 `demo/run_bugs_ab.py` y `demo/run_market_ab.py` corren los A/B con `GOOGLE_API_KEY` en
 `demo/.env`; aceptan `--baseline-from`, `--resume`, `--ablate`, `--spacing/--horizon`,
-`--history-confidence`, `--reconsider`, `--llm-rules`. Los datos de `marketworld` son 10 CSV de
+`--history-confidence`, `--reconsider`, `--llm-rules`. La variable de entorno
+`SUBCORTEX_MODEL` elige el motor: una cadena de modelo Gemini, o `claude-code[:modelo]` para el
+adaptador `adapters/claude_code_llm.py` sobre el CLI local de Claude Code, sin clave de API; los
+crudos del segundo motor están en `results-ops-cc.json` y `results-market-cc.json`. Los datos de `marketworld` son 10 CSV de
 velas diarias incluidos en el repositorio. Los resultados crudos de cada corrida están en
 `results-*.json`; los reportes con diagnóstico, en `docs/superpowers/results/`; las
 especificaciones, en `docs/superpowers/specs/`; el ensayo de origen, en

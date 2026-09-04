@@ -27,8 +27,11 @@ habits. In `marketworld`, over 40 real market decisions, five trajectories end a
 against 50.5 for the same agent without the layer (5/5 above), and at weekly cadence it also
 beats BTC; the advantage comes from stable behavior in bear regimes. In `bugworld` the layer
 contributes nothing across three runs, and we explain why: without recurring situations or
-reusable actions, no subcortical mechanism has leverage. We document eight design lessons that
-emerged from the failures, the per-episode operating cost, and the limits of the study.
+reusable actions, no subcortical mechanism has leverage. A replication with a second engine (Claude Sonnet 5,
+through an adapter that translates tool-calling into a JSON contract) reproduces the direction
+in `marketworld` and shifts `opsworld`'s gain from score to efficiency and safety: with a
+stronger base model, the layer cuts calls by 21 % and harmful actions by two thirds without
+giving up score. We document nine design lessons that emerged from the failures, the per-episode operating cost, and the limits of the study.
 
 ---
 
@@ -389,6 +392,39 @@ there is not, memory is pure overhead.
 
 {{fig:f5-eficiencia}}
 
+### 6.5 A second engine: Claude
+
+To separate the architecture from the model that runs it, we repeated the `opsworld` and
+`marketworld` A/Bs with Claude Sonnet 5 as the engine, through an adapter that implements ADK's
+`BaseLlm` on top of the local Claude Code CLI: tools travel as a schema-validated JSON contract
+and the reply comes back as a native `FunctionCall`, so the five plugins run without a single
+change. Same methodology, n=40 per arm.
+
+| metric | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
+|---|---|---|---|---|
+| mean score | 42.0 | 41.0 | 1.7 | **9.6** |
+| resolution rate | 0.82 | 0.72 | — | — |
+| LLM calls / episode | 6.0 | **4.8** | 3.1 | 2.8 |
+| harmful actions | 6 | **2** | 11 | **6** |
+| habit firings | 0 | 6 | 0 | **11** |
+
+{{fig:f6-motores}}
+
+Three readings. In `marketworld` the direction reproduces — subcortex ends above the baseline,
+within the range of the five Gemini trajectories — and for the first time habits fired in this
+world (11 times, with one correct dehabituation when the regime changed): Claude declares higher
+confidences and its repeated successes compile earlier. In `opsworld`, Claude's baseline already
+solves the causes that cost Gemini dearly and the score margin disappears; what remains is the
+structural part — 21 % fewer calls, a third of the harmful actions, a final third with zero
+worsening actions — which is what the analogy predicts: the basal ganglia do not make the cortex
+smarter, they make it cheaper and less dangerous. The honest reading: resolution dropped ten
+points, concentrated in episodes where a similar-but-not-identical precedent anchored the agent
+into closing early; the stronger the base model, the finer the recall threshold must be so that
+memory does not compete with cold judgment that was already good (§9). The adapter left a lesson
+of its own (lesson 9): with contract-based tool-calling, the obligation to act must be written
+down. Operationally the engine is ~2× slower (one CLI process per call) and its token counters
+are not comparable with the API's, so figure 6 compares calls, harm and score.
+
 ---
 
 ## 7. Design lessons
@@ -418,6 +454,11 @@ Each one came out of a run that did not work, and stayed in the code with its te
    calls the model did not generate; there is no documented dummy signature. Marking the habit's
    call and converting the call → result pair to text before each invocation is
    provider-independent and covered by tests.
+9. **An output contract must oblige action.** With native tool-calling, the channel pushes the
+   model to call tools; over a JSON-in-text contract, "answering without acting" is a valid
+   output, and it appeared in 25 % of the first episodes with the second engine. The explicit
+   prohibition — never final text without having executed at least one tool — removed it
+   entirely (0 in 160 episodes).
 
 ---
 
@@ -426,8 +467,10 @@ Each one came out of a run that did not work, and stayed in the code with its te
 - **Sample size.** 40 episodes per world (120 in the weekly variant). Directions are robust
   (5/5 replication in `marketworld`); magnitudes carry deviations on the order of half the
   advantage.
-- **A single model.** Everything ran on Gemini 3 Flash. The comparison with a second model
-  remains pending; the claim is about the architecture with this model.
+- **Two engines, one run per pair.** The main runs use Gemini 3 Flash; the Claude Sonnet 5
+  replication (§6.5) confirms the direction in `marketworld` and the efficiency reading in
+  `opsworld`, but it is one trajectory per world, and magnitudes are not directly comparable
+  across engines: the tool-calling contracts differ.
 - **Path-dependent non-determinism.** The baseline turned out deterministic in `marketworld`;
   subcortex did not, because a different decision changes which episodes exist afterwards. The
   observed variance is a property of the system, not just sampling noise.
@@ -446,8 +489,10 @@ Each one came out of a run that did not work, and stayed in the code with its te
 
 ## 9. Future work
 
-Three to five trajectories per variant in all worlds and a second model, to report means with
-deviations. A fourth world with genuinely irreversible actions (operations on an automation
+Three to five trajectories per variant in all worlds and per engine, to report means with
+deviations. The Claude replication also leaves a question of its own: with a stronger base
+model, episodic recall can over-anchor (ten resolution points in `opsworld`); the natural fix is
+a recall threshold adaptive to the model's own hit rate. A fourth world with genuinely irreversible actions (operations on an automation
 instance, sandboxed) where veto-by-default can show its value, which was marginal in all three
 worlds. Scene learning: `coarse_features` was hand-picked per world; the information-gain
 suggestion exists, but applying it without invalidating dopamine and habits requires a key
@@ -460,10 +505,14 @@ habit in bear regimes and the dispersion rules the pure rule does not have.
 ## 10. Reproducibility
 
 Repository `memory-tests`, branch `worktree-subcortex-poc`. `uv sync` installs everything;
-`uv run pytest` runs the 87 tests (5 slow ones in `bugworld`) without network access.
+`uv run pytest` runs the 91 tests (5 slow ones in `bugworld`) without network access.
 `demo/run_ab.py`, `demo/run_bugs_ab.py` and `demo/run_market_ab.py` run the A/Bs with
 `GOOGLE_API_KEY` in `demo/.env`; they accept `--baseline-from`, `--resume`, `--ablate`,
-`--spacing/--horizon`, `--history-confidence`, `--reconsider`, `--llm-rules`. The `marketworld`
+`--spacing/--horizon`, `--history-confidence`, `--reconsider`, `--llm-rules`. The
+`SUBCORTEX_MODEL` environment variable picks the engine: a Gemini model string, or
+`claude-code[:model]` for the `adapters/claude_code_llm.py` adapter over the local Claude Code
+CLI, with no API key; the raw results for the second engine live in `results-ops-cc.json` and
+`results-market-cc.json`. The `marketworld`
 data are 10 daily-candle CSVs included in the repository. Raw results for every run live in
 `results-*.json`; the reports with diagnoses in `docs/superpowers/results/`; the specifications
 in `docs/superpowers/specs/`; the source essay in `documentation/anatomia-de-una-decision.md`.
