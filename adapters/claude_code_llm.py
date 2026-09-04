@@ -105,7 +105,7 @@ class ClaudeCodeLlm(BaseLlm):
 
     def _cmd(self) -> list[str]:
         cmd = [self.binary, "-p", "--output-format", "json", "--model", self.cli_model,
-               "--no-session-persistence", "--max-turns", "1", "--tools", "",
+               "--no-session-persistence", "--max-turns", "8", "--tools", "",
                "--json-schema", json.dumps(OUTPUT_SCHEMA)]
         if self.effort:
             cmd += ["--effort", self.effort]
@@ -128,7 +128,11 @@ class ClaudeCodeLlm(BaseLlm):
                                      ) -> AsyncGenerator[LlmResponse, None]:
         envelope = await self._invoke(build_prompt(llm_request))
         if envelope.get("is_error"):
-            raise RuntimeError(f"claude -p error: {str(envelope.get('result'))[:300]}")
+            raise RuntimeError(
+                f"claude -p error (subtype={envelope.get('subtype')}, "
+                f"api_error={envelope.get('api_error_status')}, "
+                f"terminal={envelope.get('terminal_reason')}): "
+                f"{str(envelope.get('result'))[:300]}")
         usage = envelope.get("usage") or {}
         try:
             response = parse_result(envelope.get("result") or "")
