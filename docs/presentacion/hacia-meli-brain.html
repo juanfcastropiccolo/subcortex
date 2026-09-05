@@ -1,0 +1,488 @@
+<title>Hacia MELI Brain</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F7F5F0; --card: #FFFFFF; --ink: #21242B; --ink2: #565C68; --ink3: #8B909B;
+    --line: #E2DFD6; --accent: #4C46B5; --accent-soft: #EAE8F8; --amber: #D98E1F; --amber-soft: #FBF1DD;
+    --good: #2E7D5B; --bad: #BE5151; --viz-sub: #2a78d6; --viz-base: #eb6834; --viz-ref: #b9b6ac;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181D; --card: #1E2127; --ink: #ECEAE4; --ink2: #B4B8C0; --ink3: #7D828C;
+      --line: #32363E; --accent: #8E88E8; --accent-soft: #2A2850; --amber: #E5A94B; --amber-soft: #3A2F17;
+      --good: #5BBA92; --bad: #D98080; --viz-sub: #3987e5; --viz-base: #d95926; --viz-ref: #4a4e56;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181D; --card: #1E2127; --ink: #ECEAE4; --ink2: #B4B8C0; --ink3: #7D828C;
+    --line: #32363E; --accent: #8E88E8; --accent-soft: #2A2850; --amber: #E5A94B; --amber-soft: #3A2F17;
+    --good: #5BBA92; --bad: #D98080; --viz-sub: #3987e5; --viz-base: #d95926; --viz-ref: #4a4e56;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "Instrument Sans", system-ui, sans-serif;
+         font-size: 16.5px; line-height: 1.62; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .prose { max-width: 780px; }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; letter-spacing: -.01em; text-wrap: balance; }
+  h2 { font-size: 34px; font-weight: 600; margin: 0 0 10px; }
+  h3 { font-size: 20px; font-weight: 600; margin: 0 0 6px; }
+  p { margin: 0 0 14px; }
+  code, .mono { font-family: "IBM Plex Mono", Menlo, monospace; font-size: .86em; }
+  code { background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
+  a { color: var(--accent); }
+  section { padding: 72px 0; border-top: 1px solid var(--line); }
+  .eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+             color: var(--amber); margin-bottom: 14px; }
+  .lead { font-size: 19px; color: var(--ink2); }
+  .grid { display: grid; gap: 18px; }
+  .cardbox { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  .chip { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+  .chip.ok { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+  .chip.mid { background: var(--amber-soft); color: var(--amber); }
+  .chip.open { background: var(--accent-soft); color: var(--accent); }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; background: var(--card);
+          border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink3); background: var(--bg); }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--accent); }
+  figure { margin: 22px 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+           padding: 18px 16px 12px; overflow-x: auto; }
+  figcaption { font-size: 13px; color: var(--ink3); margin-top: 8px; max-width: 72ch; }
+  /* --- topbar --- */
+  nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; gap: 20px; align-items: center; padding: 12px 24px; overflow-x: auto; }
+  nav a { color: var(--ink2); text-decoration: none; font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+  nav a:hover { color: var(--accent); }
+  nav .brand { font-family: "Fraunces", serif; font-weight: 700; color: var(--ink); font-size: 15px; }
+  /* --- hero --- */
+  header.hero { padding: 84px 0 64px; }
+  .hero h1 { font-size: clamp(40px, 6vw, 64px); font-weight: 700; line-height: 1.04; margin: 0 0 18px; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .statstrip { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 20px; min-width: 150px; }
+  .stat b { display: block; font-family: "Fraunces", serif; font-size: 30px; font-weight: 600; color: var(--accent); }
+  .stat span { font-size: 13px; color: var(--ink2); }
+  /* --- brain cards --- */
+  .braincard { display: grid; grid-template-columns: 190px 1fr; gap: 20px; align-items: start; }
+  .braincard .lbl { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin: 10px 0 2px; }
+  .braincard .lbl:first-of-type { margin-top: 0; }
+  .braincard .math { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 13px;
+                     background: var(--accent-soft); color: var(--ink); border-radius: 6px; padding: 6px 10px; margin-top: 8px; }
+  .brain svg { width: 100%; height: auto; color: var(--ink3); }
+  @media (max-width: 680px) { .braincard { grid-template-columns: 1fr; } .brain { max-width: 220px; } }
+  /* --- hypotheses --- */
+  .hyp { border-left: 4px solid var(--accent); }
+  .hyp .ref { font-size: 14px; color: var(--ink2); margin: 8px 0 0; }
+  .hyp .ref b { color: var(--ink); }
+  /* --- bars --- */
+  .barrow { display: grid; grid-template-columns: 150px 1fr 64px; gap: 10px; align-items: center; font-size: 14px; margin: 7px 0; }
+  .barrow .track { background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 5px; height: 16px; position: relative; }
+  .barrow .fill { position: absolute; inset: 0 auto 0 0; border-radius: 5px; }
+  .legend { display: flex; gap: 18px; font-size: 13px; color: var(--ink2); margin: 6px 0 2px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .num { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink2); }
+  footer { padding: 56px 0 80px; border-top: 1px solid var(--line); color: var(--ink2); font-size: 14.5px; }
+  .cta { display: inline-block; background: var(--accent); color: #fff; font-weight: 600; padding: 10px 20px;
+         border-radius: 10px; text-decoration: none; }
+  .cta.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .two { grid-template-columns: 1fr 1fr; } .three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 860px) { .two, .three { grid-template-columns: 1fr; } }
+  .quiet { color: var(--ink3); font-size: 14px; }
+  .flowfig svg { width: 100%; height: auto; color: var(--ink2); }
+</style>
+
+<nav><div class="wrap">
+  <span class="brand">Hacia MELI Brain</span>
+  <a href="#idea">La idea</a><a href="#hipotesis">Hipótesis</a><a href="#cerebro">Cerebro → código</a>
+  <a href="#evidencia">Evidencia</a><a href="#ahorro">Ahorro</a><a href="#teoria">Teoría</a>
+  <a href="#casos">Casos MELI</a><a href="#falta">Qué falta</a><a href="#propuesta">La propuesta</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Propuesta de investigación aplicada · Juan F. Castro Piccolo · septiembre 2026</div>
+  <h1>Los agentes LLM no aprenden de su experiencia.<br><em>Les construimos la parte del cerebro que sí.</em></h1>
+  <p class="lead prose">Subcortex es una capa de software que envuelve a cualquier agente LLM —sin tocar el modelo
+  ni el prompt— y le agrega lo que un cerebro tiene alrededor de la corteza: memoria por situación, freno ante el
+  riesgo, hábitos que saltean la deliberación y noción del propio estado. La validamos con método A/B en
+  <b>3 dominios</b> y <b>4 modelos distintos</b>. Esta página cuenta todo el recorrido; el detalle técnico completo
+  está en el paper.</p>
+  <div class="statstrip">
+    <div class="stat"><b>−25 %</b><span>llamadas al modelo<br>(incidentes, mejor caso)</span></div>
+    <div class="stat"><b>−50 a −71 %</b><span>acciones dañinas<br>(en los 4 modelos)</span></div>
+    <div class="stat"><b>5/5</b><span>réplicas por encima del baseline<br>(trading, mismo agente)</span></div>
+    <div class="stat"><b>4 modelos</b><span>el mecanismo replica:<br>Gemini, Sonnet, Opus, Fable</span></div>
+  </div>
+</div></header>
+
+<section id="idea"><div class="wrap">
+  <div class="eyebrow">La idea en 60 segundos</div>
+  <h2>El LLM es solo la corteza</h2>
+  <div class="prose">
+  <p>Un agente actual decide <b>en un solo disparo</b>: el modelo propone una acción y el sistema la ejecuta.
+  No declara qué espera que pase, no compara lo esperado con lo observado, no recuerda por situación,
+  no compila lo repetido, no sabe cómo viene su propio episodio. Cada decisión cuesta lo mismo que la primera,
+  para siempre.</p>
+  <p>En un cerebro, la corteza (lo que el LLM hace bien: convertir argumentos heterogéneos en una decisión)
+  es una parte minoritaria del sistema. Todo lo demás —ganglios basales, cerebelo, hipocampo, amígdala,
+  ínsula— <b>autoriza, predice, recuerda, compila y aprende</b>. Partimos de un ensayo neuroanatómico propio
+  que recorre una decisión simple paso a paso, y lo convertimos en cinco plugins para Google ADK que se
+  enchufan con una línea: <code>subcortex.attach(app, ...)</code>.</p>
+  </div>
+  <figure class="flowfig">
+    <svg viewBox="0 0 960 210" role="img" aria-label="Comparación: agente actual, un bucle directo modelo-herramienta; con subcortex, el mismo bucle pasa por memoria y predicción antes del modelo, gate antes de la herramienta, y aprendizaje después, con un atajo de hábito que evita al modelo.">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="currentColor"/></marker></defs>
+      <text x="18" y="26" font-weight="700" font-size="14" fill="currentColor">Agente actual</text>
+      <rect x="18" y="46" width="120" height="46" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <text x="78" y="73" text-anchor="middle" font-size="13" fill="currentColor">LLM</text>
+      <rect x="230" y="46" width="130" height="46" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <text x="295" y="73" text-anchor="middle" font-size="13" fill="currentColor">herramienta</text>
+      <line x1="138" y1="60" x2="228" y2="60" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+      <line x1="228" y1="80" x2="138" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+      <text x="183" y="52" text-anchor="middle" font-size="11" fill="currentColor">actúa</text>
+      <text x="183" y="96" text-anchor="middle" font-size="11" fill="currentColor">resultado</text>
+      <text x="18" y="140" font-size="12.5" fill="currentColor">Cada decisión: mismo costo, misma calidad, para siempre.</text>
+
+      <text x="470" y="26" font-weight="700" font-size="14" fill="currentColor">Con subcortex</text>
+      <rect x="470" y="46" width="106" height="46" rx="9" fill="var(--accent)" fill-opacity=".14" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="523" y="66" text-anchor="middle" font-size="12" fill="currentColor">memoria +</text>
+      <text x="523" y="80" text-anchor="middle" font-size="12" fill="currentColor">predicción</text>
+      <rect x="612" y="46" width="86" height="46" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <text x="655" y="73" text-anchor="middle" font-size="13" fill="currentColor">LLM</text>
+      <rect x="732" y="46" width="70" height="46" rx="9" fill="var(--accent)" fill-opacity=".14" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="767" y="73" text-anchor="middle" font-size="12.5" fill="currentColor">gate</text>
+      <rect x="836" y="46" width="104" height="46" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <text x="888" y="73" text-anchor="middle" font-size="13" fill="currentColor">herramienta</text>
+      <line x1="576" y1="69" x2="610" y2="69" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+      <line x1="698" y1="69" x2="730" y2="69" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+      <line x1="802" y1="69" x2="834" y2="69" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+      <path d="M 888 92 C 888 150, 560 158, 524 96" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar)"/>
+      <text x="710" y="146" text-anchor="middle" font-size="11.5" fill="currentColor">error de predicción → memoria, dopamina, hábitos, tono</text>
+      <path d="M 523 46 C 523 12, 860 10, 884 44" fill="none" stroke="var(--amber)" stroke-width="1.7" marker-end="url(#ar)"/>
+      <text x="700" y="18" text-anchor="middle" font-size="11.5" fill="var(--amber)" font-weight="600">hábito compilado: actúa SIN llamar al modelo</text>
+      <text x="767" y="112" text-anchor="middle" font-size="11" fill="currentColor">veto por defecto</text>
+    </svg>
+    <figcaption>El mismo bucle de tool-calls que el framework ya tiene, con la capa alrededor. Un veto no rompe nada:
+    vuelve como resultado y el modelo re-itera. Un hábito es la única forma real de abaratar: el modelo no se invoca.</figcaption>
+  </figure>
+  <p class="prose quiet">Regla de lectura de toda esta página: <b>mismo agente, mismo modelo, mismo prompt</b>,
+  con y sin la capa. Todo lo que cambia entre columnas es <code>attach()</code>.</p>
+</div></section>
+
+<section id="hipotesis"><div class="wrap">
+  <div class="eyebrow">Las hipótesis — explícitas y refutables</div>
+  <h2>Qué afirmamos, qué las refutaría, cómo vienen</h2>
+  <div class="grid two" style="margin-top: 26px">
+    <div class="cardbox hyp"><h3>H1 · Memoria como mecanismo</h3>
+      <p>Un agente LLM <b>mejora con el uso</b> si se le agrega memoria episódica indexada por situación,
+      escrita solo ante sorpresa o éxito — sin fine-tuning, sin tocar pesos.</p>
+      <p class="ref"><b>Se refuta si:</b> quitar solo la memoria (ablación) no degrada la conducta, o el agente con
+      memoria no supera al mismo agente sin ella.</p>
+      <span class="chip ok">Sostenida</span>
+      <p class="ref">La ablación sin memoria devuelve la conducta bajista <b>exactamente</b> al baseline
+      (−3.50 % vs −3.51 % por decisión). La memoria no correlaciona con la mejora: <b>es</b> la mejora.</p>
+    </div>
+    <div class="cardbox hyp"><h3>H2 · Compilar abarata</h3>
+      <p>Las decisiones repetidas se <b>compilan en hábitos</b> que responden sin invocar al modelo,
+      reduciendo llamadas, tokens y tiempo sin perder calidad.</p>
+      <p class="ref"><b>Se refuta si:</b> con repetición real, las llamadas por episodio no bajan, o bajan a costa
+      del resultado.</p>
+      <span class="chip ok">Sostenida — con su límite mapeado</span>
+      <p class="ref">Incidentes: −34 % de llamadas en el último tercio (Gemini), −21 % global (Sonnet). El límite
+      es honesto: donde nada se repite (bugs únicos), no hay palanca — 3 corridas, 3 empates, explicados.</p>
+    </div>
+    <div class="cardbox hyp"><h3>H3 · Veto estructural &gt; prompt</h3>
+      <p>Un <b>gate de veto por defecto</b> (la acción se ejecuta solo si confianza × historial supera el costo del
+      riesgo) reduce acciones dañinas más que pedírselo al prompt.</p>
+      <p class="ref"><b>Se refuta si:</b> en un dominio con acciones genuinamente irreversibles, el gate no reduce el
+      daño o bloquea de más (falsos frenos que empeoran el resultado).</p>
+      <span class="chip mid">Parcial — necesita su dominio</span>
+      <p class="ref">Las acciones dañinas cayeron a la mitad o menos en los 4 modelos, pero la atribución es
+      compartida con la memoria; los vetos casi no se ejercieron porque nuestros mundos no tienen verdaderos
+      irreversibles. Es exactamente lo próximo a probar (ver <a href="#falta">qué falta</a>).</p>
+    </div>
+    <div class="cardbox hyp"><h3>H4 · Es la arquitectura, no el modelo</h3>
+      <p>El mecanismo es <b>independiente del modelo</b>: la misma capa, sin un solo cambio, produce el mismo
+      patrón con motores distintos.</p>
+      <p class="ref"><b>Se refuta si:</b> al cambiar de modelo, la capa deja de aportar o invierte el signo del efecto.</p>
+      <span class="chip ok">Sostenida en 4 modelos</span>
+      <p class="ref">Gemini 3 Flash, Claude Sonnet 5, Opus 5 y Fable 5.1: en trading subcortex terminó arriba
+      del baseline con los cuatro; en incidentes redujo llamadas y daño con los cuatro. Lo que cambia con el
+      modelo es <i>dónde</i> aparece la ganancia — y eso también lo predice la teoría (ver evidencia).</p>
+    </div>
+  </div>
+</div></section>
+
+<section id="cerebro"><div class="wrap">
+  <div class="eyebrow">El mapa</div>
+  <h2>Cerebro → código, componente por componente</h2>
+  <p class="prose lead">Cada pieza de la capa copia un mecanismo concreto del cerebro. No como metáfora decorativa:
+  con la fórmula al lado, para que se vea qué abstracción elegimos y por qué.</p>
+  <div class="grid" style="margin-top: 26px" id="braincards"></div>
+  <p class="quiet prose" style="margin-top: 18px">La corteza prefrontal es el propio LLM, sin cambios: convertir
+  argumentos heterogéneos a una moneda común es lo único que ya hace bien. La abstracción ahí fue no abstraer.</p>
+</div></section>
+
+<section id="evidencia"><div class="wrap">
+  <div class="eyebrow">La evidencia</div>
+  <h2>Tres mundos, método A/B, cuatro modelos</h2>
+  <div class="grid three" style="margin-top: 26px">
+    <div class="cardbox"><h3>🖥️ opsworld — incidentes</h3>
+      <p class="quiet">Simulador de operaciones: 6 causas raíz, acciones con riesgo (restart, rollback, failover).
+      40 episodios por brazo.</p>
+      <p><b>+22 % score, 100 % resolución, −34 % llamadas</b> en el último tercio (Gemini). Con hábitos compilados:
+      el 4.º incidente igual ya no delibera.</p></div>
+    <div class="cardbox"><h3>🐛 bugworld — resultado nulo honesto</h3>
+      <p class="quiet">40 bugs reales inyectados en una librería Python. 3 corridas: 3 empates.</p>
+      <p>Cada bug es único → nada se repite → <b>ningún mecanismo subcortical tiene palanca</b>. Este límite mapea
+      exactamente dónde aplica la capa y dónde no. Un resultado nulo explicado vale más que uno positivo inflado.</p></div>
+    <div class="cardbox"><h3>📈 marketworld — el problema real</h3>
+      <p class="quiet">Replay histórico del paper trader de momentum del autor: 40 decisiones reales de mercado,
+      ventana adversa a la estrategia.</p>
+      <p><b>5 de 5 réplicas</b> por encima del mismo agente sin capa (89.3 ± 19.5 vs 50.5 de equity); en cadencia
+      semanal supera también a comprar-y-holdear BTC. La ventaja: conducta estable en régimen bajista.</p></div>
+  </div>
+
+  <figure>
+    <div class="legend"><span><i style="background: var(--viz-base)"></i>baseline (mismo agente, sin capa)</span>
+    <span><i style="background: var(--viz-sub)"></i>subcortex</span><span><i style="background: var(--viz-ref)"></i>referencias sin LLM</span></div>
+    <div class="barrow"><span>baseline</span><div class="track"><div class="fill" style="width: 39%; background: var(--viz-base)"></div></div><span class="num">50.5</span></div>
+    <div class="barrow"><span><b>subcortex</b> (media de 5)</span><div class="track"><div class="fill" style="width: 69%; background: var(--viz-sub)"></div></div><span class="num">89.3</span></div>
+    <div class="barrow"><span>regla momentum diaria</span><div class="track"><div class="fill" style="width: 60%; background: var(--viz-ref)"></div></div><span class="num">78.6</span></div>
+    <div class="barrow"><span>BTC buy &amp; hold</span><div class="track"><div class="fill" style="width: 73%; background: var(--viz-ref)"></div></div><span class="num">95.3</span></div>
+    <figcaption>marketworld: equity final desde 100, 40 decisiones cada 21 días. Las cinco trayectorias de subcortex
+    (68–121) quedaron todas por encima del baseline determinista. En la variante semanal subcortex (101.6) supera
+    además a BTC (95.3).</figcaption>
+  </figure>
+
+  <h3 style="margin-top: 34px">La ablación que cierra el argumento</h3>
+  <figure>
+    <div class="barrow"><span>capa completa</span><div class="track"><div class="fill" style="width: 34%; background: var(--viz-sub)"></div></div><span class="num">−1.24 %</span></div>
+    <div class="barrow"><span>sin interocepción</span><div class="track"><div class="fill" style="width: 62%; background: var(--viz-sub); opacity: .55"></div></div><span class="num">−2.27 %</span></div>
+    <div class="barrow"><span><b>sin memoria</b></span><div class="track"><div class="fill" style="width: 96%; background: var(--bad)"></div></div><span class="num">−3.50 %</span></div>
+    <div class="barrow"><span>baseline</span><div class="track"><div class="fill" style="width: 96.3%; background: var(--viz-base)"></div></div><span class="num">−3.51 %</span></div>
+    <figcaption>Retorno medio por decisión en régimen bajista (menos negativo = mejor). Sacás la memoria y la
+    conducta vuelve <b>exactamente</b> a la del agente desnudo. La memoria es el mecanismo — H1.</figcaption>
+  </figure>
+
+  <h3 style="margin-top: 34px">Cuatro modelos, un patrón — y un hallazgo</h3>
+  <div class="scroll"><table>
+    <tr><th>motor</th><th>ops: score</th><th>ops: llamadas</th><th>ops: daño</th><th>market: score</th></tr>
+    <tr><td>Gemini 3 Flash</td><td>46.3 → <strong>56.3</strong></td><td>6.7 → 5.0 (−25 %)</td><td>4 → 2</td><td>−4.1 → <strong>8.4</strong></td></tr>
+    <tr><td>Claude Sonnet 5</td><td>42.0 → 41.0</td><td>6.0 → 4.8 (−21 %)</td><td>6 → 2</td><td>1.7 → <strong>9.6</strong></td></tr>
+    <tr><td>Claude Opus 5</td><td>43.6 → 41.9</td><td>5.5 → 4.8 (−11 %)</td><td>5 → 2</td><td>1.7 → <strong>5.2</strong></td></tr>
+    <tr><td>Claude Fable 5.1</td><td>41.1 → <strong>54.3 (+32 %)</strong></td><td>5.4 → 4.6 (−15 %)</td><td>7 → 2</td><td>−2.2 → <strong>2.4</strong></td></tr>
+  </table></div>
+  <div class="prose" style="margin-top: 16px">
+  <p><b>El patrón:</b> con modelos cuyo baseline ya resuelve bien (Sonnet, Opus), el score empata y la ganancia se
+  muda a eficiencia y seguridad — que es lo que la analogía predice: <i>los ganglios basales no te hacen más
+  inteligente; te hacen más barato y menos peligroso</i>. <b>El hallazgo:</b> Fable 5.1 gana también en score y
+  resolución — el modelo más capaz de los cuatro fue el que mejor usó los precedentes. La interacción
+  memoria × capacidad del modelo es una línea de investigación en sí misma.</p>
+  </div>
+</div></section>
+
+<section id="ahorro"><div class="wrap">
+  <div class="eyebrow">A prueba de todo — el caso económico</div>
+  <h2>Dónde ahorra, cuánto, y dónde paga</h2>
+  <div class="grid three" style="margin-top: 26px">
+    <div class="cardbox"><h3>💸 Dinero</h3>
+      <p>Cada llamada al modelo es factura de inferencia. Un hábito compilado responde <b>sin llamar al modelo</b>:
+      −11 a −25 % de llamadas por episodio según el motor, y creciendo con el uso (el ahorro aparece cuando la
+      experiencia se acumula: −34 % en el último tercio).</p>
+      <p class="quiet">Aritmética neutra: en una flota que toma 1 M de decisiones/día, −20 % de llamadas son
+      200.000 invocaciones menos <i>por día</i> — antes de contar el re-trabajo que evita cada acción dañina no ejecutada.</p></div>
+    <div class="cardbox"><h3>⏱️ Tiempo</h3>
+      <p>Menos llamadas = menos latencia acumulada por episodio: 12.2 → 10.2 s en incidentes (−16 %). Y el episodio
+      con hábito es el caso extremo: la decisión sale en el tiempo de ejecutar la herramienta, cero deliberación.</p></div>
+    <div class="cardbox"><h3>🔤 Tokens</h3>
+      <p>−17 % de tokens por episodio en incidentes (Sonnet). La capa <b>no es gratis en todos lados</b>: donde no hay
+      repetición paga sobrecosto de contexto (~2× tokens en trading) por los precedentes que inyecta.</p>
+      <p class="quiet">La regla operativa que observamos: <b>donde hay repetición, los hábitos terminan pagando la
+      memoria; donde no la hay, la memoria es solo sobrecosto</b>. Por eso el criterio de adopción es medible antes
+      de adoptar: ¿tus escenas se repiten?</p></div>
+  </div>
+  <div class="cardbox" style="margin-top: 18px; border-left: 4px solid var(--amber)">
+    <h3>🛡️ El ahorro que no sale en la factura</h3>
+    <p>Acciones dañinas (empeoran el sistema que tocan): <b>4→2, 6→2, 5→2, 7→2</b> en los cuatro modelos.
+    En producción, cada una de esas es un rollback que no correspondía, un incidente agravado, un costo de
+    remediación. El gate además deja rastro: cada veto queda logueado con motivo y alternativa — <b>auditabilidad
+    estructural</b> que un prompt no da.</p>
+  </div>
+</div></section>
+
+<section id="teoria"><div class="wrap">
+  <div class="eyebrow">Para la mesa técnica</div>
+  <h2>Cómo se acomoda con la teoría actual</h2>
+  <div class="grid two" style="margin-top: 26px">
+    <div class="cardbox"><h3>Aprendizaje en tiempo de inferencia</h3>
+      <p>La vía dominante para mejorar agentes es más cómputo en el modelo (modelos más grandes, más razonamiento
+      por decisión): el costo <b>sube</b> con la calidad. Subcortex explora el eje ortogonal: pesos congelados,
+      aprendizaje en una memoria externa estructurada, y calidad que sube mientras el costo <b>baja</b> con el uso.
+      Es la dirección de Reflexion, Voyager y Generative Agents — con tres diferencias: la señal de escritura es el
+      <b>error de predicción</b> (no un resumen), la escritura es <b>selectiva</b> (sorpresa o éxito, no volumen), y
+      lo aprendido puede <b>saltear al modelo</b> (hábitos), no solo informarlo.</p></div>
+    <div class="cardbox"><h3>No es RAG</h3>
+      <p>RAG recupera por similitud semántica <i>con la pregunta</i>. Acá el recuerdo se indexa por <b>escena</b>
+      (features de la situación, enriquecidas por lo que el diagnóstico descubre) y se ordena por valencia: los
+      fracasos primero. Dos situaciones textualmente parecidas con desenlaces opuestos son, para RAG, el mismo
+      vecino; para un hipocampo, dos escenas distintas. Y RAG no tiene noción de "esta memoria se ganó con una
+      sorpresa": escribe todo.</p></div>
+    <div class="cardbox"><h3>Arquitecturas cognitivas, versión LLM</h3>
+      <p>ACT-R y Soar formalizaron hace décadas memoria declarativa vs. procedural, chunking y utilidad de
+      producción — pero nunca tuvieron una "corteza" competente que proponga. Subcortex es esa agenda con el
+      eslabón que faltaba: el LLM propone, la maquinaria clásica (dopamina como media bayesiana, gate como
+      utilidad, compilación como chunking) decide qué se ejecuta y qué se aprende. Todo interpretable: cada
+      número de la capa se puede auditar.</p></div>
+    <div class="cardbox"><h3>Seguridad de agentes</h3>
+      <p>La práctica actual frena acciones peligrosas con instrucciones ("nunca borres sin confirmar") — que el
+      modelo puede ignorar. Acá el default es <b>estructural</b>: toda acción está vetada salvo que
+      confianza × historial supere el costo de su clase de riesgo, con freno extra para irreversibles
+      (vía hiperdirecta). El modelo no puede "convencerse a sí mismo": la desinhibición es de una sola acción
+      por turno, y queda registrada.</p></div>
+  </div>
+</div></section>
+
+<section id="casos"><div class="wrap">
+  <div class="eyebrow">Dónde encaja en MELI</div>
+  <h2>Casos donde esta capa jugaría a favor</h2>
+  <p class="prose lead">El criterio es medible: <b>escenas que se repiten + acciones reutilizables + riesgo
+  asimétrico</b>. Donde se cumplen los tres, la evidencia dice que la capa cobra; donde no (tareas únicas,
+  creativas), la evidencia dice que no la uses — y eso también está medido.</p>
+  <div class="grid two" style="margin-top: 26px">
+    <div class="cardbox"><h3>🎧 Atención al cliente con políticas</h3>
+      <p>Reembolsos, cambios, disputas: escenas que se repiten miles de veces por día, con políticas que definen
+      qué acción está prohibida en qué contexto. El gate adquiere semántica exacta (violación de política = daño
+      medible) y los hábitos compilan los casos de manual. Es además el benchmark público ideal para validar
+      (τ²-bench, de Sierra).</p></div>
+    <div class="cardbox"><h3>🚨 Respuesta a incidentes / SRE</h3>
+      <p>Nuestro opsworld, pero real: los incidentes repiten clases (deploy malo, saturación, dependencia caída),
+      las acciones son las mismas (restart, rollback, failover, escalar) y equivocarse agranda el incidente.
+      Es el dominio donde la capa mejor midió, y existe banco público de terceros para probarlo sin sesgo
+      (AIOpsLab, de Microsoft).</p></div>
+    <div class="cardbox"><h3>🔒 Prevención de fraude y riesgo</h3>
+      <p>Bloquear una cuenta o retener un pago es genuinamente irreversible para la experiencia del usuario.
+      Hoy el umbral vive en reglas o en un prompt; acá viviría en un gate con historial por clase de escena,
+      freno hiperdirecto para lo irreversible y rastro auditable de cada veto — exactamente la H3, que es la
+      hipótesis que todavía necesita su dominio de prueba.</p></div>
+    <div class="cardbox"><h3>📦 Operación logística y pagos</h3>
+      <p>Reintentos de despacho, ruteo de excepciones, conciliaciones: decisiones operativas de alto volumen y
+      baja variedad — el hábitat natural del hábito compilado. Cada punto porcentual de llamadas evitadas se
+      multiplica por el volumen de la operación.</p></div>
+  </div>
+</div></section>
+
+<section id="falta"><div class="wrap">
+  <div class="eyebrow">Honestidad epistémica</div>
+  <h2>Qué falta para confirmar — o refutar</h2>
+  <div class="scroll"><table>
+    <tr><th>pendiente</th><th>qué hipótesis afecta</th><th>cómo se resuelve</th></tr>
+    <tr><td>El gate no enfrentó irreversibles reales</td><td>H3</td><td>τ²-bench (políticas explícitas) y AIOpsLab (acciones destructivas en k8s): los dos dan al veto semántica objetiva. Es el próximo experimento, ya investigado y priorizado.</td></tr>
+    <tr><td>Una corrida por par modelo-mundo</td><td>H4 (magnitudes)</td><td>3–5 réplicas por par para reportar medias con desvío (la dirección ya replicó 5/5 donde se midió).</td></tr>
+    <tr><td>Los mundos propios los diseñó quien diseñó la capa</td><td>todas</td><td>Benchmarks de terceros (τ²-bench, AIOpsLab, AppWorld) — cero control nuestro sobre el terreno.</td></tr>
+    <tr><td>Con modelos fuertes, el recall puede anclar de más (−7/−10 pts de resolución)</td><td>H1 (costo)</td><td>Umbral de recuperación adaptativo a la tasa de acierto del propio modelo. Fable 5.1 sugiere que no es inevitable.</td></tr>
+    <tr><td>La escena se define a mano por dominio</td><td>generalidad</td><td>Ya existe la sugerencia automática por ganancia de información; falta la migración de claves para aplicarla en caliente.</td></tr>
+    <tr><td>Confianza declarada mal calibrada</td><td>H3</td><td>Mezcla con historial ya implementada (peso n/(n+2)); falta medirla con réplicas.</td></tr>
+  </table></div>
+  <p class="prose" style="margin-top: 16px">Todo lo anterior es <b>ejecutable con lo que ya existe</b>: la librería
+  corre con cualquier motor (probado en 4), los benchmarks son públicos, y el protocolo A/B con ablaciones ya está
+  escrito y validado tres veces.</p>
+</div></section>
+
+<section id="propuesta"><div class="wrap">
+  <div class="eyebrow">El puntapié</div>
+  <h2>La propuesta: un MELI Brain</h2>
+  <div class="prose">
+  <p>Google tuvo Brain; DeepMind existió porque alguien decidió que la neurociencia tenía algo que decirle al
+  software. Este trabajo demuestra que <b>con foco, un protocolo experimental serio y costo de infraestructura
+  despreciable</b> se puede producir investigación aplicada de agentes: una librería funcionando, tres dominios
+  medidos, cuatro modelos replicados, ablaciones que aíslan el mecanismo, un resultado nulo explicado y un paper
+  bilingüe — hecho por una persona, en días, sin GPU propia.</p>
+  <p>Un equipo chico con mandato de investigación aplicada en agentes podría, sobre esta base:</p>
+  </div>
+  <div class="grid three" style="margin-top: 20px">
+    <div class="cardbox"><h3>0–90 días</h3><p>Validar H3 en τ²-bench y AIOpsLab (benchmarks de terceros, sin sesgo
+    del autor). Réplicas con desvíos para las magnitudes. Resultado: evidencia publicable, interna y externa.</p></div>
+    <div class="cardbox"><h3>90–180 días</h3><p>Piloto sombra en un dominio interno real (el agente con capa corre
+    <i>al lado</i> del proceso actual, sin tocar producción, midiendo qué habría decidido). Candidatos: atención con
+    políticas o respuesta a incidentes.</p></div>
+    <div class="cardbox"><h3>180+ días</h3><p>Agenda propia: escena aprendida, memoria compartida entre agentes de
+    una flota, gate con políticas de negocio como clases de riesgo. Y la marca: papers, open source, presencia en la
+    conversación de agentes — el tipo de trabajo que atrae al talento que queremos.</p></div>
+  </div>
+  <div style="margin-top: 34px; display: flex; gap: 14px; flex-wrap: wrap">
+    <a class="cta" href="https://claude.ai/code/artifact/72bee34f-5950-46e9-9bb2-eaeb41558c03">Leer el paper completo (ES/EN)</a>
+    <a class="cta ghost" href="#hipotesis">Releer las hipótesis</a>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p><b>Subcortex</b> · investigación y desarrollo: Juan F. Castro Piccolo · septiembre 2026.
+  Librería sobre Google ADK (5 plugins, 91 tests), tres mundos de prueba, resultados crudos y protocolo A/B
+  reproducibles desde el repositorio. El paper enlazado contiene metodología, fórmulas, lecciones de diseño,
+  límites y referencias.</p>
+</div></footer>
+
+<script>
+(function () {
+  var OUTLINE = 'M 25 95 C 18 60, 45 22, 95 16 C 150 8, 200 35, 205 80 C 208 105, 190 122, 172 128 C 174 140, 162 152, 145 150 C 140 158, 122 162, 110 156 C 92 164, 62 158, 52 140 C 34 132, 20 115, 25 95 Z';
+  var CEREB = 'M 150 128 C 167 124, 184 130, 187 142 C 188 152, 174 160, 160 156 C 152 154, 147 148, 148 140 Z';
+  var STEM = 'M 134 152 L 129 168 L 143 168 L 145 154 Z';
+  var R = {
+    cerebelo: '<ellipse cx="167" cy="142" rx="17" ry="11"/>',
+    ganglios: '<path d="M 96 62 C 112 58, 124 68, 124 84 C 124 98, 112 104, 100 100 C 90 96, 84 84, 88 72 Z"/>',
+    dopamina: '<circle cx="118" cy="88" r="10"/><path d="M 118 98 C 116 112, 124 122, 134 128" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="3 3"/>',
+    hipocampo: '<path d="M 96 106 C 110 100, 132 102, 142 112 C 132 118, 108 120, 96 114 Z"/>',
+    amigdala: '<circle cx="92" cy="112" r="7"/><circle cx="130" cy="80" r="4"/>',
+    insula: '<circle cx="88" cy="88" r="13" stroke-dasharray="4 3"/>',
+    putamen: '<ellipse cx="110" cy="82" rx="12" ry="15"/><path d="M 110 67 C 96 60, 84 62, 76 70" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="3 3"/>',
+    sueno: '<path d="' + OUTLINE + '" opacity=".18"/><text x="160" y="46" font-size="22" fill="var(--accent)" stroke="none">z</text><text x="176" y="32" font-size="16" fill="var(--accent)" stroke="none">z</text>'
+  };
+  var CARDS = [
+    ['cerebelo', 'Cerebelo', 'Antes de cada movimiento emite una copia eferente: qué espera que pase. Al comparar con lo que pasó, computa el error que calibra todo lo demás.',
+     'Toda acción del agente lleva dos campos obligatorios: <code>expected_effect</code> y <code>confidence</code>. Al volver el resultado, la capa computa el error con signo. Sin declarar qué esperás, no actuás.',
+     'err = clamp((rank(observado) − rank(esperado))/2) × confianza'],
+    ['ganglios', 'Ganglios basales', 'El default del cerebro es NO moverse: todas las acciones están inhibidas, y decidir es dejar de inhibir exactamente una. Una vía de emergencia (hiperdirecta) frena todo ante la duda.',
+     'Veto por defecto: la acción se ejecuta solo si su valor esperado supera el umbral; si el modelo propone varias, sobrevive una sola (winner-take-all). Irreversibles con poca confianza o mal tono: freno directo.',
+     'valor = confianza × dopamina − costo(riesgo) ≥ 0.10'],
+    ['dopamina', 'Dopamina (estriado)', 'No premia lo bueno: premia lo mejor de lo esperado. Cada contexto+acción acumula su propia historia de sorpresas.',
+     'Un contador de éxitos/fracasos por (clase de escena, acción), suavizado con un prior optimista: sin datos vale 0.6, con datos converge a la tasa real. Es el "historial" que el gate multiplica.',
+     'dopamina = (éxitos + 2·0.6) / (éxitos + fracasos + 2)'],
+    ['hipocampo', 'Hipocampo', 'No recuerda por parecido de palabras: recuerda por escena — el conjunto de rasgos de la situación — y trae primero lo que terminó mal.',
+     'Cada episodio se indexa por las features de la situación (más lo que el diagnóstico descubre). El recall exige superposición mínima de rasgos y ordena: misma escena, luego overlap, y los fracasos primero.',
+     'orden: (misma escena, overlap ≥ 2, habénula primero, fuerza)'],
+    ['amigdala', 'Amígdala + habénula', 'Etiquetan cada experiencia con valencia emocional antes de pensar, y llevan un canal separado para la decepción: lo que salió peor de lo esperado se marca distinto.',
+     'La valencia del recuerdo ES el error de predicción. Y la memoria no escribe por volumen: solo ante sorpresa (|err| ≥ 0.25) o éxito. Lo decepcionante lleva flag de habénula y prioridad de recuperación.',
+     'escribe si |err| ≥ 0.25 ∨ éxito · habénula = (err < 0)'],
+    ['insula', 'Ínsula', 'Traduce el estado del cuerpo — cansancio, estrés, hambre — a un sentimiento que la corteza puede pesar contra cualquier otro argumento.',
+     'La capa mide el episodio (presupuesto consumido, fallos seguidos, bloqueos, falta de progreso) y lo inyecta como texto: "llevás 2 fallos: bajá la confianza". El tono resultante modula memoria y gate.',
+     'tono = 1 − 0.15·fallos − 0.5·(pasos/presupuesto)'],
+    ['putamen', 'Caudado → putamen', 'Lo que repetís con éxito migra de la deliberación consciente al hábito: estímulo → respuesta, sin pensar. Por eso la práctica abarata.',
+     'Tres éxitos de la misma acción (con argumentos plantillados: lo aprendido en un servicio sirve en otro) la compilan. Después, ante esa escena, la capa responde sin invocar al modelo. Si falla, se debilita a la mitad.',
+     'compila si éxitos ≥ 3 ∧ fracasos = 0 · dispara si fuerza ≥ 0.8'],
+    ['sueno', 'Sueño + microglía', 'Dormir no es pausa: es mantenimiento. Se podan sinapsis débiles, se refuerza lo usado y lo episódico se destila en conocimiento general.',
+     'consolidate() entre sesiones: decaimiento exponencial de recuerdos no usados, refuerzo de los re-accedidos, poda, y destilación de reglas ("con X, la acción Y tiende a Z (n=5)") — solo con evidencia repetida.',
+     'fuerza ← fuerza · 0.9^(días sin uso) · regla exige soporte ≥ 3']
+  ];
+  var host = document.getElementById('braincards');
+  CARDS.forEach(function (c) {
+    var div = document.createElement('div');
+    div.className = 'cardbox braincard';
+    div.innerHTML =
+      '<div class="brain"><svg viewBox="0 0 220 178" role="img" aria-label="Cerebro con la región ' + c[1] + ' resaltada">' +
+      '<g fill="none" stroke="currentColor" stroke-width="2"><path d="' + OUTLINE + '"/><path d="' + CEREB + '"/><path d="' + STEM + '"/></g>' +
+      '<g fill="var(--accent)" fill-opacity=".3" stroke="var(--accent)" stroke-width="2">' + R[c[0]] + '</g>' +
+      '</svg></div>' +
+      '<div><h3>' + c[1] + '</h3>' +
+      '<div class="lbl">En el cerebro</div><p style="margin: 0">' + c[2] + '</p>' +
+      '<div class="lbl">En el código</div><p style="margin: 0">' + c[3] + '</p>' +
+      '<span class="math">' + c[4] + '</span></div>';
+    host.appendChild(div);
+  });
+})();
+</script>
