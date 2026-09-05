@@ -43,6 +43,16 @@ Respondés SIEMPRE con un único JSON que cumple el schema dado.
   ni sin haber ejecutado al menos una herramienta: trabajás usando herramientas, no opinando.
 Una sola herramienta por turno. No inventes herramientas ni argumentos fuera de sus schemas."""
 
+# Variante conversacional (require_action=False): el texto es una respuesta al usuario, no el
+# cierre de una tarea. Con el contrato estricto, un agente de chat encadena tools sin hablar nunca.
+CONTRACT_RELAXED = """## Cómo responder (obligatorio)
+Respondés SIEMPRE con un único JSON que cumple el schema dado.
+- Para llamar a una herramienta: {"kind": "tool", "tool": "<nombre>", "args": {...}} con TODOS los
+  argumentos requeridos por su schema.
+- Para hablarle al usuario (saludar, explicar, resumir lo hecho): {"kind": "text", "text": "..."}.
+  Después de ejecutar herramientas, contale qué hiciste y qué viste antes de seguir.
+Una sola herramienta por turno. No inventes herramientas ni argumentos fuera de sus schemas."""
+
 
 def render_tools(llm_request: LlmRequest) -> str:
     decls = []
@@ -71,13 +81,13 @@ def render_transcript(llm_request: LlmRequest) -> str:
     return "## Conversación hasta ahora\n" + "\n".join(lines) if lines else ""
 
 
-def build_prompt(llm_request: LlmRequest) -> str:
+def build_prompt(llm_request: LlmRequest, contract: str = CONTRACT) -> str:
     system = ""
     if llm_request.config and llm_request.config.system_instruction:
         si = llm_request.config.system_instruction
         system = si if isinstance(si, str) else str(si)
     blocks = [b for b in (f"## Instrucciones del agente\n{system}" if system else "",
-                          render_tools(llm_request), render_transcript(llm_request), CONTRACT) if b]
+                          render_tools(llm_request), render_transcript(llm_request), contract) if b]
     return "\n\n".join(blocks)
 
 
@@ -97,6 +107,7 @@ class ClaudeCodeLlm(BaseLlm):
     cli_model: str = "sonnet"          # sonnet | opus | fable… lo que el plan habilite
     effort: str | None = None          # low | medium | high | xhigh | max
     timeout_s: float = 300.0
+    require_action: bool = True        # True: A/B (texto solo al terminar) · False: chat conversacional
     binary: ClassVar[str] = "claude"
 
     @classmethod
@@ -126,7 +137,8 @@ class ClaudeCodeLlm(BaseLlm):
 
     async def generate_content_async(self, llm_request: LlmRequest, stream: bool = False
                                      ) -> AsyncGenerator[LlmResponse, None]:
-        envelope = await self._invoke(build_prompt(llm_request))
+        contract = CONTRACT if self.require_action else CONTRACT_RELAXED
+        envelope = await self._invoke(build_prompt(llm_request, contract))
         if envelope.get("is_error"):
             raise RuntimeError(
                 f"claude -p error (subtype={envelope.get('subtype')}, "

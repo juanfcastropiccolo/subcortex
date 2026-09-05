@@ -23,14 +23,15 @@ except ImportError:  # pragma: no cover
 MODEL = os.environ.get("SUBCORTEX_MODEL", "gemini-3-flash-preview")
 
 
-def resolve_model(name: str | object = None):
+def resolve_model(name: str | object = None, **extra):
     """"claude-code" o "claude-code:opus[:effort]" → ClaudeCodeLlm (plan de Claude, sin API key);
-    cualquier otro string → modelo Gemini nativo de ADK."""
+    cualquier otro string → modelo Gemini nativo de ADK. `extra` va a ClaudeCodeLlm
+    (p. ej. require_action=False para chat) y se ignora con modelos Gemini."""
     name = name or MODEL
     if isinstance(name, str) and name.startswith("claude-code"):
         from adapters.claude_code_llm import ClaudeCodeLlm
         parts = name.split(":")
-        kw = {}
+        kw = dict(extra)
         if len(parts) > 1 and parts[1]:
             kw["cli_model"] = parts[1]
         if len(parts) > 2 and parts[2]:

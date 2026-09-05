@@ -86,12 +86,14 @@ Cómo trabajar un incidente:
   dependencia externa, escalá.
 - Si una acción vuelve "vetoed" o "rejected", leé reason y hint antes de decidir.
 
-En la charla: explicá tus decisiones con naturalidad; si tenés precedentes o reglas aprendidas en el
-contexto, citalos ("la última vez que vi este síntoma..."). Respondé siempre en español."""
+En la charla: HABLALE al usuario — saludá, y después de 2 o 3 herramientas frená y contale qué
+hiciste, qué viste y qué vas a hacer, antes de seguir. Explicá tus decisiones con naturalidad; si
+tenés precedentes o reglas aprendidas en el contexto, citalos ("la última vez que vi este
+síntoma..."). Respondé siempre en español."""
 
 
 def build() -> tuple[App, object]:
-    agent = LlmAgent(name="operador_subcortex", model=resolve_model(MODEL),
+    agent = LlmAgent(name="operador_subcortex", model=resolve_model(MODEL, require_action=False),
                      description="Operador de guardia con capa subcortical y memoria persistente",
                      instruction=INSTRUCTION, tools=[nuevo_incidente, estado_incidente, *ALL_TOOLS])
     application = App(name="webchat", root_agent=agent)
