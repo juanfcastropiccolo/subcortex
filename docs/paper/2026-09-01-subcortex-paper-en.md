@@ -27,11 +27,12 @@ habits. In `marketworld`, over 40 real market decisions, five trajectories end a
 against 50.5 for the same agent without the layer (5/5 above), and at weekly cadence it also
 beats BTC; the advantage comes from stable behavior in bear regimes. In `bugworld` the layer
 contributes nothing across three runs, and we explain why: without recurring situations or
-reusable actions, no subcortical mechanism has leverage. A replication with a second engine (Claude Sonnet 5,
-through an adapter that translates tool-calling into a JSON contract) reproduces the direction
-in `marketworld` and shifts `opsworld`'s gain from score to efficiency and safety: with a
-stronger base model, the layer cuts calls by 21 % and harmful actions by two thirds without
-giving up score. We document nine design lessons that emerged from the failures, the per-episode operating cost, and the limits of the study.
+reusable actions, no subcortical mechanism has leverage. Replications with three Claude-family engines (Sonnet 5, Opus 5 and Fable 5.1, through an
+adapter that translates tool-calling into a JSON contract) reproduce the direction across all
+four models tested: in `marketworld` subcortex always ends above the baseline and in `opsworld`
+it always cuts calls and harmful actions; where the gain shows up depends on the model — with
+strong baselines (Sonnet 5, Opus 5) it shifts from score to efficiency and safety, and with
+Fable 5.1 it wins on score again (+32 %). We document nine design lessons that emerged from the failures, the per-episode operating cost, and the limits of the study.
 
 ---
 
@@ -62,10 +63,10 @@ Contributions:
 1. An explicit mapping from fifteen neuroanatomical steps to mechanisms implementable in an
    agent, with the concrete formulas for each (section 3).
 2. `subcortex`, an implementation on Google ADK that wraps any `LlmAgent` without touching it,
-   with 82 tests that run without network access (section 4).
+   with 91 tests that run without network access (section 4).
 3. Three test beds and an A/B protocol with LLM-free references, replication and ablations
    (section 5), with positive results in two of them and an explained null result (section 6).
-4. Eight design lessons that came out of the runs that did not work, including two
+4. Nine design lessons that came out of the runs that did not work, including two
    incompatibilities with the Gemini 3 API and an infinite habit loop (section 7).
 
 ---
@@ -268,9 +269,10 @@ agent never sees dates. Scene: BTC trend, breadth, volatility, dispersion, curre
 
 ## 6. Results
 
-Two engines, always identified by exact model: sections 6.1–6.4 run on **Gemini 3 Flash**
+Four engines, always identified by exact model: sections 6.1–6.4 run on **Gemini 3 Flash**
 (`gemini-3-flash-preview`); section 6.5 replicates opsworld and marketworld on
-**Claude Sonnet 5** (`claude-code:sonnet`). No other model was tested.
+**Claude Sonnet 5** (`claude-code:sonnet`), **Claude Opus 5** (`claude-code:opus`) and
+**Claude Fable 5.1** (`claude-code:fable`). No other model was tested.
 
 ### 6.1 opsworld: the layer works — on the second iteration
 
@@ -396,39 +398,49 @@ there is not, memory is pure overhead.
 
 {{fig:f5-eficiencia}}
 
-### 6.5 A second engine: Claude Sonnet 5
+### 6.5 The Claude family as engine: Sonnet 5, Opus 5 and Fable 5.1
 
 To separate the architecture from the model that runs it, we repeated the `opsworld` and
-`marketworld` A/Bs with Claude Sonnet 5 as the engine, through an adapter that implements ADK's
-`BaseLlm` on top of the local Claude Code CLI: tools travel as a schema-validated JSON contract
-and the reply comes back as a native `FunctionCall`, so the five plugins run without a single
-change. Same methodology, n=40 per arm.
+`marketworld` A/Bs with three Claude-family models as the engine — Sonnet 5, Opus 5 and
+Fable 5.1 — through an adapter that implements ADK's `BaseLlm` on top of the local Claude Code
+CLI: tools travel as a schema-validated JSON contract and the reply comes back as a native
+`FunctionCall`, so the five plugins run without a single change. Same methodology, n=40 per arm
+per model.
 
-| metric (engine: Claude Sonnet 5) | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
+**opsworld, per model (baseline → subcortex):**
+
+| engine | score | resolution | calls/ep. | harmful | vetoes | habits |
+|---|---|---|---|---|---|---|
+| Gemini 3 Flash | 46.3 → **56.3** | 0.93 → **1.00** | 6.7 → 5.0 | 4 → 2 | 0 | 9 |
+| Claude Sonnet 5 | 42.0 → 41.0 | 0.82 → 0.72 | 6.0 → **4.8** | 6 → **2** | 0 | 6 |
+| Claude Opus 5 | 43.6 → 41.9 | 0.82 → 0.75 | 5.5 → **4.8** | 5 → **2** | 2 | 5 |
+| Claude Fable 5.1 | 41.1 → **54.3** | 0.82 → **0.90** | 5.4 → **4.6** | 7 → **2** | 3 | 8 |
+
+**marketworld, per model (baseline → subcortex):**
+
+| engine | score | harmful | vetoes | habits (dehab.) |
 |---|---|---|---|---|
-| mean score | 42.0 | 41.0 | 1.7 | **9.6** |
-| resolution rate | 0.82 | 0.72 | — | — |
-| LLM calls / episode | 6.0 | **4.8** | 3.1 | 2.8 |
-| harmful actions | 6 | **2** | 11 | **6** |
-| habit firings | 0 | 6 | 0 | **11** |
+| Gemini 3 Flash | −4.1 → **8.4** (mean of 5) | 13 → 9 | 0 | 0 |
+| Claude Sonnet 5 | 1.7 → **9.6** | 11 → **6** | 0 | 11 (1) |
+| Claude Opus 5 | 1.7 → **5.2** | 11 → 13 | 0 | 1 |
+| Claude Fable 5.1 | −2.2 → **2.4** | 12 → 12 | 2 | 4 (1) |
 
 {{fig:f6-motores}}
 
-Three readings. In `marketworld` the direction reproduces — subcortex ends above the baseline,
-within the range of the five Gemini 3 Flash trajectories — and for the first time habits fired in this
-world (11 times, with one correct dehabituation when the regime changed): Claude declares higher
-confidences and its repeated successes compile earlier — the "Claude declares" above is
-Claude Sonnet 5 specifically. In `opsworld`, Claude Sonnet 5's baseline already
-solves the causes that cost Gemini 3 Flash dearly and the score margin disappears; what remains is the
-structural part — 21 % fewer calls, a third of the harmful actions, a final third with zero
-worsening actions — which is what the analogy predicts: the basal ganglia do not make the cortex
-smarter, they make it cheaper and less dangerous. The honest reading: resolution dropped ten
-points, concentrated in episodes where a similar-but-not-identical precedent anchored the agent
-into closing early; the stronger the base model, the finer the recall threshold must be so that
-memory does not compete with cold judgment that was already good (§9). The adapter left a lesson
-of its own (lesson 9): with contract-based tool-calling, the obligation to act must be written
-down. Operationally the engine is ~2× slower (one CLI process per call) and its token counters
-are not comparable with the API's, so figure 6 compares calls, harm and score.
+Readings. **The direction replicates across all four engines**: in `marketworld` subcortex
+always ends above the baseline (with varying margins), and in `opsworld` it always reduces
+calls and harmful actions. **Where the gain shows up depends on the model**: with Sonnet 5 and
+Opus 5 — whose baselines already solve the causes that cost Gemini 3 Flash dearly — score ties
+and the layer pays off in efficiency and safety, at the resolution cost of anchoring recall
+(−10 and −7 points). **Fable 5.1 breaks that pattern**: it also wins on score (+32 %) and
+resolution (+8 points), the profile closest to Gemini's but with no weak baseline to explain
+it; with one run per pair we cannot attribute it beyond how that model uses precedents. The
+gate's **first vetoes** with Claude engines appeared with Opus 5 (2) and Fable 5.1 (5 across
+both worlds), and Sonnet 5 and Fable 5.1 compiled habits in `marketworld` with one correct
+dehabituation each. The adapter left a lesson of its own (lesson 9): with contract-based
+tool-calling, the obligation to act must be written down. Operationally the CLI engines are
+~2× slower (one process per call) and their token counters are not comparable with the API's,
+so figure 6 compares calls, harm and score.
 
 ---
 
@@ -472,10 +484,10 @@ Each one came out of a run that did not work, and stayed in the code with its te
 - **Sample size.** 40 episodes per world (120 in the weekly variant). Directions are robust
   (5/5 replication in `marketworld`); magnitudes carry deviations on the order of half the
   advantage.
-- **Two engines, one run per pair.** The main runs use Gemini 3 Flash; the Claude Sonnet 5
-  replication (§6.5) confirms the direction in `marketworld` and the efficiency reading in
-  `opsworld`, but it is one trajectory per world, and magnitudes are not directly comparable
-  across engines: the tool-calling contracts differ.
+- **Four engines, one run per pair.** The main runs use Gemini 3 Flash; the Sonnet 5, Opus 5
+  and Fable 5.1 replications (§6.5) confirm the direction in both worlds, but they are one
+  trajectory per model-world pair, and magnitudes are not directly comparable across engines:
+  the tool-calling contracts differ.
 - **Path-dependent non-determinism.** The baseline turned out deterministic in `marketworld`;
   subcortex did not, because a different decision changes which episodes exist afterwards. The
   observed variance is a property of the system, not just sampling noise.
@@ -495,9 +507,10 @@ Each one came out of a run that did not work, and stayed in the code with its te
 ## 9. Future work
 
 Three to five trajectories per variant in all worlds and per engine, to report means with
-deviations. The Claude Sonnet 5 replication also leaves a question of its own: with a stronger base
-model, episodic recall can over-anchor (ten resolution points in `opsworld`); the natural fix is
-a recall threshold adaptive to the model's own hit rate. A fourth world with genuinely irreversible actions (operations on an automation
+deviations. The Sonnet 5 and Opus 5 replications also leave a question of their own: with a stronger base
+model, episodic recall can over-anchor (seven to ten resolution points in `opsworld`) — and
+Fable 5.1 shows it is not inevitable; the natural fix is a recall threshold adaptive to the
+model's own hit rate. A fourth world with genuinely irreversible actions (operations on an automation
 instance, sandboxed) where veto-by-default can show its value, which was marginal in all three
 worlds. Scene learning: `coarse_features` was hand-picked per world; the information-gain
 suggestion exists, but applying it without invalidating dopamine and habits requires a key

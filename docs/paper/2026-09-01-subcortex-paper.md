@@ -27,11 +27,12 @@ del autor (`marketworld`). En `opsworld` la capa sube el score 22 %, lleva la re
 equity contra 50.5 del mismo agente sin la capa (5/5 por encima), y con cadencia semanal supera
 también a BTC; la ventaja proviene de un comportamiento estable en régimen bajista. En
 `bugworld` la capa no aporta nada en tres corridas, y explicamos por qué: sin repetición de
-situaciones ni acciones reutilizables, ningún mecanismo subcortical tiene palanca. Una réplica con un segundo motor (Claude Sonnet 5,
-mediante un adaptador que traduce el tool-calling a un contrato JSON) reproduce la dirección en
-`marketworld` y muda la ganancia de `opsworld` del score a la eficiencia y la seguridad: con un
-modelo base más fuerte, la capa recorta 21 % las llamadas y dos tercios de las acciones dañinas
-sin ceder score. Documentamos nueve lecciones de diseño surgidas de los fracasos, el costo operativo por episodio y los
+situaciones ni acciones reutilizables, ningún mecanismo subcortical tiene palanca. Réplicas con tres motores de la familia Claude (Sonnet 5, Opus 5 y Fable 5.1, mediante un
+adaptador que traduce el tool-calling a un contrato JSON) reproducen la dirección en los cuatro
+modelos probados: en `marketworld` subcortex queda siempre por encima del baseline y en
+`opsworld` siempre recorta llamadas y acciones dañinas; dónde aparece la ganancia depende del
+modelo — con baselines fuertes (Sonnet 5, Opus 5) se muda del score a la eficiencia y la
+seguridad, y con Fable 5.1 vuelve a ganar también en score (+32 %). Documentamos nueve lecciones de diseño surgidas de los fracasos, el costo operativo por episodio y los
 límites del estudio.
 
 ---
@@ -62,10 +63,10 @@ Contribuciones:
 1. Un mapeo explícito de quince pasos neuroanatómicos a mecanismos implementables en un
    agente, con las fórmulas concretas de cada uno (sección 3).
 2. `subcortex`, una implementación sobre Google ADK que envuelve cualquier `LlmAgent` sin
-   tocarlo, con 82 tests que corren sin red (sección 4).
+   tocarlo, con 91 tests que corren sin red (sección 4).
 3. Tres bancos de prueba y un protocolo A/B con referencias sin LLM, replicación y ablaciones
    (sección 5), con resultados positivos en dos de ellos y un resultado nulo explicado (sección 6).
-4. Ocho lecciones de diseño que salieron de las corridas que no funcionaron, incluidas dos
+4. Nueve lecciones de diseño que salieron de las corridas que no funcionaron, incluidas dos
    incompatibilidades con la API de Gemini 3 y un bucle infinito de hábitos (sección 7).
 
 ---
@@ -270,9 +271,10 @@ no ve fechas. Escena: tendencia de BTC, amplitud, volatilidad, dispersión, cart
 
 ## 6. Resultados
 
-Dos motores, siempre identificados por modelo exacto: las secciones 6.1–6.4 corren con
+Cuatro motores, siempre identificados por modelo exacto: las secciones 6.1–6.4 corren con
 **Gemini 3 Flash** (`gemini-3-flash-preview`); la sección 6.5 replica opsworld y marketworld con
-**Claude Sonnet 5** (`claude-code:sonnet`). Ningún otro modelo fue probado.
+**Claude Sonnet 5** (`claude-code:sonnet`), **Claude Opus 5** (`claude-code:opus`) y
+**Claude Fable 5.1** (`claude-code:fable`). Ningún otro modelo fue probado.
 
 ### 6.1 opsworld: la capa funciona, en la segunda iteración
 
@@ -397,40 +399,49 @@ terminan pagando la memoria; donde no la hay, la memoria es solo sobrecosto.
 
 {{fig:f5-eficiencia}}
 
-### 6.5 Un segundo motor: Claude Sonnet 5
+### 6.5 La familia Claude como motor: Sonnet 5, Opus 5 y Fable 5.1
 
 Para separar la arquitectura del modelo que la corre, repetimos los A/B de `opsworld` y
-`marketworld` con Claude Sonnet 5 como motor, mediante un adaptador que implementa el `BaseLlm`
-de ADK sobre el CLI local de Claude Code: las herramientas viajan como un contrato JSON validado
-por schema y la respuesta vuelve como `FunctionCall` nativa, así que los cinco plugins corren sin
-un solo cambio. Misma metodología, n=40 por brazo.
+`marketworld` con tres modelos de la familia Claude como motor —Sonnet 5, Opus 5 y Fable 5.1—,
+mediante un adaptador que implementa el `BaseLlm` de ADK sobre el CLI local de Claude Code: las
+herramientas viajan como un contrato JSON validado por schema y la respuesta vuelve como
+`FunctionCall` nativa, así que los cinco plugins corren sin un solo cambio. Misma metodología,
+n=40 por brazo por modelo.
 
-| métrica (motor: Claude Sonnet 5) | ops: baseline | ops: subcortex | market: baseline | market: subcortex |
+**opsworld, por modelo (baseline → subcortex):**
+
+| motor | score | resolución | llamadas/ep. | dañinas | vetos | hábitos |
+|---|---|---|---|---|---|---|
+| Gemini 3 Flash | 46.3 → **56.3** | 0.93 → **1.00** | 6.7 → 5.0 | 4 → 2 | 0 | 9 |
+| Claude Sonnet 5 | 42.0 → 41.0 | 0.82 → 0.72 | 6.0 → **4.8** | 6 → **2** | 0 | 6 |
+| Claude Opus 5 | 43.6 → 41.9 | 0.82 → 0.75 | 5.5 → **4.8** | 5 → **2** | 2 | 5 |
+| Claude Fable 5.1 | 41.1 → **54.3** | 0.82 → **0.90** | 5.4 → **4.6** | 7 → **2** | 3 | 8 |
+
+**marketworld, por modelo (baseline → subcortex):**
+
+| motor | score | dañinas | vetos | hábitos (des-hab.) |
 |---|---|---|---|---|
-| score medio | 42.0 | 41.0 | 1.7 | **9.6** |
-| tasa de resolución | 0.82 | 0.72 | — | — |
-| llamadas al LLM / episodio | 6.0 | **4.8** | 3.1 | 2.8 |
-| acciones dañinas | 6 | **2** | 11 | **6** |
-| hábitos: disparos | 0 | 6 | 0 | **11** |
+| Gemini 3 Flash | −4.1 → **8.4** (media de 5) | 13 → 9 | 0 | 0 |
+| Claude Sonnet 5 | 1.7 → **9.6** | 11 → **6** | 0 | 11 (1) |
+| Claude Opus 5 | 1.7 → **5.2** | 11 → 13 | 0 | 1 |
+| Claude Fable 5.1 | −2.2 → **2.4** | 12 → 12 | 2 | 4 (1) |
 
 {{fig:f6-motores}}
 
-Tres lecturas. En `marketworld` la dirección se reproduce —subcortex termina por encima del
-baseline, dentro del rango de las cinco trayectorias con Gemini 3 Flash— y por primera vez los hábitos
-se dispararon en este mundo (11 veces, con una des-habituación correcta al cambiar el régimen):
-Claude Sonnet 5 declara confianzas más altas y sus éxitos repetidos compilan antes. En
-`opsworld` el baseline de Claude Sonnet 5 ya resuelve las causas que a Gemini 3 Flash le
-costaban y el margen de score
-desaparece; lo que queda es lo estructural —21 % menos llamadas, un tercio de las acciones
-dañinas, último tercio sin empeoramientos— que es lo que la analogía predice: los ganglios
-basales no hacen más inteligente a la corteza, la hacen más barata y menos peligrosa. La lectura
-honesta: la resolución bajó diez puntos, concentrada en episodios donde un precedente parecido
-pero no idéntico ancló al agente y lo hizo cerrar antes de tiempo; cuanto más fuerte el modelo
-base, más fino debe ser el umbral de recuperación para que la memoria no compita con un juicio
-en frío que ya era bueno (§9). El adaptador dejó una lección propia (lección 9): con
-tool-calling por contrato, la obligación de actuar hay que escribirla. Operativamente el motor
-es ~2× más lento (un proceso de CLI por llamada) y sus contadores de tokens no son comparables
-con los de la API, por lo que la figura 6 compara llamadas, daño y score.
+Lecturas. **La dirección replica en los cuatro motores**: en `marketworld` subcortex termina
+siempre por encima del baseline (con márgenes distintos), y en `opsworld` siempre reduce
+llamadas y acciones dañinas. **Dónde aparece la ganancia depende del modelo**: con Sonnet 5 y
+Opus 5 —cuyos baselines ya resuelven las causas que a Gemini 3 Flash le costaban— el score
+empata y la capa paga en eficiencia y seguridad, con el costo de resolución del recall que ancla
+(−10 y −7 puntos). **Fable 5.1 rompe ese patrón**: gana también en score (+32 %) y en resolución
+(+8 puntos), el perfil más parecido al de Gemini pero sin un baseline débil que lo explique; con
+una corrida por par no podemos atribuirlo más que a cómo ese modelo usa los precedentes. Los
+**primeros vetos** del gate con motores Claude aparecieron con Opus 5 (2) y Fable 5.1 (5 entre
+ambos mundos), y Sonnet 5 y Fable 5.1 compilaron hábitos en `marketworld` con una
+des-habituación correcta cada uno. El adaptador dejó una lección propia (lección 9): con
+tool-calling por contrato, la obligación de actuar hay que escribirla. Operativamente los
+motores CLI son ~2× más lentos (un proceso por llamada) y sus contadores de tokens no son
+comparables con los de la API, por lo que la figura 6 compara llamadas, daño y score.
 
 ---
 
@@ -474,9 +485,9 @@ Cada una salió de una corrida que no funcionó y quedó en el código con su te
 - **Tamaño de muestra.** 40 episodios por mundo (120 en la variante semanal). Las direcciones son
   robustas (replicación 5/5 en `marketworld`); las magnitudes tienen desvíos del orden de la
   mitad de la ventaja.
-- **Dos motores, una corrida por par.** Las corridas principales usan Gemini 3 Flash; la réplica
-  con Claude Sonnet 5 (§6.5) confirma la dirección en `marketworld` y la lectura de eficiencia en
-  `opsworld`, pero es una trayectoria por mundo y las magnitudes entre motores no son directamente
+- **Cuatro motores, una corrida por par.** Las corridas principales usan Gemini 3 Flash; las
+  réplicas con Sonnet 5, Opus 5 y Fable 5.1 (§6.5) confirman la dirección en los dos mundos, pero
+  son una trayectoria por par modelo-mundo y las magnitudes entre motores no son directamente
   comparables: los contratos de tool-calling difieren.
 - **No determinismo dependiente del camino.** El baseline resultó determinista en `marketworld`;
   subcortex no, porque una decisión distinta cambia qué episodios existen después. La varianza
@@ -497,9 +508,10 @@ Cada una salió de una corrida que no funcionó y quedó en el código con su te
 ## 9. Trabajo futuro
 
 Tres a cinco trayectorias por variante en todos los mundos y por motor, para reportar medias
-con desvío. La réplica con Claude Sonnet 5 deja además una pregunta propia: con un modelo base más fuerte,
-el recall episódico puede anclar de más (diez puntos de resolución en `opsworld`); el ajuste
-natural es un umbral de recuperación adaptativo a la tasa de acierto del propio modelo. Un cuarto mundo con acciones irreversibles reales (operaciones sobre una
+con desvío. Las réplicas con Sonnet 5 y Opus 5 dejan además una pregunta propia: con un modelo base más
+fuerte, el recall episódico puede anclar de más (siete a diez puntos de resolución en
+`opsworld`) — y Fable 5.1 muestra que no es inevitable; el ajuste natural es un umbral de
+recuperación adaptativo a la tasa de acierto del propio modelo. Un cuarto mundo con acciones irreversibles reales (operaciones sobre una
 instancia de automatización, en sandbox) donde el veto por defecto pueda mostrar su valor, que en
 los tres mundos fue marginal. Aprendizaje de la escena: `coarse_features` se eligió a mano por
 mundo; la sugerencia por ganancia de información existe, pero aplicarla sin invalidar dopamina y

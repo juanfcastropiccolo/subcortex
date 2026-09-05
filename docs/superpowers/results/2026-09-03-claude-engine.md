@@ -85,3 +85,30 @@ putamen trabajó.
 **Próximo paso propuesto** (de `docs/superpowers/research/2026-09-02-nuevos-dominios.md`):
 tau2-bench primero (vetos con semántica de policy real), AIOpsLab segundo, AppWorld tercero.
 Con el motor Claude dentro del plan, ninguno depende de recargar crédito de Gemini.
+
+---
+
+## Addendum (2026-09-05): Opus 5 y Fable 5.1
+
+Mismos A/B con `claude-code:opus` (`claude-opus-5`) y `claude-code:fable` (`claude-fable-5-1`).
+Fix previo necesario: `--max-turns 8` en el adaptador (Opus con thinking adaptativo excede 1
+turno interno; `error_max_turns` con `result: None`). Crudos: `results-{ops,market}-cc-opus.json`
+y `results-{ops,market}-cc-fable.json`.
+
+| motor (ops: base → sub) | score | resol. | llamadas | dañinas | vetos | hábitos |
+|---|---|---|---|---|---|---|
+| Opus 5 | 43.6 → 41.9 | 0.82 → 0.75 | 5.5 → 4.8 | 5 → 2 | 2 | 5 |
+| Fable 5.1 | 41.1 → **54.3** | 0.82 → **0.90** | 5.4 → 4.6 | 7 → 2 | 3 | 8 |
+
+| motor (market: base → sub) | score | dañinas | vetos | hábitos (des-hab.) |
+|---|---|---|---|---|
+| Opus 5 | 1.7 → 5.2 | 11 → 13 | 0 | 1 |
+| Fable 5.1 | −2.2 → 2.4 | 12 → 12 | 2 | 4 (1) |
+
+Lecturas: Opus replica el patrón de Sonnet (empate en score, gana eficiencia/seguridad, −7 pts
+de resolución) y trajo los **primeros vetos** del gate con motor Claude. **Fable 5.1 rompe el
+patrón**: +32 % de score y +8 pts de resolución en opsworld — el único motor Claude que gana en
+todo, sin baseline débil que lo explique. Operativo: los modelos grandes consumen la ventana de
+cuota del plan mucho más rápido (Opus llenó una ventana entera; Fable necesitó tres, con dos
+cortes 429 reanudados con `--baseline-from`/`--resume` sin repetir episodios). Paper §6.5 y
+figura 6 actualizados con la tabla por los 4 modelos.
