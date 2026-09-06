@@ -10,9 +10,37 @@ from .metrics import bump
 from .store import EpisodicStore
 from .types import K_INTERO, K_PENDING, K_TONE, K_VETO_LOG
 
+__all__ = ["GatePlugin", "K_RECONSIDERED", "effective_confidence", "gate_decision", "gate_decision_ex"]
+
 K_RECONSIDERED = "subcortex.reconsidered"
 
 log = logging.getLogger("subcortex")
+
+
+def gate_decision_ex(cfg: SubcortexConfig, tool: str, confidence: float, dopamine: float,
+                     tone: float, consecutive_blocks: int, trusted: bool = False,
+                     ) -> tuple[bool, float, str, str]:
+    """Como `gate_decision`, más el código causal del bloqueo (para no contar peras con manzanas
+    al reportar "vetos"): value | hyperdirect | blockstreak | allowed."""
+    if tool in cfg.always_allowed:
+        return True, 1.0, "siempre permitida", "allowed"
+    risk = cfg.risk_of(tool)
+    # El tono NO multiplica el valor: ya frena por la vía hiperdirecta. Multiplicarlo hacía
+    # imposible autorizar una irreversible a mitad de episodio (corrida 1).
+    value = round(confidence * dopamine - cfg.cost.get(risk, 0.0), 4)
+    if consecutive_blocks >= cfg.max_consecutive_blocks:
+        return (False, value, "demasiadas acciones bloqueadas seguidas: solo se permite escalar o cerrar",
+                "blockstreak")
+    if risk == "irreversible" and not trusted:
+        if confidence < cfg.hyperdirect_confidence:
+            return False, value, (f"acción irreversible con confianza {confidence:.2f} < "
+                                  f"{cfg.hyperdirect_confidence}"), "hyperdirect"
+        if tone < cfg.hyperdirect_tone:
+            return False, value, f"acción irreversible con tono bajo ({tone:.2f})", "hyperdirect"
+    if value < cfg.gate_threshold:
+        return (False, value, f"valor esperado {value:.2f} < umbral {cfg.gate_threshold}: "
+                "poca confianza, historial pobre o costo alto", "value")
+    return True, value, "autorizada", "allowed"
 
 
 def gate_decision(cfg: SubcortexConfig, tool: str, confidence: float, dopamine: float,
@@ -20,24 +48,9 @@ def gate_decision(cfg: SubcortexConfig, tool: str, confidence: float, dopamine: 
                   ) -> tuple[bool, float, str]:
     """Devuelve (autorizada, valor, motivo). `trusted` = la acción ya resolvió esta clase de
     escena varias veces sin fallar: la confianza ganada exime del freno hiperdirecto."""
-    if tool in cfg.always_allowed:
-        return True, 1.0, "siempre permitida"
-    risk = cfg.risk_of(tool)
-    # El tono NO multiplica el valor: ya frena por la vía hiperdirecta. Multiplicarlo hacía
-    # imposible autorizar una irreversible a mitad de episodio (corrida 1).
-    value = round(confidence * dopamine - cfg.cost.get(risk, 0.0), 4)
-    if consecutive_blocks >= cfg.max_consecutive_blocks:
-        return False, value, "demasiadas acciones bloqueadas seguidas: solo se permite escalar o cerrar"
-    if risk == "irreversible" and not trusted:
-        if confidence < cfg.hyperdirect_confidence:
-            return False, value, (f"acción irreversible con confianza {confidence:.2f} < "
-                                  f"{cfg.hyperdirect_confidence}")
-        if tone < cfg.hyperdirect_tone:
-            return False, value, f"acción irreversible con tono bajo ({tone:.2f})"
-    if value < cfg.gate_threshold:
-        return False, value, (f"valor esperado {value:.2f} < umbral {cfg.gate_threshold}: "
-                              "poca confianza, historial pobre o costo alto")
-    return True, value, "autorizada"
+    ok, value, why, _code = gate_decision_ex(cfg, tool, confidence, dopamine, tone,
+                                             consecutive_blocks, trusted)
+    return ok, value, why
 
 
 def effective_confidence(declared: float, dopamine: float, n_history: int) -> float:
@@ -106,7 +119,9 @@ class GatePlugin(BasePlugin):
 
             winner = max(action_idx, key=score)
             losers = set(action_idx) - {winner}
-            bump(state, "vetoes", len(losers))
+            # Arbitraje, NO veto: elegir una de varias propuestas paralelas no impide ninguna
+            # acción que el agente fuera a ejecutar igual. Se cuenta aparte (auditoría 2026-09-06).
+            bump(state, "arbitration_dropped", len(losers))
             llm_response.content.parts = [p for i, p in enumerate(parts) if i not in losers]
             log.info("winner-take-all: conservo %s, veto %d acciones paralelas",
                      parts[winner].function_call.name, len(losers))
@@ -130,7 +145,8 @@ class GatePlugin(BasePlugin):
             trusted = s >= self.cfg.trust_min_successes and f == 0
             confidence = (effective_confidence(declared, dop, s + f) if self.cfg.confidence_from_history
                           else declared)
-            ok, value, why = gate_decision(self.cfg, tool.name, confidence, dop, tone, blocks, trusted)
+            ok, value, why, code = gate_decision_ex(self.cfg, tool.name, confidence, dop, tone,
+                                                    blocks, trusted)
             if ok and self.cfg.cingulate_reconsider and tool.name not in self.cfg.always_allowed:
                 # Cingulado (paso 9): conflicto = valor cerca del umbral. Compra un pase más de
                 # deliberación, una sola vez por episodio y por acción, antes de desinhibir.
@@ -147,11 +163,12 @@ class GatePlugin(BasePlugin):
             if ok:
                 return None
             bump(state, "vetoes")
+            bump(state, f"vetoes_{code}")  # value | hyperdirect | blockstreak
             if self.cfg.risk_of(tool.name) == "irreversible":
                 bump(state, "vetoes_irreversible")
             veto_log = list(state.get(K_VETO_LOG) or [])
             veto_log.append({"tool": tool.name, "confidence": confidence, "declared": declared, "tone": tone,
-                             "dopamine": round(dop, 3), "reason": why})
+                             "dopamine": round(dop, 3), "reason": why, "code": code})
             state[K_VETO_LOG] = veto_log
             log.info("veto %s: %s", tool.name, why)
             return {"status": "vetoed", "tool": tool.name, "value": value, "reason": why,

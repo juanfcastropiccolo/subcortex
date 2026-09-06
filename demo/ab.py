@@ -20,7 +20,7 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 from subcortex.metrics import get_metrics
-from subcortex.types import K_FEATURES, K_VETO_LOG
+from subcortex.types import K_FEATURES, K_PRED_LOG, K_VETO_LOG
 
 MAX_ATTEMPTS = 6
 BACKOFF = (10, 30, 60, 120, 180)  # segundos entre reintentos: un 429 de cuota por minuto necesita esperar
@@ -88,6 +88,13 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
                "episodes_written": m.get("episodes_written", 0), "habit_hits": m.get("habit_hits", 0),
                "dehabituations": m.get("dehabituations", 0), "stalled": m.get("stalled", 0),
                "abs_error_sum": m.get("abs_error_sum", 0.0), "error_count": m.get("error_count", 0),
+               # Desglose causal del veto y registro de calibración (auditoría 2026-09-06)
+               "vetoes_value": m.get("vetoes_value", 0),
+               "vetoes_hyperdirect": m.get("vetoes_hyperdirect", 0),
+               "vetoes_blockstreak": m.get("vetoes_blockstreak", 0),
+               "arbitration_dropped": m.get("arbitration_dropped", 0),
+               "reconsiders": m.get("reconsiders", 0),
+               "pred_log": list(session.state.get(K_PRED_LOG) or []) if with_subcortex else [],
                "actions": [e["action"] for e in world.log],
                "veto_log": list(session.state.get(K_VETO_LOG) or []) if with_subcortex else []}
         if extra:

@@ -48,6 +48,10 @@ class SubcortexConfig:
     stall_fraction: float = 0.6    # presupuesto consumido sin resultado evaluado → "sin progreso"
     cingulate_reconsider: bool = False  # segundo pase cuando el valor de la acción está cerca del umbral
     reconsider_margin: float = 0.08     # |value − umbral| por debajo del cual hay "conflicto"
+    # Control experimental (auditoría 2026-09-06): mismo contenido informativo que la interocepción
+    # —presupuesto y errores— pero en lenguaje neutro de telemetría, sin marco corporal ni consejo.
+    # Sirve para separar "el agente usa la información" de "el agente reacciona al encuadre".
+    neutral_telemetry: bool = False
 
     @property
     def action_tools(self) -> frozenset[str]:

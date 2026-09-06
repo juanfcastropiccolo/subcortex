@@ -34,6 +34,7 @@ K_METRICS = "subcortex.metrics"
 K_FEATURES = "subcortex.features"
 K_DISCOVERED = "subcortex.discovered"
 K_VETO_LOG = "subcortex.veto_log"
+K_PRED_LOG = "subcortex.pred_log"  # (esperado, observado, confianza) por acción, para calibración
 
 PRED_PARAMS = ("expected_effect", "confidence")
 

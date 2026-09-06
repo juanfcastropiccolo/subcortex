@@ -35,6 +35,22 @@ def compute_tone(intero: dict, cfg: SubcortexConfig) -> float:
     return round(max(0.05, min(1.0, tone)), 4)
 
 
+def render_state_neutral(intero: dict, tone: float, cfg: SubcortexConfig) -> str:
+    """Control de telemetría neutra: los mismos números, sin encuadre corporal ni recomendación.
+
+    Si el agente rinde igual con este texto que con el interoceptivo, lo que aportaba la ínsula
+    era información de presupuesto, no un estado interno traducido a lenguaje (auditoría 2026-09-06).
+    """
+    return "\n".join([
+        "## Telemetría",
+        f"- Llamadas a herramientas usadas: {intero.get('steps', 0)} de {cfg.step_budget}.",
+        f"- Errores consecutivos: {intero.get('failures', 0)}.",
+        f"- Acciones bloqueadas consecutivas: {intero.get('blocks', 0)}.",
+        f"- Llamadas inválidas consecutivas: {intero.get('invalid_streak', 0)}.",
+        f"- Acciones con resultado evaluado: {intero.get('evaluated', 0)}.",
+    ])
+
+
 def render_state(intero: dict, tone: float, cfg: SubcortexConfig) -> str:
     lines = ["## Estado interno"]
     used = int(100 * intero.get("steps", 0) / max(cfg.step_budget, 1))
@@ -73,7 +89,8 @@ class InteroceptionPlugin(BasePlugin):
             state = callback_context.state
             intero = _intero(state)
             tone = float(state.get(K_TONE, compute_tone(intero, self.cfg)))
-            llm_request.append_instructions([render_state(intero, tone, self.cfg)])
+            render = render_state_neutral if self.cfg.neutral_telemetry else render_state
+            llm_request.append_instructions([render(intero, tone, self.cfg)])
         except Exception:  # degradación a vanilla
             log.exception("interoception.before_model")
 

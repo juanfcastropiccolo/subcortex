@@ -11,7 +11,9 @@ from google.adk.plugins.base_plugin import BasePlugin
 
 from .config import SubcortexConfig
 from .metrics import bump
-from .types import EFFECTS, K_LAST_ERROR, K_PENDING, PRED_PARAMS, Prediction, prediction_error
+from .types import (
+    EFFECTS, K_LAST_ERROR, K_PENDING, K_PRED_LOG, PRED_PARAMS, Prediction, prediction_error,
+)
 
 log = logging.getLogger("subcortex")
 BLOCK_STATUSES = {"vetoed", "rejected", "invalid", "reconsider"}
@@ -116,6 +118,12 @@ class PredictionPlugin(BasePlugin):
                                    "status": status, "call_id": call_id}
             bump(state, "abs_error_sum", abs(err))
             bump(state, "error_count")
+            # Registro para reglas de puntuación propias (Brier/NLL/ECE) fuera de línea: el error
+            # categórico medio no distingue "predice mejor" de "cambió la distribución de acciones".
+            log_rows = list(state.get(K_PRED_LOG) or [])
+            log_rows.append({"tool": tool.name, "expected": pred["expected"], "observed": observed,
+                             "confidence": pred["confidence"]})
+            state[K_PRED_LOG] = log_rows
         except Exception:
             log.exception("prediction.after_tool")
         return
