@@ -93,15 +93,16 @@ class GatePlugin(BasePlugin):
         return " ".join(parts)
 
     async def after_model_callback(self, *, callback_context, llm_response):
-        """Cuenta llamadas reales al LLM y aplica winner-take-all sobre acciones paralelas."""
+        """Winner-take-all sobre acciones paralelas.
+
+        El conteo de llamadas y tokens vive en `PredictionPlugin`, que está presente en todas las
+        configuraciones: contarlo acá dejaba en cero el costo de los brazos sin gate y habría
+        inflado su utilidad en el experimento confirmatorio (endpoint = score − λ·llamadas).
+        """
         try:
             state = callback_context.state
             if llm_response.partial:
                 return None
-            bump(state, "llm_calls")
-            um = llm_response.usage_metadata
-            if um and um.total_token_count:
-                bump(state, "tokens", um.total_token_count)
             parts = (list(llm_response.content.parts)
                      if llm_response.content and llm_response.content.parts else [])
             action_idx = [i for i, p in enumerate(parts)

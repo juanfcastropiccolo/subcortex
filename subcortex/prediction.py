@@ -87,6 +87,25 @@ class PredictionPlugin(BasePlugin):
         except Exception:
             log.exception("prediction.before_model")
 
+    async def after_model_callback(self, *, callback_context, llm_response):
+        """Contabilidad de costo: llamadas reales al modelo y tokens.
+
+        Vive acá y no en el gate porque `PredictionPlugin` es el único plugin presente en TODAS
+        las configuraciones (incluidas las ablaciones y los brazos de control). Devuelve None
+        siempre: no altera la respuesta ni interrumpe la cadena de plugins.
+        """
+        try:
+            if llm_response is None or llm_response.partial:
+                return
+            state = callback_context.state
+            bump(state, "llm_calls")
+            um = llm_response.usage_metadata
+            if um and um.total_token_count:
+                bump(state, "tokens", um.total_token_count)
+        except Exception:
+            log.exception("prediction.after_model")
+        return
+
     async def before_tool_callback(self, *, tool, tool_args, tool_context):
         if not self.cfg.is_action(tool.name):
             return None

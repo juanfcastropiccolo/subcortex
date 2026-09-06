@@ -152,6 +152,28 @@ degrada la afirmación central del paper, no se descarta.
 
 ---
 
+## 6.1 Registro de enmiendas
+
+Toda modificación posterior al preregistro se anota acá, con fecha, motivo y qué datos se
+descartaron. Una enmienda de instrumentación no cambia `CONFIG_SHA` porque no cambia la
+arquitectura; igual se declara.
+
+**E1 · 2026-09-06 · Corrección de un error de medición (no de arquitectura).**
+Al arrancar el primer episodio del brazo `protocol` se detectó que reportaba `llm_calls = 0`. La
+causa: el conteo de llamadas y tokens vivía en `GatePlugin.after_model_callback`, así que **los
+cuatro brazos sin gate** (`protocol`, `retrieval`, `cache`, `telemetry`) no habrían registrado
+ningún costo — y el endpoint primario es `score − λ_c · llm_calls`. Su utilidad habría salido
+inflada exactamente en las comparaciones que la auditoría pidió.
+*Corrección:* el conteo se movió a `PredictionPlugin.after_model_callback`, presente en todas las
+configuraciones, y el runner ahora cae al conteo por eventos si la métrica llega en cero. Cubierto
+por `tests/unit/test_prediction.py::test_after_model_counts_cost_in_every_configuration`.
+*Datos descartados:* el único episodio corrido de `protocol|101`. Las trayectorias `vanilla|101` y
+`full|101` no están afectadas (la primera contaba por eventos, la segunda tenía el gate) y se
+conservan. *Sin cambios* en umbrales, brazos, endpoint, semillas ni estadística: `CONFIG_SHA` sigue
+siendo `6db371dcff30e02f`.
+
+---
+
 ## 7. Lo que este experimento NO prueba
 
 - **No prueba generalización**: un solo mundo sintético, diseñado por el autor. La validación

@@ -82,7 +82,10 @@ async def run_episodes(name: str, items: list, *, app, sc, registry, app_name: s
         row = {"variant": name, "i": i, "cause": label(item), "score": world.score,
                "resolved": world.resolved, "steps": world.steps, "worsens": world.worsens,
                "seconds": round(time.time() - t0, 1),
-               "llm_calls": m.get("llm_calls", model_turns), "tokens": m.get("tokens", tokens_fallback),
+               # `or` y no `get(..., default)`: si la métrica quedó en 0 por una configuración sin
+               # el plugin que la cuenta, el costo real igual se registra desde los eventos.
+               "llm_calls": m.get("llm_calls") or model_turns,
+               "tokens": m.get("tokens") or tokens_fallback,
                "vetoes": m.get("vetoes", 0), "vetoes_irreversible": m.get("vetoes_irreversible", 0),
                "rejected": m.get("rejected", 0),
                "episodes_written": m.get("episodes_written", 0), "habit_hits": m.get("habit_hits", 0),

@@ -71,3 +71,30 @@ async def test_invalid_call_is_not_an_outcome():
                                 result={"status": "invalid", "observed_effect": "no_change"})
     assert c.state.get(K_LAST_ERROR) is None
     assert c.state.get("subcortex.metrics", {}).get("error_count", 0) == 0
+
+
+@pytest.mark.asyncio
+async def test_after_model_counts_cost_in_every_configuration():
+    """El costo lo cuenta prediction, no el gate.
+
+    Bug encontrado durante el experimento confirmatorio (2026-09-06): llamadas y tokens se
+    contaban en `GatePlugin.after_model`, así que los brazos de control sin gate reportaban
+    cero llamadas — y el endpoint primario es `score − λ·llamadas`. Su utilidad habría salido
+    inflada justo en las comparaciones que la auditoría pidió.
+    """
+    from google.adk.models.llm_response import LlmResponse
+    from google.genai import types
+
+    p = PredictionPlugin(CFG)
+    c = ctx("cost")
+    resp = LlmResponse(
+        content=types.Content(role="model", parts=[types.Part(text="hola")]),
+        usage_metadata=types.GenerateContentResponseUsageMetadata(total_token_count=321))
+    assert await p.after_model_callback(callback_context=c, llm_response=resp) is None
+    await p.after_model_callback(callback_context=c, llm_response=resp)
+    m = c.state["subcortex.metrics"]
+    assert m["llm_calls"] == 2 and m["tokens"] == 642
+    # una respuesta parcial (streaming) no cuenta como llamada
+    resp.partial = True
+    await p.after_model_callback(callback_context=c, llm_response=resp)
+    assert c.state["subcortex.metrics"]["llm_calls"] == 2

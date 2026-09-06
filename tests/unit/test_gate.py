@@ -108,8 +108,10 @@ async def test_after_model_winner_take_all_and_llm_count():
     # El descarte por winner-take-all es arbitraje, no veto: no impide ninguna acción que el
     # agente fuera a ejecutar igual. Contarlo como veto inflaba el "efecto de seguridad"
     # (auditoría 2026-09-06), así que va en su propia métrica.
-    assert m["llm_calls"] == 1 and m["tokens"] == 123
     assert m["arbitration_dropped"] == 1 and m["vetoes"] == 0
+    # El costo (llamadas, tokens) ya NO lo cuenta el gate: lo cuenta prediction, que está en
+    # todas las configuraciones. Ver test_prediction.py::test_after_model_counts_cost.
+    assert m.get("llm_calls", 0) == 0
 
 
 def test_effective_confidence_shifts_from_model_to_history():
