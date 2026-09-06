@@ -246,6 +246,68 @@
           "escalate_to_human"
         ],
         "veto_log": []
+      },
+      {
+        "variant": "vanilla|101",
+        "i": 5,
+        "cause": "false_alarm",
+        "score": 90,
+        "resolved": true,
+        "steps": 2,
+        "worsens": 0,
+        "seconds": 44.2,
+        "llm_calls": 4,
+        "tokens": 180730,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "vetoes_value": 0,
+        "vetoes_hyperdirect": 0,
+        "vetoes_blockstreak": 0,
+        "arbitration_dropped": 0,
+        "reconsiders": 0,
+        "pred_log": [],
+        "actions": [
+          "resolve"
+        ],
+        "veto_log": []
+      },
+      {
+        "variant": "vanilla|101",
+        "i": 6,
+        "cause": "memory_leak",
+        "score": 75,
+        "resolved": true,
+        "steps": 3,
+        "worsens": 0,
+        "seconds": 95.5,
+        "llm_calls": 7,
+        "tokens": 255696,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "vetoes_value": 0,
+        "vetoes_hyperdirect": 0,
+        "vetoes_blockstreak": 0,
+        "arbitration_dropped": 0,
+        "reconsiders": 0,
+        "pred_log": [],
+        "actions": [
+          "restart"
+        ],
+        "veto_log": []
       }
     ]
   }

@@ -101,17 +101,21 @@
   <span class="brand">Hacia MELI Brain</span>
   <a href="#idea">La idea</a><a href="#hipotesis">Hipótesis</a><a href="#cerebro">Cerebro → código</a>
   <a href="#evidencia">Evidencia</a><a href="#ahorro">Ahorro</a><a href="#teoria">Teoría</a>
-  <a href="#casos">Casos MELI</a><a href="#falta">Qué falta</a>
+  <a href="#auditoria">La auditoría</a><a href="#casos">Casos MELI</a><a href="#falta">Qué falta</a>
 </div></nav>
 
 <header class="hero"><div class="wrap">
   <div class="eyebrow">Propuesta de investigación aplicada · Juan F. Castro Piccolo · septiembre 2026</div>
   <h1>Los agentes LLM no aprenden de su experiencia.<br><em>Les construimos la parte del cerebro que sí.</em></h1>
-  <p class="lead prose">Subcortex es una capa de software que envuelve a cualquier agente LLM —sin tocar el modelo
-  ni el prompt— y le agrega lo que un cerebro tiene alrededor de la corteza: memoria por situación, freno ante el
-  riesgo, hábitos que saltean la deliberación y noción del propio estado. La validamos con método A/B en
-  <b>3 dominios</b> y <b>4 modelos distintos</b>. Esta página cuenta todo el recorrido; el detalle técnico completo
-  está en el paper.</p>
+  <p class="lead prose">Subcortex es una capa de software que envuelve a cualquier agente LLM —sin tocar sus pesos—
+  y le agrega lo que un cerebro tiene alrededor de la corteza: memoria por situación, freno ante el riesgo,
+  hábitos que saltean la deliberación y noción del propio estado. La probamos con método A/B en <b>3 dominios</b>
+  y <b>4 modelos</b>, y después la sometimos a una <b>auditoría externa de nivel PhD</b> que encontró problemas
+  reales. Esta página cuenta el recorrido completo — incluido lo que la auditoría tumbó y el experimento
+  confirmatorio que está corriendo ahora.</p>
+  <p class="quiet prose" style="margin-top:-4px">Los números de abajo son <b>resultados de desarrollo</b>: sirvieron
+  para diseñar la arquitectura, así que motivan pero todavía no confirman. La distinción es el corazón de esta
+  presentación.</p>
   <div class="statstrip">
     <div class="stat"><b>−25 %</b><span>llamadas al modelo<br>(incidentes, mejor caso)</span></div>
     <div class="stat"><b>−50 a −71 %</b><span>acciones dañinas<br>(en los 4 modelos)</span></div>
@@ -178,21 +182,33 @@
   <div class="eyebrow">Las hipótesis — explícitas y refutables</div>
   <h2>Qué afirmamos, qué las refutaría, cómo vienen</h2>
   <div class="grid two" style="margin-top: 26px">
+    <div class="cardbox hyp" style="border-left-color: var(--amber)"><h3>H0 · ¿Es la arquitectura o el protocolo?</h3>
+      <p>Al enchufar la capa, el agente pasa a <b>declarar qué espera que pase</b> antes de cada acción. Toda la
+      mejora podría venir de eso, y no de la memoria, el freno ni los hábitos.</p>
+      <p class="ref"><b>Se refuta si:</b> un agente con solo el contrato de predicción —sin memoria, sin gate, sin
+      hábitos— iguala a la capa completa.</p>
+      <span class="chip open">Midiéndose ahora</span>
+      <p class="ref">La auditoría señaló que <b>ninguna corrida previa tenía este control</b>. Es la primera
+      pregunta del experimento confirmatorio en curso. Si H0 no se refuta, la conclusión honesta cambia: lo que
+      funciona sería obligar a anticipar la consecuencia, un mecanismo mucho más barato que toda la capa.</p>
+    </div>
     <div class="cardbox hyp"><h3>H1 · Memoria como mecanismo</h3>
       <p>Un agente LLM <b>mejora con el uso</b> si se le agrega memoria episódica indexada por situación,
       escrita solo ante sorpresa o éxito — sin fine-tuning, sin tocar pesos.</p>
       <p class="ref"><b>Se refuta si:</b> quitar solo la memoria (ablación) no degrada la conducta, o el agente con
       memoria no supera al mismo agente sin ella.</p>
-      <span class="chip ok">Sostenida</span>
+      <span class="chip mid">Indicio fuerte, no confirmada</span>
       <p class="ref">La ablación sin memoria devuelve la conducta bajista <b>exactamente</b> al baseline
-      (−3.50 % vs −3.51 % por decisión). La memoria no correlaciona con la mejora: <b>es</b> la mejora.</p>
+      (−3.50 % vs −3.51 % por decisión) — un indicio llamativo. Pero fue <b>una sola trayectoria por ablación</b>
+      contra una variabilidad de ±19.5: la auditoría tiene razón en que eso no alcanza para atribuir causalidad
+      por componente. Se re-mide con réplicas en el experimento en curso.</p>
     </div>
     <div class="cardbox hyp"><h3>H2 · Compilar abarata</h3>
       <p>Las decisiones repetidas se <b>compilan en hábitos</b> que responden sin invocar al modelo,
       reduciendo llamadas, tokens y tiempo sin perder calidad.</p>
       <p class="ref"><b>Se refuta si:</b> con repetición real, las llamadas por episodio no bajan, o bajan a costa
       del resultado.</p>
-      <span class="chip ok">Sostenida — con su límite mapeado</span>
+      <span class="chip mid">Indicio, con su límite mapeado</span>
       <p class="ref">Incidentes: −34 % de llamadas en el último tercio (Gemini), −21 % global (Sonnet). El límite
       es honesto: donde nada se repite (bugs únicos), no hay palanca — 3 corridas, 3 empates, explicados.</p>
     </div>
@@ -210,10 +226,12 @@
       <p>El mecanismo es <b>independiente del modelo</b>: la misma capa, sin un solo cambio, produce el mismo
       patrón con motores distintos.</p>
       <p class="ref"><b>Se refuta si:</b> al cambiar de modelo, la capa deja de aportar o invierte el signo del efecto.</p>
-      <span class="chip ok">Sostenida en 4 modelos</span>
+      <span class="chip mid">Dirección consistente en 4 modelos</span>
       <p class="ref">Gemini 3 Flash, Claude Sonnet 5, Opus 5 y Fable 5.1: en trading subcortex terminó arriba
       del baseline con los cuatro; en incidentes redujo llamadas y daño con los cuatro. Lo que cambia con el
-      modelo es <i>dónde</i> aparece la ganancia — y eso también lo predice la teoría (ver evidencia).</p>
+      modelo es <i>dónde</i> aparece la ganancia. Salvedad honesta: es <b>una trayectoria por par
+      modelo-mundo</b>, y los motores Claude usan un contrato de herramientas distinto al nativo de Gemini, así
+      que las magnitudes no son directamente comparables entre motores.</p>
     </div>
   </div>
 </div></section>
@@ -333,6 +351,15 @@
       fracasos primero. Dos situaciones textualmente parecidas con desenlaces opuestos son, para RAG, el mismo
       vecino; para un hipocampo, dos escenas distintas. Y RAG no tiene noción de "esta memoria se ganó con una
       sorpresa": escribe todo.</p></div>
+    <div class="cardbox"><h3>Qué es nuevo y qué no</h3>
+      <p>Revisamos el estado del arte y lo decimos sin adornos: <b>memoria episódica sin actualizar pesos no es
+      nuestra</b> (Reflexion, Rememberer, 2023); <b>compilar acciones para saltear el modelo tampoco</b>
+      (SkillDroid, 2026, con −49 % de llamadas en otro dominio); y los <b>gates de acción tipo bandit</b> ya
+      están formalizados para agentes con herramientas. Lo que no encontramos publicado es la pieza de
+      <b>predicción obligatoria de la consecuencia antes de actuar</b>, con el error como disparador de la
+      memoria — y un trabajo de diagnóstico reciente confirma que los agentes actuales casi nunca anticipan
+      consecuencias. Lo defendible es esa pieza, la integración en un único plano de control, y el rigor
+      experimental.</p></div>
     <div class="cardbox"><h3>Arquitecturas cognitivas, versión LLM</h3>
       <p>ACT-R y Soar formalizaron hace décadas memoria declarativa vs. procedural, chunking y utilidad de
       producción — pero nunca tuvieron una "corteza" competente que proponga. Subcortex es esa agenda con el
@@ -345,6 +372,52 @@
       confianza × historial supere el costo de su clase de riesgo, con freno extra para irreversibles
       (vía hiperdirecta). El modelo no puede "convencerse a sí mismo": la desinhibición es de una sola acción
       por turno, y queda registrada.</p></div>
+  </div>
+</div></section>
+
+<section id="auditoria"><div class="wrap">
+  <div class="eyebrow">Lo que más nos sirvió</div>
+  <h2>Pasamos el trabajo por una auditoría hostil</h2>
+  <p class="prose lead">Antes de mostrar esto, sometimos el repositorio y el paper a una auditoría crítica externa
+  de nivel PhD, pidiendo explícitamente que buscara cómo refutarnos. Encontró cosas reales. Las publicamos acá
+  porque un resultado que sobrevive a su mejor crítica vale más que uno que nunca fue atacado.</p>
+
+  <div class="grid two" style="margin-top: 26px">
+    <div class="cardbox"><h3>🎯 Lo que la auditoría tumbó</h3>
+      <p><b>Reuso adaptativo del banco.</b> Nuestra primera corrida perdía contra el baseline. Analizamos las fallas,
+      cambiamos la arquitectura, y volvimos a correr <i>los mismos casos con la misma semilla</i>. Eso convierte el
+      banco en conjunto de desarrollo: la mejora reportada no es validación.</p>
+      <p><b>La comparación no era limpia.</b> "Mismo agente con y sin la capa" era falso: con la capa, el agente
+      también recibe un contrato nuevo. Nunca corrimos el control que separa una cosa de la otra.</p>
+      <p><b>El episodio no era la unidad.</b> La memoria acopla los episodios entre sí; la réplica real es la
+      trayectoria completa. Nuestras medias trataban episodios como observaciones independientes.</p>
+      <p><b>"Veto" mezclaba dos cosas.</b> El arbitraje entre acciones paralelas contaba en el mismo contador que
+      los frenos por riesgo, inflando el efecto de seguridad.</p>
+    </div>
+    <div class="cardbox"><h3>🔬 Lo que hicimos con eso</h3>
+      <p><b>Congelamos la arquitectura</b> con un hash de configuración. Si alguien toca un umbral, cambia el hash y
+      la integración continua falla: deja de ser el mismo experimento.</p>
+      <p><b>Preregistramos</b> el experimento —endpoint primario, semillas, estadística y criterios de falsación—
+      y lo commiteamos <i>antes</i> de correr un solo caso.</p>
+      <p><b>Agregamos los 7 brazos de control</b> que faltaban, incluido el que mide cuánto aporta el mero contrato
+      de predicción, y el que reemplaza la "interocepción" por telemetría en lenguaje neutro.</p>
+      <p><b>Corregimos las métricas</b>: vetos separados por causa, calibración con reglas de puntuación propias,
+      comparación pareada por semilla con bootstrap.</p>
+      <p class="quiet">Todo eso corriendo ahora sobre semillas que nunca usamos.</p>
+    </div>
+  </div>
+
+  <div class="cardbox" style="margin-top: 18px; border-left: 4px solid var(--accent)">
+    <h3>🧠 Y sobre las analogías cerebrales: bajamos el tono</h3>
+    <p>Revisamos cada mapeo contra la literatura. Tres no aguantan el nombre que les habíamos puesto, y lo dice el
+    paper ahora: lo que llamábamos <b>"dopamina"</b> es un estimador bayesiano de tasa de éxito (no tiene la
+    estructura temporal de la señal real); lo que llamábamos <b>"hábitos"</b> es una caché procedural — y falla por
+    el lado contrario al que define un hábito, porque es <i>hipersensible</i> al resultado en vez de insensible; y
+    la <b>"interocepción"</b> es monitoreo de recursos, porque no hay ningún estado oculto que inferir.</p>
+    <p>Encontramos además un error de etiquetado propio: lo que llamábamos "cingulado" no era el mecanismo que la
+    literatura llama conflicto — y resulta que ese mecanismo <b>sí existe</b> en nuestro código, con otro nombre.</p>
+    <p class="quiet">La analogía neuroanatómica sigue siendo el <i>generador de hipótesis</i> —de ahí salieron las
+    piezas que funcionan— pero no es una afirmación de correspondencia biológica, y el paper ya no la hace.</p>
   </div>
 </div></section>
 
@@ -382,16 +455,19 @@
   <h2>Qué falta para confirmar — o refutar</h2>
   <div class="scroll"><table>
     <tr><th>pendiente</th><th>qué hipótesis afecta</th><th>cómo se resuelve</th></tr>
+    <tr><td><b>Separar arquitectura de protocolo</b> (el control que nunca corrimos)</td><td>H0 · todas</td><td>Experimento confirmatorio en curso: 7 brazos, arquitectura congelada, semillas nunca usadas, comparación pareada. La etapa crítica responde si la ganancia viene de la memoria o de obligar a predecir.</td></tr>
     <tr><td>El gate no enfrentó irreversibles reales</td><td>H3</td><td>τ²-bench (políticas explícitas) y AIOpsLab (acciones destructivas en k8s): los dos dan al veto semántica objetiva. Es el próximo experimento, ya investigado y priorizado.</td></tr>
-    <tr><td>Una corrida por par modelo-mundo</td><td>H4 (magnitudes)</td><td>3–5 réplicas por par para reportar medias con desvío (la dirección ya replicó 5/5 donde se midió).</td></tr>
+    <tr><td>Una corrida por par modelo-mundo; ablaciones de una sola trayectoria</td><td>H1, H4 (magnitudes)</td><td>Réplicas suficientes para que la comparación pareada tenga sentido frente a la variabilidad observada (±19.5 de equity entre trayectorias).</td></tr>
+    <tr><td>Comparación contra las alternativas simples (recuperación sola, caché sola, memoria estilo Reflexion)</td><td>novedad</td><td>Brazos ya implementados; etapa B del mismo experimento.</td></tr>
     <tr><td>Los mundos propios los diseñó quien diseñó la capa</td><td>todas</td><td>Benchmarks de terceros (τ²-bench, AIOpsLab, AppWorld) — cero control nuestro sobre el terreno.</td></tr>
     <tr><td>Con modelos fuertes, el recall puede anclar de más (−7/−10 pts de resolución)</td><td>H1 (costo)</td><td>Umbral de recuperación adaptativo a la tasa de acierto del propio modelo. Fable 5.1 sugiere que no es inevitable.</td></tr>
     <tr><td>La escena se define a mano por dominio</td><td>generalidad</td><td>Ya existe la sugerencia automática por ganancia de información; falta la migración de claves para aplicarla en caliente.</td></tr>
     <tr><td>Confianza declarada mal calibrada</td><td>H3</td><td>Mezcla con historial ya implementada (peso n/(n+2)); falta medirla con réplicas.</td></tr>
   </table></div>
   <p class="prose" style="margin-top: 16px">Todo lo anterior es <b>ejecutable con lo que ya existe</b>: la librería
-  corre con cualquier motor (probado en 4), los benchmarks son públicos, y el protocolo A/B con ablaciones ya está
-  escrito y validado tres veces.</p>
+  corre con cualquier motor (probado en 4), los benchmarks son públicos, y el protocolo ya está congelado,
+  preregistrado y corriendo. La honestidad sobre lo que falta no es una debilidad del trabajo: es lo que
+  permite que el próximo resultado signifique algo.</p>
   <div style="margin-top: 30px; display: flex; gap: 14px; flex-wrap: wrap">
     <a class="cta" href="https://claude.ai/code/artifact/72bee34f-5950-46e9-9bb2-eaeb41558c03">Leer el paper completo (ES/EN)</a>
     <a class="cta ghost" href="#hipotesis">Releer las hipótesis</a>
