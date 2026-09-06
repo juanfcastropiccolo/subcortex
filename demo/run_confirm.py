@@ -24,7 +24,14 @@ from demo.agent import MODEL, build_agent
 from demo.arms import ARMS, CONFIG_SHA, STAGES, build_arm_app, protocol_spec
 from demo.stats import render_report, trajectory_summary
 from opsworld.tools import registry
-from opsworld.world import COARSE_FEATURES, DIAGNOSTIC_TOOLS, RISK, World, features, generate_incidents
+from opsworld.world import (
+    COARSE_FEATURES,
+    DIAGNOSTIC_TOOLS,
+    RISK,
+    World,
+    features,
+    generate_incidents,
+)
 
 # Semillas de evaluación: elegidas de antemano y nunca usadas en desarrollo (42 y 7 sí lo fueron).
 HELD_OUT_SEEDS = (101, 202, 303, 404, 505)

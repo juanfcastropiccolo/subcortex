@@ -10,7 +10,7 @@ from .metrics import bump
 from .store import EpisodicStore
 from .types import K_INTERO, K_PENDING, K_TONE, K_VETO_LOG
 
-__all__ = ["GatePlugin", "K_RECONSIDERED", "effective_confidence", "gate_decision", "gate_decision_ex"]
+__all__ = ["K_RECONSIDERED", "GatePlugin", "effective_confidence", "gate_decision", "gate_decision_ex"]
 
 K_RECONSIDERED = "subcortex.reconsidered"
 
@@ -38,8 +38,8 @@ def gate_decision_ex(cfg: SubcortexConfig, tool: str, confidence: float, dopamin
         if tone < cfg.hyperdirect_tone:
             return False, value, f"acción irreversible con tono bajo ({tone:.2f})", "hyperdirect"
     if value < cfg.gate_threshold:
-        return (False, value, f"valor esperado {value:.2f} < umbral {cfg.gate_threshold}: "
-                "poca confianza, historial pobre o costo alto", "value")
+        return (False, value, (f"valor esperado {value:.2f} < umbral {cfg.gate_threshold}: "
+                               "poca confianza, historial pobre o costo alto"), "value")
     return True, value, "autorizada", "allowed"
 
 

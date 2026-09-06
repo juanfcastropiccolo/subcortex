@@ -1,0 +1,252 @@
+{
+  "config_sha": "6db371dcff30e02f",
+  "protocol": {
+    "frozen_config": {
+      "step_budget": 8,
+      "surprise_threshold": 0.25,
+      "gate_threshold": 0.1,
+      "cost": {
+        "free": 0.0,
+        "costly": 0.1,
+        "irreversible": 0.2
+      },
+      "dopamine_prior": 0.6,
+      "hyperdirect_confidence": 0.6,
+      "hyperdirect_tone": 0.4,
+      "trust_min_successes": 2,
+      "max_consecutive_blocks": 3,
+      "habit_min_successes": 3,
+      "habit_min_strength": 0.8,
+      "recall_min_overlap": 2,
+      "recall_max": 4,
+      "write_on_success": true,
+      "confidence_from_history": false,
+      "stall_fraction": 0.6,
+      "cingulate_reconsider": false,
+      "reconsider_margin": 0.08
+    },
+    "arms": {
+      "vanilla": {
+        "attach": false,
+        "disable": [],
+        "neutral_telemetry": false
+      },
+      "protocol": {
+        "attach": true,
+        "disable": [
+          "gate",
+          "habit",
+          "interoception",
+          "memory"
+        ],
+        "neutral_telemetry": false
+      },
+      "retrieval": {
+        "attach": true,
+        "disable": [
+          "gate",
+          "habit",
+          "interoception"
+        ],
+        "neutral_telemetry": false
+      },
+      "cache": {
+        "attach": true,
+        "disable": [
+          "gate",
+          "interoception",
+          "memory"
+        ],
+        "neutral_telemetry": false
+      },
+      "gate": {
+        "attach": true,
+        "disable": [
+          "habit",
+          "interoception",
+          "memory"
+        ],
+        "neutral_telemetry": false
+      },
+      "telemetry": {
+        "attach": true,
+        "disable": [
+          "gate",
+          "habit",
+          "memory"
+        ],
+        "neutral_telemetry": true
+      },
+      "full": {
+        "attach": true,
+        "disable": [],
+        "neutral_telemetry": false
+      }
+    },
+    "primary_endpoint": "utility_mean",
+    "lambda_calls": 2.0,
+    "replicate": "trajectory"
+  },
+  "model": "claude-code:sonnet",
+  "n_episodes": 30,
+  "rows": {
+    "vanilla|101": [
+      {
+        "variant": "vanilla|101",
+        "i": 0,
+        "cause": "memory_leak",
+        "score": 75,
+        "resolved": true,
+        "steps": 3,
+        "worsens": 0,
+        "seconds": 64.9,
+        "llm_calls": 6,
+        "tokens": 217782,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "vetoes_value": 0,
+        "vetoes_hyperdirect": 0,
+        "vetoes_blockstreak": 0,
+        "arbitration_dropped": 0,
+        "reconsiders": 0,
+        "pred_log": [],
+        "actions": [
+          "restart"
+        ],
+        "veto_log": []
+      },
+      {
+        "variant": "vanilla|101",
+        "i": 1,
+        "cause": "bad_deploy",
+        "score": 65,
+        "resolved": true,
+        "steps": 2,
+        "worsens": 0,
+        "seconds": 52.3,
+        "llm_calls": 6,
+        "tokens": 216976,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "vetoes_value": 0,
+        "vetoes_hyperdirect": 0,
+        "vetoes_blockstreak": 0,
+        "arbitration_dropped": 0,
+        "reconsiders": 0,
+        "pred_log": [],
+        "actions": [
+          "rollback"
+        ],
+        "veto_log": []
+      },
+      {
+        "variant": "vanilla|101",
+        "i": 2,
+        "cause": "traffic_spike",
+        "score": 80,
+        "resolved": true,
+        "steps": 2,
+        "worsens": 0,
+        "seconds": 89.9,
+        "llm_calls": 6,
+        "tokens": 220130,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "vetoes_value": 0,
+        "vetoes_hyperdirect": 0,
+        "vetoes_blockstreak": 0,
+        "arbitration_dropped": 0,
+        "reconsiders": 0,
+        "pred_log": [],
+        "actions": [
+          "scale"
+        ],
+        "veto_log": []
+      },
+      {
+        "variant": "vanilla|101",
+        "i": 3,
+        "cause": "db_saturated",
+        "score": -65,
+        "resolved": false,
+        "steps": 3,
+        "worsens": 1,
+        "seconds": 253.7,
+        "llm_calls": 7,
+        "tokens": 257281,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "vetoes_value": 0,
+        "vetoes_hyperdirect": 0,
+        "vetoes_blockstreak": 0,
+        "arbitration_dropped": 0,
+        "reconsiders": 0,
+        "pred_log": [],
+        "actions": [
+          "restart",
+          "escalate_to_human"
+        ],
+        "veto_log": []
+      },
+      {
+        "variant": "vanilla|101",
+        "i": 4,
+        "cause": "dependency_down",
+        "score": 20,
+        "resolved": true,
+        "steps": 2,
+        "worsens": 0,
+        "seconds": 52.0,
+        "llm_calls": 5,
+        "tokens": 182190,
+        "vetoes": 0,
+        "vetoes_irreversible": 0,
+        "rejected": 0,
+        "episodes_written": 0,
+        "habit_hits": 0,
+        "dehabituations": 0,
+        "stalled": 0,
+        "abs_error_sum": 0.0,
+        "error_count": 0,
+        "vetoes_value": 0,
+        "vetoes_hyperdirect": 0,
+        "vetoes_blockstreak": 0,
+        "arbitration_dropped": 0,
+        "reconsiders": 0,
+        "pred_log": [],
+        "actions": [
+          "escalate_to_human"
+        ],
+        "veto_log": []
+      }
+    ]
+  }
+}

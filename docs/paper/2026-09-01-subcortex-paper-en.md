@@ -1,8 +1,17 @@
 # Subcortex: a subcortical layer for LLM agents
 
-## Design from the anatomy of a decision, and validation across three worlds
+## A neuroscience-inspired control architecture for persistent LLM agents
 
-**Juan F. Castro Piccolo** · September 1, 2026
+**Juan F. Castro Piccolo** · September 1, 2026 · revised September 6, 2026
+
+> **Revision note.** An external audit established that the experiments in sections 6.1–6.5
+> informed design decisions and are therefore **development data**, not confirmatory
+> validation; that the "same agent with and without the layer" comparison confounded the
+> architecture with a change to the model-facing protocol; and that the neuroanatomical labels
+> oversold biological correspondence. This version corrects the scope of the claims, adds
+> related work and limits of the analogy, and describes the frozen-architecture confirmatory
+> experiment that answers those objections (§6.6; preregistration in
+> `docs/superpowers/specs/2026-09-06-preregistro-confirmatorio.md`).
 
 ---
 
@@ -14,8 +23,10 @@ hippocampus, amygdala, insula, habenula — authorizes, predicts, remembers, com
 We start from a neuroanatomical walkthrough of a simple decision ("Anatomy of a Yes") and use it
 as a map of what is missing from an agent in which the LLM is only the cortex. We implement that
 map as `subcortex`, a library of five plugins for Google ADK that attaches to any `LlmAgent`
-with one line, without modifying the model or the prompt: mandatory prediction before acting
-(cerebellum), veto-by-default with disinhibition of a single action (basal ganglia), episodic
+with one line, **without updating weights and without hand-rewriting the agent's original
+prompt** (the layer does intervene in the model-facing channel: it adds two mandatory parameters
+to action tools and injects protocol, precedents and internal state). Its components are:
+mandatory prediction before acting (cerebellum), veto-by-default with disinhibition of a single action (basal ganglia), episodic
 memory by situation that writes on surprise or success (hippocampus, amygdala, habenula),
 compiled habits that respond without calling the model (caudate → putamen), interoception
 translated into language (insula), and offline consolidation (sleep). We evaluate it with the
@@ -33,6 +44,15 @@ four models tested: in `marketworld` subcortex always ends above the baseline an
 it always cuts calls and harmful actions; where the gain shows up depends on the model — with
 strong baselines (Sonnet 5, Opus 5) it shifts from score to efficiency and safety, and with
 Fable 5.1 it wins on score again (+32 %). We document nine design lessons that emerged from the failures, the per-episode operating cost, and the limits of the study.
+
+**Scope of what we claim.** We present subcortex as a neuroscience-inspired middleware
+architecture for persistent LLM agents that separates consequence prediction, experience
+retrieval, risk-sensitive action arbitration, resource monitoring and procedural caching.
+Development experiments suggest the architecture can reduce deliberative LLM calls and harmful
+actions in domains with recurring state–action structure, while providing little benefit on
+nonrepetitive software repair. **These results motivate, but do not yet establish, general
+performance gains or biological correspondence.** Nothing in this work claims that subcortex
+is a validated model of the brain.
 
 ---
 
@@ -60,37 +80,52 @@ domains.
 
 Contributions:
 
-1. An explicit mapping from fifteen neuroanatomical steps to mechanisms implementable in an
-   agent, with the concrete formulas for each (section 3).
-2. `subcortex`, an implementation on Google ADK that wraps any `LlmAgent` without touching it,
-   with 91 tests that run without network access (section 4).
+1. An explicit mapping from fifteen neuroanatomical steps to implementable mechanisms, with the
+   concrete formulas for each and **the level of analogy each mapping supports** (sections 2, 3).
+2. `subcortex`, an implementation on Google ADK that attaches to any `LlmAgent` without changing
+   its weights or rewriting its original prompt, with 101 tests that run offline (section 4).
 3. Three test beds and an A/B protocol with LLM-free references, replication and ablations
-   (section 5), with positive results in two of them and an explained null result (section 6).
+   (section 5), with positive development results in two of them and an explained null result
+   (section 6), plus a **preregistered confirmatory protocol with the architecture frozen** and
+   the control arms that separate architecture from protocol (§6.6).
 4. Nine design lessons that came out of the runs that did not work, including two
    incompatibilities with the Gemini 3 API and an infinite habit loop (section 7).
+5. An honest assessment of **what is and is not novel** relative to Reflexion, Rememberer,
+   AdaPlanner, LATS, MetaFlowLLM, SkillDroid and bandit-style action gates (section 11).
 
 ---
 
 ## 2. From the brain to the agent
 
 The table summarizes the mapping. The column "missing from agents today" describes the state of
-the LLM agent frameworks we know; the "subcortex" column names the component that implements it.
+the LLM agent frameworks we know; the "subcortex" column names the component that implements it;
+the last column states **what level of analogy each mapping supports**, per the literature review
+in §8.1: *inspiration* (the general principle is shared), *algorithmic analogy* (the
+computational structure resembles it) or *label* (the biological name does not describe the
+mechanism and survives only as the module's historical name in the code). No mapping reaches the
+level of a mechanistic model.
 
-| Essay step | Brain mechanism | Missing from agents today | subcortex |
-|---|---|---|---|
-| 2, 4 — thalamus, reticular formation | Gain set by alertness | Everything enters the context with equal weight | `tone` modulates how many precedents are recalled |
-| 5 — amygdala | Valence before deliberation; memories carry emotional tags | Neutral memories | Episodes with `valence`, `habenula` |
-| 6–7 — hypothalamus, insula | Bodily state translated into a comparable feeling | The agent doesn't know how it is doing | `InteroceptionPlugin`: budget, failures, blocks → text + `tone` |
-| 8 — hippocampus, parahippocampal | Retrieval by scene; simulation of futures | Retrieval by similarity to the question | Recall by situation features; the scene is enriched by what diagnosis discovers |
-| 9 — anterior cingulate | Conflict detection; effort cost | No fast/slow router; no action cost | `reconsider` when value is near the threshold; cost per risk class |
-| 10 — prefrontal | Common currency, intention | This is what the LLM does well | The LLM, unchanged |
-| 11 — basal ganglia | Universal veto; disinhibit a single action; hyperdirect pathway | The default is to act | `GatePlugin`: value ≥ threshold, brake on irreversibles, one action per turn |
-| 13 — cerebellum | Efference copy, predicted consequences, error | No declared expectation | `PredictionPlugin`: mandatory `expected_effect`, `confidence`; signed error |
-| 15.1–15.2 — habenula, dopamine | Prediction error as the learning signal; a separate negative channel | Memory written by volume | Writing only on surprise or success; `habenula=True` with retrieval priority; dopamine per (scene, action) |
-| 15.4 — caudate → putamen | Habit: stimulus-response that skips deliberation | Everything goes through the LLM | `HabitPlugin`: compiles after 3 successes of the same action; responds without the LLM; de-habituates |
-| 0.4, 15.3 — microglia, sleep | Pruning, reinforcement, episodic → semantic consolidation | Memory grows monotonically | `consolidate()`: decay, pruning, reinforcement, distilled rules |
+| Essay step | Brain mechanism | Missing from agents today | subcortex | Level |
+|---|---|---|---|---|
+| 2, 4 — thalamus, reticular formation | Gain set by alertness | Everything enters the context with equal weight | `tone` modulates how many precedents are recalled | analogy |
+| 5 — amygdala | Valence before deliberation; memories carry emotional tags | Neutral memories | Episodes with `valence`, `habenula` | label |
+| 6–7 — hypothalamus, insula | Bodily state translated into a comparable feeling | The agent doesn't know how it is doing | `InteroceptionPlugin`: budget, failures, blocks → text + `tone` | label |
+| 8 — hippocampus, parahippocampal | Retrieval by scene; simulation of futures | Retrieval by similarity to the question | Recall by situation features; the scene is enriched by what diagnosis discovers | analogy |
+| 9 — anterior cingulate | Conflict detection; effort cost | No fast/slow router; no action cost | `reconsider` when value is near the threshold; cost per risk class | label* |
+| 10 — prefrontal | Common currency, intention | This is what the LLM does well | The LLM, unchanged | — |
+| 11 — basal ganglia | Universal veto; disinhibit a single action; hyperdirect pathway | The default is to act | `GatePlugin`: value ≥ threshold, brake on irreversibles, one action per turn | analogy |
+| 13 — cerebellum | Efference copy, predicted consequences, error | No declared expectation | `PredictionPlugin`: mandatory `expected_effect`, `confidence`; signed error | inspiration |
+| 15.1–15.2 — habenula, dopamine | Prediction error as the learning signal; a separate negative channel | Memory written by volume | Writing only on surprise or success; `habenula=True` with retrieval priority; dopamine per (scene, action) | label |
+| 15.4 — caudate → putamen | Habit: stimulus-response that skips deliberation | Everything goes through the LLM | `HabitPlugin`: compiles after 3 successes of the same action; responds without the LLM; de-habituates | label |
+| 0.4, 15.3 — microglia, sleep | Pruning, reinforcement, episodic → semantic consolidation | Memory grows monotonically | `consolidate()`: decay, pruning, reinforcement, distilled rules | inspiration (distillation) |
 
 {{fig:f1-arquitectura}}
+
+\* The asterisk on the cingulate flags a labeling error we found while reviewing the
+literature: "conflict", in the sense of Botvinick et al. (2001), is the co-activation of
+incompatible responses — and that mechanism **does exist** in the system, but it is the
+winner-take-all arbitration over parallel actions, not the near-threshold `reconsider`, which
+measures uncertainty. Full discussion in §8.1.
 
 Two mapping decisions deserve comment. First: the tool-calling loop ADK already has — the model
 proposes a call, the tool responds, the model looks again — is structurally the
@@ -268,6 +303,18 @@ agent never sees dates. Scene: BTC trend, breadth, volatility, dispersion, curre
 ---
 
 ## 6. Results
+
+> **Status of sections 6.1 through 6.5: development data.** These runs informed architecture
+> decisions — the two-level scene key, the gate formula, the consequence horizon, writing on
+> success — and several re-evaluated the same task set with the same seed after those changes.
+> That is legitimate engineering iteration and we report it in full, but it **turns these test
+> beds into development sets**: they do not support a confirmatory claim. The frozen-architecture
+> experiment with control arms and never-used seeds is in §6.6.
+
+> **A confound these runs do not separate.** Attaching the layer makes the agent declare
+> `expected_effect` and `confidence` and receive protocol instructions: the model-facing channel
+> changes. Any improvement could come from forcing it to anticipate the consequence rather than
+> from memory, gate or habits. No run in 6.1–6.5 has the arm that isolates that.
 
 Four engines, always identified by exact model: sections 6.1–6.4 run on **Gemini 3 Flash**
 (`gemini-3-flash-preview`); section 6.5 replicates opsworld and marketworld on
@@ -481,6 +528,74 @@ Each one came out of a run that did not work, and stayed in the code with its te
 
 ## 8. Limits and threats to validity
 
+### 8.0 What the external audit exposed
+
+- **Adaptive benchmark reuse.** The first `opsworld` run favored the baseline (37.1 vs 42.1
+  score, 0.80 vs 0.93 resolution); analyzing those failures motivated three architecture changes,
+  and the next run — **over the same 40 incidents with the same seed** — produced the headline
+  46.3 → 56.3. The same pattern affects `bugworld` (failures motivated `write_on_success` and the
+  no-progress signal before re-running the same 40 mutations) and `marketworld` (the horizon
+  moved from 7 to 21 days after observing the score/equity contradiction, on the same series).
+- **The episode is not the replicate.** Memory couples episodes serially within a run: the
+  independent unit is the whole trajectory. Section 6 reported means and thirds as if episodes
+  were independent observations.
+- **Single-trajectory ablations.** The full layer varies by ±19.5 equity across trajectories in
+  `marketworld`; each ablation was run once. Under that variance, ranking single trajectories
+  cannot support component-level causal attribution.
+- **"Veto" was not one thing.** Winner-take-all arbitration incremented the same counter as
+  risk blocks, inflating the reported safety effect. They are now separate metrics
+  (value / hyperdirect / block-streak / arbitration).
+- **Multiplicity without preregistration.** Several worlds, iterations, horizons, cadences,
+  models, ablations and variants were inspected with no primary endpoint declared in advance.
+- **Reproducibility.** The default model was a preview; the Claude adapter had to change when
+  25 % of episodes ended without a tool action; `pyproject.toml` had no upper bound on ADK; there
+  was no CI.
+
+### 8.1 Limits of the neuroanatomical analogy
+
+We reviewed each mapping against the literature (detail and citations in
+`docs/superpowers/research/2026-09-06-auditoria-neurociencia.md`). None reaches the level of a
+mechanistic model, and three should not carry the biological name:
+
+- **"Dopamine" is a Beta-Bernoulli estimator.** `p̂ = (successes + 2·0.6)/(successes + failures
+  + 2)` is a smoothed success frequency per (scene class, action). The real dopamine signal is a
+  reward prediction error with the shape of a TD error — signed relative to expectation, with
+  temporal bootstrapping — and modern evidence describes it as a **distributional**,
+  populationally heterogeneous code (Dabney et al., 2020; Engelhard et al., 2019). Ours has
+  neither sign relative to expectation nor credit propagation. The honest name is *Bayesian
+  contextual reliability estimator*.
+- **The "habits" fail on the side opposite to what defines a habit.** The behavioral criterion
+  for habitual control is **insensitivity** to outcome devaluation and contingency degradation
+  (Balleine & Dickinson, 1998; Yin & Knowlton, 2006). Ours halves its strength on the first
+  failure: it is *hypersensitive* to outcome, which is the signature of goal-directed control.
+  Arbitration between systems in the brain is also continuous and uncertainty-based rather than
+  a repetition threshold (Daw, Niv & Dayan, 2005), and five experiments failed to induce human
+  habits by overtraining (de Wit et al., 2018). The honest name is **procedural cache**.
+- **"Interoception" is resource monitoring.** Biological interoception is inference over a
+  partly hidden, noisy bodily state — hence interoceptive accuracy as a measurable trait
+  (Critchley et al., 2004) and the modern predictive-comparator framing (Seth, 2013). Our `tone`
+  is arithmetic over exact counters the system already holds: there is no hidden state to infer.
+  The `telemetry` arm in §6.6 exists to measure whether the bodily framing adds anything over the
+  same numbers in neutral language.
+- **The hippocampus does the opposite of our recall.** Dentate-gyrus pattern separation makes
+  similar inputs *more* distinct to avoid interference; our recall prioritizes maximal feature
+  overlap. There is no pattern completion and no sequence coding. What is defensible is the
+  parallel with hippocampal indexing theory (Teyler & Rudy, 2007).
+- **"Microglia" and "sleep" do not describe `consolidate()`.** Decay by time-since-access is a
+  forgetting curve; pruning is a thresholded `DELETE`; frequency-based reinforcement has none of
+  real replay, which is structured sequential reactivation **prioritized by value** (Ambrose,
+  Pfeiffer & Foster, 2016). The one piece with genuine kinship is distillation, a crude
+  instantiation of gist extraction by information overlap (Lewis & Durrant, 2011).
+- **The gate is the most defensible mapping**, at the level of control architecture (utility
+  threshold + high-priority brake + competitive selection), but the Go/No-Go dichotomy that used
+  to justify it is contradicted by evidence of concurrent activation of both pathways (Cui et
+  al., 2013) and of continuous, relative value coding across populations (Shin, Kim & Jung, 2018).
+
+We keep the biological names **in the code** for project continuity, and replace them with the
+functional names in every scientific claim.
+
+### 8.2 Limits of the experimental design
+
 - **Sample size.** 40 episodes per world (120 in the weekly variant). Directions are robust
   (5/5 replication in `marketworld`); magnitudes carry deviations on the order of half the
   advantage.
@@ -506,8 +621,12 @@ Each one came out of a run that did not work, and stayed in the code with its te
 
 ## 9. Future work
 
-Three to five trajectories per variant in all worlds and per engine, to report means with
-deviations. The Sonnet 5 and Opus 5 replications also leave a question of their own: with a stronger base
+The priority is no longer adding worlds or models but **closing the confirmatory experiment**
+(§6.6) and taking it to an external benchmark we did not design: τ-bench or τ²-bench for the
+gate — where policies define which action is forbidden in which context, and a violation is an
+objective failure — AppWorld for episodic transfer with state-based verification, and AIOpsLab
+for genuinely destructive actions. After that: three to five trajectories per variant in all
+worlds and per engine, to report means with deviations. The Sonnet 5 and Opus 5 replications also leave a question of their own: with a stronger base
 model, episodic recall can over-anchor (seven to ten resolution points in `opsworld`) — and
 Fable 5.1 shows it is not inevitable; the natural fix is a recall threshold adaptive to the
 model's own hit rate. A fourth world with genuinely irreversible actions (operations on an automation
@@ -523,7 +642,7 @@ habit in bear regimes and the dispersion rules the pure rule does not have.
 ## 10. Reproducibility
 
 Repository `memory-tests`, branch `worktree-subcortex-poc`. `uv sync` installs everything;
-`uv run pytest` runs the 91 tests (5 slow ones in `bugworld`) without network access.
+`uv run pytest` runs the 101 tests (5 slow ones in `bugworld`) without network access.
 `demo/run_ab.py`, `demo/run_bugs_ab.py` and `demo/run_market_ab.py` run the A/Bs with
 `GOOGLE_API_KEY` in `demo/.env`; they accept `--baseline-from`, `--resume`, `--ablate`,
 `--spacing/--horizon`, `--history-confidence`, `--reconsider`, `--llm-rules`. The
@@ -532,8 +651,58 @@ Repository `memory-tests`, branch `worktree-subcortex-poc`. `uv sync` installs e
 CLI, with no API key; the raw results for the second engine live in `results-ops-cc.json` and
 `results-market-cc.json`. The `marketworld`
 data are 10 daily-candle CSVs included in the repository. Raw results for every run live in
-`results-*.json`; the reports with diagnoses in `docs/superpowers/results/`; the specifications
-in `docs/superpowers/specs/`; the source essay in `documentation/anatomia-de-una-decision.md`.
+`results-*.json`; the reports with diagnoses in `docs/superpowers/results/`; the specifications and the
+**confirmatory preregistration** in `docs/superpowers/specs/`; the literature and analogy
+reviews in `docs/superpowers/research/`; the source essay in `documentation/anatomia-de-una-decision.md`.
+
+---
+
+## 11. Related work and what remains novel
+
+The underlying problem — making an LLM agent improve from its own experience without updating its
+weights — is an established research direction, and several subcortex components have direct
+precedents. We say so explicitly because the honest contribution is smaller and more specific than
+"memory and external control for agents".
+
+**Episodic memory without weight updates: no novelty.** It is the central result of *Reflexion*
+(Shinn et al., 2023), which stores verbal self-reflections after failure and re-injects them on the
+next attempt, and of *Rememberer / RLEM* (Zhang et al., 2023), which maintains an experience table
+updated by a Q-learning-style rule while the LLM stays frozen — hence "semi-parametric". Neither
+vetoes actions nor bypasses inference; both influence via retrieval into the prompt. *AdaPlanner*
+(Sun et al., 2023) reuses successful plans as exemplars, but the model is still invoked. *LATS*
+(Zhou et al., 2024) adds MCTS with the LLM itself as value function: the opposite direction from
+ours in cost, since it makes each decision **more** expensive. *MetaFlowLLM* (Fan et al., 2025)
+builds a hierarchical tree of reusable experience and reports reduced execution cost on AppWorld and
+WorkBench; it is the closest neighbor to our habit compilation and a direct comparison is pending.
+
+**Compiling repeated actions to bypass the LLM: marginal novelty.** *SkillDroid* (2026) compiles
+successful GUI trajectories into parameterized templates replayed **with no model call at all**,
+with a matching cascade and recompilation when reliability degrades, reporting −49 % calls. The
+mechanism is essentially ours, in another domain. We cannot claim priority over the idea; what
+remains is the application to general tool-calling and the integration with the rest of the control
+plane.
+
+**Learned action gating: low novelty.** *GDCB* (2026) formalizes contextual bandits in which every
+action passes through a pre-execution gate that may modify or veto it before reaching the
+environment, and explicitly lists LLM tool-use agents among its instantiations. *OLIVIA* (2026)
+instantiates a linear contextual bandit at the action-selection interface of a frozen ReAct agent.
+Subcortex differs by integration — the gate shares per-scene statistics with memory and habits — not
+by the idea.
+
+**Mandatory consequence prediction with error as the write signal: the real gap.** We found no work
+combining (i) an LLM agent with tools, (ii) **mandatory** declaration of the expected consequence
+before executing, and (iii) prediction error as the quantitative trigger for memory writes. The
+closest neighbor, *D-MEM* (2026), gates writes with a reward-prediction-error-inspired signal, but
+computed post hoc over conversational relevance, without a mandatory pre-action step. A recent
+diagnostic paper shows current agents almost never simulate consequences before acting, suggesting
+the gap is real rather than an oversight of ours. The genealogy of the idea, however, is old:
+curiosity-driven exploration and dopaminergic reward prediction error.
+
+**What we do claim**, then, is: the integration of these mechanisms into a **single mandatory
+control plane per tool call**, external to the model and with persistent state; the mandatory
+prediction component; and the experimental protocol — ablations, control arms, an explained null
+result and preregistration — that makes it possible to decide which mechanism does the work. No
+individual mechanism is ours.
 
 ---
 
@@ -549,4 +718,24 @@ in `docs/superpowers/specs/`; the source essay in `documentation/anatomia-de-una
 - Shinn, N., et al. (2023). Reflexion: language agents with verbal reinforcement learning. *NeurIPS*.
 - Wang, G., et al. (2023). Voyager: an open-ended embodied agent with large language models. *arXiv*.
 - Park, J. S., et al. (2023). Generative agents: interactive simulacra of human behavior. *UIST*.
+- Zhang, D., et al. (2023). Large language models are semi-parametric reinforcement learning agents. *NeurIPS*. (Rememberer / RLEM.)
+- Sun, H., et al. (2023). AdaPlanner: adaptive planning from feedback with language models. *NeurIPS*.
+- Zhou, A., et al. (2024). Language agent tree search unifies reasoning, acting and planning. *ICML*.
+- Fan, S., et al. (2025). Generalizing experience for language agents with hierarchical MetaFlows. *NeurIPS*.
+- Lu, P., et al. (2023). Chameleon: plug-and-play compositional reasoning. *NeurIPS*.
+- Dabney, W., Kurth-Nelson, Z., Uchida, N., et al. (2020). A distributional code for value in dopamine-based reinforcement learning. *Nature*, 577.
+- Engelhard, B., et al. (2019). Specialized coding of sensory, motor and cognitive variables in VTA dopamine neurons. *Nature*, 570.
+- Cui, G., et al. (2013). Concurrent activation of striatal direct and indirect pathways during action initiation. *Nature*, 494.
+- Shin, J. H., Kim, D., & Jung, M. W. (2018). Differential coding of reward and movement information in the dorsomedial striatal direct and indirect pathways. *Nature Communications*, 9.
+- Balleine, B. W., & Dickinson, A. (1998). Goal-directed instrumental action. *Neuropharmacology*, 37.
+- Yin, H. H., & Knowlton, B. J. (2006). The role of the basal ganglia in habit formation. *Nature Reviews Neuroscience*, 7.
+- Daw, N. D., Niv, Y., & Dayan, P. (2005). Uncertainty-based competition between prefrontal and dorsolateral striatal systems. *Nature Neuroscience*, 8.
+- de Wit, S., et al. (2018). Shifting the balance between goals and habits: five failures in experimental habit induction. *Journal of Experimental Psychology: General*, 147(7).
+- Critchley, H. D., et al. (2004). Neural systems supporting interoceptive awareness. *Nature Neuroscience*, 7(2).
+- Seth, A. K. (2013). Interoceptive inference, emotion, and the embodied self. *Trends in Cognitive Sciences*, 17(11).
+- Teyler, T. J., & Rudy, J. W. (2007). The hippocampal indexing theory and episodic memory. *Hippocampus*.
+- Lewis, P. A., & Durrant, S. J. (2011). Overlapping memory replay during sleep builds cognitive schemata. *Trends in Cognitive Sciences*.
+- Ambrose, R. E., Pfeiffer, B. E., & Foster, D. J. (2016). Reverse replay of hippocampal place cells is uniquely modulated by changing reward. *Neuron*, 91.
+- Botvinick, M. M., et al. (2001). Conflict monitoring and cognitive control. *Psychological Review*, 108(3).
+- Shenhav, A., Botvinick, M. M., & Cohen, J. D. (2013). The expected value of control. *Neuron*, 79.
 - Google. *Agent Development Kit (ADK) — Python*, version 2.8. Online documentation.

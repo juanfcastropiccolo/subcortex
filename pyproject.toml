@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Capa subcortical para agentes ADK: gate, predicción, interocepción, memoria episódica y hábitos"
 requires-python = ">=3.11"
 dependencies = [
-    "google-adk>=1.20",
+    # Cota superior pedida por la auditoría: sin ella, un ADK 3.x cambia los hooks de plugins
+    # y la reproducción exacta de las corridas deja de estar garantizada (uv.lock fija el resto).
+    "google-adk>=1.20,<3",
     "pydantic>=2.0",
 ]
 

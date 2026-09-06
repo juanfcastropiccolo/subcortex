@@ -1607,7 +1607,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "google-adk", specifier = ">=1.20" },
+    { name = "google-adk", specifier = ">=1.20,<3" },
     { name = "pydantic", specifier = ">=2.0" },
 ]
 

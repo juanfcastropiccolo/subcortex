@@ -12,7 +12,6 @@ from __future__ import annotations
 import math
 import random
 import statistics
-from typing import Any
 
 from demo.arms import LAMBDA_CALLS_PRIMARY, LAMBDA_CALLS_SENSITIVITY
 
@@ -160,7 +159,7 @@ def render_report(trajectories: dict[str, dict[int, dict]], reference: str = "va
         if not by_seed:
             continue
 
-        def m(key):
+        def m(key, by_seed=by_seed):
             vals = [t[key] for t in by_seed.values() if key in t]
             return statistics.mean(vals) if vals else 0.0
 

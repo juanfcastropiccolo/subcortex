@@ -1,0 +1,35 @@
+name: CI
+
+# La auditoría del 2026-09-05 marcó que los tests existían pero no había ninguna corrida
+# independiente y verificable. Esto la agrega: instalación desde el lockfile y suite completa,
+# sin red hacia proveedores de modelos (los tests no llaman a ningún LLM).
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Instalar desde el lockfile (reproducible)
+        run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check .
+      - name: Tests
+        run: uv run pytest -q
+      - name: Verificar que la arquitectura sigue congelada
+        # Si alguien toca un umbral de FROZEN, cambia el hash y la corrida confirmatoria
+        # publicada deja de corresponder a este código: el CI lo detecta.
+        run: |
+          SHA=$(uv run python -c "from demo.arms import CONFIG_SHA; print(CONFIG_SHA)")
+          echo "CONFIG_SHA=$SHA"
+          test "$SHA" = "6db371dcff30e02f" || {
+            echo "::error::CONFIG_SHA cambió ($SHA ≠ 6db371dcff30e02f). Actualizá el preregistro y declará una corrida nueva."
+            exit 1
+          }

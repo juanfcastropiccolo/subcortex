@@ -5,7 +5,14 @@ import pytest
 from google.adk.agents import LlmAgent
 
 from demo.arms import ARMS, CONFIG_SHA, FROZEN, build_arm_app, config_sha
-from demo.stats import calibration, compare, paired_bootstrap, pareto_front, trajectory_summary, utility
+from demo.stats import (
+    calibration,
+    compare,
+    paired_bootstrap,
+    pareto_front,
+    trajectory_summary,
+    utility,
+)
 from opsworld.world import COARSE_FEATURES, DIAGNOSTIC_TOOLS, RISK
 from subcortex.config import SubcortexConfig
 from subcortex.gate import gate_decision, gate_decision_ex

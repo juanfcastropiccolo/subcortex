@@ -21,12 +21,27 @@ import subcortex
 from demo.agent import resolve_model
 from opsworld.tools import ALL_TOOLS, registry
 from opsworld.world import (
-    CAUSES, COARSE_FEATURES, DIAGNOSTIC_TOOLS, HOURS, RISK, SERVICES, Incident, World, features,
+    CAUSES,
+    COARSE_FEATURES,
+    DIAGNOSTIC_TOOLS,
+    HOURS,
+    RISK,
+    SERVICES,
+    Incident,
+    World,
+    features,
 )
 from subcortex.gate import K_RECONSIDERED
 from subcortex.habit import K_HABIT_TRIED
 from subcortex.types import (
-    K_ACTED, K_DISCOVERED, K_FEATURES, K_HABIT_HIT, K_INTERO, K_LAST_ERROR, K_PENDING, K_TONE,
+    K_ACTED,
+    K_DISCOVERED,
+    K_FEATURES,
+    K_HABIT_HIT,
+    K_INTERO,
+    K_LAST_ERROR,
+    K_PENDING,
+    K_TONE,
     K_VETO_LOG,
 )
 

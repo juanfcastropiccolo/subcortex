@@ -177,11 +177,11 @@ def f1(out, t):
     b += arrow(595, 110, 595, 132)
     b += box(750, 66, 150, 70, t["f1tool"], t["f1toolsub"])
     b += arrow(680, 158, 748, 118, t["f1auth"], -8)
-    b += f'<path d="M 510 176 C 390 176, 310 144, 306 98" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a)"/>'
+    b += '<path d="M 510 176 C 390 176, 310 144, 306 98" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a)"/>'
     b += f'<text x="368" y="155" text-anchor="middle" fill="{INK3}" font-size="11">{t["f1veto"]}</text>'
     b += box(750, 210, 150, 96, "after_tool", t["f1at"])
     b += arrow(825, 136, 825, 208)
-    b += f'<path d="M 750 262 C 300 272, 125 248, 117 128" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#a)"/>'
+    b += '<path d="M 750 262 C 300 272, 125 248, 117 128" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#a)"/>'
     b += f'<text x="390" y="252" text-anchor="middle" fill="{INK3}" font-size="11">{t["f1learn"]}</text>'
     fig(out, "f1-arquitectura", t["f1cap"], t["f1aria"], 930, 320, b)
 
