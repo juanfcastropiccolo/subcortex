@@ -1,5 +1,7 @@
 # subcortex
 
+Disclaimer: Todo este proyecto es investigación en curso. Nada está confirmado por falta de capital. TBD...
+
 Capa subcortical para agentes [ADK](https://google.github.io/adk-docs/). Se engancha a cualquier
 `LlmAgent` sin modificarlo y le agrega lo que un LLM solo no tiene: veto por defecto, predicción
 antes de actuar, interocepción, memoria episódica que escribe solo ante sorpresa, hábitos que
